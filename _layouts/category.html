@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ page.title }} | WinkCasa</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+
+{% include header.html %}
+
+<main class="content">
+
+  <h1>{{ page.title }}</h1>
+
+  {% if page.description %}
+    <p>{{ page.description }}</p>
+  {% endif %}
+
+  <hr>
+
+  <div class="latest-news-grid">
+    {% assign category = page.category %}
+    {% for post in site.posts %}
+      {% if post.category == category %}
+        <div class="news-card">
+          <h3>
+            <a href="{{ post.url }}">{{ post.title }}</a>
+          </h3>
+          <p>{{ post.excerpt | strip_html | truncate: 120 }}</p>
+          <span class="news-meta">{{ post.date | date: "%B %d, %Y" }}</span>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+</main>
+
+{% include footer.html %}
+
+</body>
+</html>
