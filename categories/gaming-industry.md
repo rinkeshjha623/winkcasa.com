@@ -1,7 +1,6 @@
 ---
-layout: page
+layout: category
 title: Gaming Industry Updates
-permalink: /gaming-industry/
+category: gaming-industry
+description: News and updates from the global gaming industry, esports, studios, and platforms.
 ---
-
-News, trends, and press releases from the global gaming and esports industry.
