@@ -24,6 +24,9 @@
   font-size: 14px;
 }
 
+main.content {
+  min-height: 60vh;
+}
 .main-nav a:hover {
   color: #0a58ca;
 }
