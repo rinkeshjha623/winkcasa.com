@@ -1,7 +1,6 @@
 .site-header {
   border-bottom: 1px solid #e6e6e6;
   background: #ffffff;
-
   position: sticky;
   top: 0;
   z-index: 1000;
@@ -91,3 +90,36 @@ main.content {
     grid-template-columns: 1fr;
   }
 }
+/* =========================
+   Section Bar (News Categories)
+   ========================= */
+
+.section-bar {
+  background: #f8f8f8;
+  border-top: 1px solid #e6e6e6;
+  border-bottom: 1px solid #ddd;
+  padding: 10px 16px;
+  display: flex;
+  gap: 18px;
+  overflow-x: auto;
+}
+
+.section-bar a {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.section-bar a:hover {
+  color: #0a58ca;
+}
+
+/* Mobile improvement */
+@media (max-width: 768px) {
+  .section-bar {
+    gap: 14px;
+  }
+}
+
