@@ -23,5 +23,6 @@ Welcome to **WinkCasa**, a multi-industry news and PR platform covering technolo
 
 ---
 
-👉 **Looking to publish a press release or guest post?**  
-Visit our **[Publish With Us](\/publish-with-us\/)** page.
+✍️ **Want to contribute an article?**  
+Visit our **[Write for Us](/write-for-us/)** page.
+
