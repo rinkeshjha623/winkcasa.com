@@ -1,3 +1,8 @@
 title: WinkCasa
 description: Free blogging website
 theme: minima
+
+header_pages:
+  - about.md
+  - contact.md
+  - privacy-policy.md
