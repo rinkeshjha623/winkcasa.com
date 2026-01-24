@@ -25,4 +25,5 @@ Welcome to **WinkCasa**, a multi-industry news and PR platform covering technolo
 
 ✍️ **Want to contribute an article?**  
 Visit our **[Write for Us](/write-for-us/)** page.
-
+---
+📌 Read our **[Editorial Policy](/editorial-policy/)** to understand how we publish content.
