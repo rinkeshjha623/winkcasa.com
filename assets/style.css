@@ -27,3 +27,60 @@
 .main-nav a:hover {
   color: #0a58ca;
 }
+.site-footer {
+  background: #111;
+  color: #ddd;
+  margin-top: 60px;
+}
+
+.footer-container {
+  max-width: 1200px;
+  margin: auto;
+  padding: 40px 20px;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 30px;
+}
+
+.footer-brand img {
+  height: 40px;
+  margin-bottom: 12px;
+}
+
+.footer-brand p {
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.footer-links h4 {
+  color: #fff;
+  font-size: 15px;
+  margin-bottom: 10px;
+}
+
+.footer-links a {
+  display: block;
+  color: #bbb;
+  font-size: 14px;
+  margin-bottom: 8px;
+  text-decoration: none;
+}
+
+.footer-links a:hover {
+  color: #fff;
+}
+
+.footer-bottom {
+  border-top: 1px solid #333;
+  text-align: center;
+  padding: 14px;
+  font-size: 13px;
+  color: #aaa;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .footer-container {
+    grid-template-columns: 1fr;
+  }
+}
