@@ -785,3 +785,57 @@ main.content {
   font-weight: 700;
   font-size: 12px;
 }
+/* =========================
+   CATEGORY BADGES
+   ========================= */
+
+.card-meta {
+  margin-bottom: 6px;
+}
+
+.badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 6px;
+  margin-right: 6px;
+  color: #fff;
+  border-radius: 2px;
+}
+
+/* Category colors */
+.category-ai-trends { background: #0a58ca; }
+.category-cybersecurity { background: #6f42c1; }
+.category-cloud-saas { background: #198754; }
+.category-payment-solutions { background: #0d6efd; }
+.category-crypto-updates { background: #f59e0b; color:#111; }
+.category-gaming-industry { background: #dc3545; }
+.category-live-streaming { background: #d0021b; }
+
+/* LIVE badge */
+.badge-live {
+  background: #d0021b;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 6px;
+  margin-right: 6px;
+  border-radius: 2px;
+}
+
+/* BREAKING STYLE (Top story emphasis) */
+.home-hero {
+  position: relative;
+}
+
+.home-hero::before {
+  content: "BREAKING";
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: #d0021b;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 4px 8px;
+}
