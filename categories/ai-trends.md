@@ -1,7 +1,6 @@
 ---
-layout: page
+layout: category
 title: AI Trends
-permalink: /ai-trends/
+category: ai-trends
+description: Latest news, insights, and analysis on artificial intelligence, automation, and machine learning.
 ---
-
-Latest news, research, and industry updates on artificial intelligence, machine learning, and automation.
