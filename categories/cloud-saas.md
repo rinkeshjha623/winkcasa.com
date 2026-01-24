@@ -1,7 +1,6 @@
 ---
-layout: page
+layout: category
 title: Cloud & SaaS Updates
-permalink: /cloud-saas/
+category: cloud-saas
+description: News, trends, and insights from cloud computing platforms and SaaS companies worldwide.
 ---
-
-Updates, press releases, and insights from cloud computing and SaaS companies worldwide.
