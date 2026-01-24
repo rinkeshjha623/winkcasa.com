@@ -1,7 +1,6 @@
 ---
-layout: page
+layout: category
 title: Payment Solutions
-permalink: /payment-solutions/
+category: payment-solutions
+description: News and insights on UPI, fintech, and cross-border payment technologies.
 ---
-
-Coverage of payment technologies including UPI, cross-border payments, digital wallets, and payment gateways.
