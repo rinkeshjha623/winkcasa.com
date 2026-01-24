@@ -1,8 +1,9 @@
 ---
-layout: default
+layout: post
 title: "How AI Is Transforming Global Business in 2026"
 category: ai-trends
 author: Rinkesh Jha
+image: /assets/images/ai-2026.jpg
 ---
 
 Artificial Intelligence is no longer experimental. In 2026, AI is deeply
