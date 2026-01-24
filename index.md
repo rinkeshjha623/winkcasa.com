@@ -4,6 +4,7 @@ title: WinkCasa
 ---
 
 ## Latest News & Industry Updates
+
 <div class="featured-story">
   <span class="featured-label">Top Story</span>
 
@@ -19,25 +20,25 @@ title: WinkCasa
   </p>
 </div>
 
-Welcome to **WinkCasa**, a multi-industry news and PR platform covering technology, finance, and digital entertainment.
+<hr>
 
----
+<h2>Latest News</h2>
 
-## Our Coverage
-
-- **[Top Companies](\/top-companies\/)** – Curated lists and company insights  
-- **[AI Trends](\/ai-trends\/)** – Artificial intelligence and automation updates  
-- **[Cybersecurity Awareness](\/cybersecurity\/)** – Security, privacy, and threat analysis  
-- **[Cloud & SaaS Updates](\/cloud-saas\/)** – Cloud platforms and SaaS innovations  
-- **[Payment Solutions](\/payment-solutions\/)** – UPI, fintech, and cross-border payments  
-- **[Crypto Updates](\/crypto-updates\/)** – Blockchain, Web3, and digital assets  
-- **[Gaming Industry](\/gaming-industry\/)** – Gaming and esports news  
-- **[Micro Drama](\/micro-drama\/)** – Short-form and micro-drama entertainment  
-- **[Live Streaming](\/live-streaming\/)** – Streaming platforms and creator updates  
+<div class="latest-news-grid">
+  {% for post in site.posts limit:6 %}
+    <div class="news-card">
+      <h3>
+        <a href="{{ post.url }}">{{ post.title }}</a>
+      </h3>
+      <p>{{ post.excerpt | strip_html | truncate: 120 }}</p>
+      <span class="news-meta">{{ post.date | date: "%B %d, %Y" }}</span>
+    </div>
+  {% endfor %}
+</div>
 
 ---
 
 ✍️ **Want to contribute an article?**  
 Visit our **[Write for Us](/write-for-us/)** page.
----
+
 📌 Read our **[Editorial Policy](/editorial-policy/)** to understand how we publish content.
