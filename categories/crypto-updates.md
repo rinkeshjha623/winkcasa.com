@@ -1,7 +1,6 @@
 ---
-layout: page
+layout: category
 title: Crypto Updates
-permalink: /crypto-updates/
+category: crypto-updates
+description: Latest cryptocurrency, blockchain, and Web3 industry updates.
 ---
-
-Latest cryptocurrency news, blockchain updates, Web3 projects, and digital asset trends.
