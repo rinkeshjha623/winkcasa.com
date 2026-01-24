@@ -1,7 +1,6 @@
 ---
-layout: page
+layout: category
 title: Top Companies
-permalink: /top-companies/
+category: top-companies
+description: Curated lists, rankings, and in-depth coverage of top companies across technology, fintech, AI, and emerging industries.
 ---
-
-Curated lists and rankings of top companies across technology, fintech, AI, SaaS, and emerging industries.
