@@ -1,6 +1,10 @@
 .site-header {
   border-bottom: 1px solid #e6e6e6;
   background: #ffffff;
+
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 
 .header-container {
