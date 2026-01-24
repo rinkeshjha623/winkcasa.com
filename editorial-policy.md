@@ -43,4 +43,4 @@ All trademarks, logos, and brand names belong to their respective owners.
 
 For editorial concerns or corrections, please contact:
 
-📧 **contact@winkcasa.com**
+📧 **support@winkcasa.com**
