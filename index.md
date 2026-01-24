@@ -3,48 +3,73 @@ layout: default
 title: WinkCasa – Global News & Industry Updates
 ---
 
-<section class="home-hero-grid">
+{% assign top = site.posts.first %}
 
-  <!-- MAIN STORY -->
-  <article class="hero-main">
-    <span class="hero-label">Top Story</span>
+<!-- TOP STORY -->
+<section class="home-hero">
+  <span class="hero-label">Top Story</span>
 
-    <h1>
-      <a href="/ai-trends/ai-transforming-global-business/">
-        How AI Is Transforming Global Business in 2026
-      </a>
-    </h1>
+  {% if top.image %}
+    <img class="hero-image" src="{{ top.image }}" alt="{{ top.title }}">
+  {% endif %}
 
-    <p>
-      Artificial Intelligence is reshaping finance, payments, cybersecurity,
-      cloud platforms, and digital media. Here’s how global companies are adapting.
-    </p>
-  </article>
+  <h1>
+    <a href="{{ top.url }}">{{ top.title }}</a>
+  </h1>
 
-  <!-- SIDE STORIES -->
-  <aside class="hero-side">
-    {% for post in site.posts limit:3 %}
-      <div class="side-story">
-        <h3>
-          <a href="{{ post.url }}">{{ post.title }}</a>
-        </h3>
-        <span>{{ post.date | date: "%b %d, %Y" }}</span>
-      </div>
-    {% endfor %}
-  </aside>
-
+  <p>{{ top.excerpt | strip_html | truncate: 180 }}</p>
 </section>
 
-<section class="latest-grid">
+<!-- MAIN GRID -->
+<section class="home-grid">
 
-  {% for post in site.posts offset:1 limit:6 %}
-    <article class="news-card">
-      <h3>
-        <a href="{{ post.url }}">{{ post.title }}</a>
-      </h3>
-      <p>{{ post.excerpt | strip_html | truncate: 130 }}</p>
-      <span class="news-meta">{{ post.date | date: "%B %d, %Y" }}</span>
-    </article>
-  {% endfor %}
+  <!-- LEFT COLUMN -->
+  <div class="home-left">
+    <h2>Latest News</h2>
+
+    <div class="news-card-grid">
+      {% for post in site.posts offset:1 limit:6 %}
+        <article class="news-card">
+
+          {% if post.image %}
+            <img src="{{ post.image }}" alt="{{ post.title }}">
+          {% endif %}
+
+          <h3>
+            <a href="{{ post.url }}">{{ post.title }}</a>
+          </h3>
+
+          <p>{{ post.excerpt | strip_html | truncate: 120 }}</p>
+
+          <span class="news-meta">
+            {{ post.date | date: "%B %d, %Y" }}
+          </span>
+
+        </article>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- RIGHT COLUMN -->
+  <aside class="home-right">
+    <h2>Sections</h2>
+
+    <ul class="section-list">
+      <li><a href="/categories/top-companies/">Top Companies</a></li>
+      <li><a href="/categories/ai-trends/">AI Trends</a></li>
+      <li><a href="/categories/cybersecurity/">Cybersecurity</a></li>
+      <li><a href="/categories/cloud-saas/">Cloud & SaaS</a></li>
+      <li><a href="/categories/payment-solutions/">Payments</a></li>
+      <li><a href="/categories/crypto-updates/">Crypto</a></li>
+      <li><a href="/categories/gaming-industry/">Gaming</a></li>
+      <li><a href="/categories/live-streaming/">Live</a></li>
+    </ul>
+
+    <div class="write-box">
+      <h3>Write for WinkCasa</h3>
+      <p>Founders, analysts & industry experts welcome.</p>
+      <a class="btn" href="/write-for-us/">Write for Us</a>
+    </div>
+  </aside>
 
 </section>
