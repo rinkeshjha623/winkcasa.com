@@ -1,7 +1,6 @@
 ---
-layout: page
+layout: category
 title: Live Streaming Updates
-permalink: /live-streaming/
+category: live-streaming
+description: Updates and insights on live streaming platforms, creators, gaming streams, and real-time digital content.
 ---
-
-Updates, announcements, and industry news related to live streaming platforms, creators, gaming streams, and real-time digital content.
