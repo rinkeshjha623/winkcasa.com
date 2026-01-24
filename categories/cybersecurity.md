@@ -1,7 +1,6 @@
 ---
-layout: page
+layout: category
 title: Cybersecurity Awareness
-permalink: /cybersecurity/
+category: cybersecurity
+description: Updates, guides, and awareness articles on cybersecurity threats, data protection, and digital safety.
 ---
-
-News, insights, and awareness articles on cybersecurity threats, data protection, and digital safety.
