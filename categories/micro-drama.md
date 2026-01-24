@@ -1,7 +1,6 @@
 ---
-layout: page
+layout: category
 title: Micro Drama Updates
-permalink: /micro-drama/
+category: micro-drama
+description: Latest trends, releases, and industry updates related to micro dramas and short-form storytelling platforms.
 ---
-
-Latest news, trends, and press releases related to micro dramas, short-form storytelling platforms, and digital entertainment content.
