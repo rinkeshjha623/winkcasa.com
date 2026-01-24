@@ -35,9 +35,21 @@ title: WinkCasa – Global News & Industry Updates
             <img src="{{ post.image }}" alt="{{ post.title }}">
           {% endif %}
 
-          <h3>
-            <a href="{{ post.url }}">{{ post.title }}</a>
-          </h3>
+         <div class="card-meta">
+
+  {% if post.live %}
+    <span class="badge-live">LIVE</span>
+  {% endif %}
+
+  <span class="badge category-{{ post.category }}">
+    {{ post.category | replace: "-", " " | upcase }}
+  </span>
+
+</div>
+
+<h3>
+  <a href="{{ post.url }}">{{ post.title }}</a>
+</h3>
 
           <p>{{ post.excerpt | strip_html | truncate: 120 }}</p>
 
