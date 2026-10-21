@@ -116,7 +116,7 @@ footer{padding-block:32px;display:flex;justify-content:space-between;gap:12px;fl
       <p><strong>Furniture and decor for rooms that have a sense of humour.</strong> Small-batch sofas, lamps, rugs and objects, made in India from sheesham, jute, cotton and brass.</p>
       <a class="cta" href="#shop">Shop the collection →</a>
     </div>
-    <div class="facts"><span><b>Free delivery</b> above ₹5,000</span><span><b>30-day</b> returns</span><span><b>2-year</b> frame warranty</span></div>
+    <div class="facts"><span><b>Free delivery</b> above ₹999</span><span><b>30-day</b> returns</span><span><b>2-year</b> frame warranty</span></div>
   </section>
 
   <section id="shop">
@@ -150,15 +150,16 @@ footer{padding-block:32px;display:flex;justify-content:space-between;gap:12px;fl
 
 <script>
 var PRODUCTS=[
- {id:1,name:'Bhola Sofa',room:'Living',price:42900,dim:'3-seater · 210 cm · cotton boucle',art:'sofa',tile:1,obj:1,tag:'Bestseller'},
- {id:2,name:'Arch Floor Lamp',room:'Lighting',price:8900,dim:'Brass · 158 cm tall',art:'lamp',tile:2,obj:2},
- {id:3,name:'Matka Vase',room:'Decor',price:1450,dim:'Hand-thrown terracotta · 28 cm',art:'vase',tile:4,obj:4},
- {id:4,name:'Chhota Stool',room:'Living',price:3200,dim:'Solid sheesham · 45 cm',art:'stool',tile:3,obj:3},
- {id:5,name:'Dhurrie Rug',room:'Living',price:12500,dim:'Hand-woven cotton · 5 × 8 ft',art:'rug',tile:2,obj:1,tag:'New'},
- {id:6,name:'Moon Mirror',room:'Decor',price:6800,dim:'Arched, brass edge · 90 cm',art:'mirror',tile:1,obj:2},
- {id:7,name:'Khaka Shelf',room:'Storage',price:15900,dim:'Five tiers · sheesham · 180 cm',art:'shelf',tile:3,obj:3},
- {id:8,name:'Slub Cushion',room:'Decor',price:950,dim:'Linen · 50 × 50 cm',art:'cushion',tile:4,obj:1},
- {id:9,name:'Jute Pendant',room:'Lighting',price:4200,dim:'Hand-woven · 45 cm drum',art:'pendant',tile:2,obj:4}
+ {id:1,name:'Arch Floor Lamp',room:'Lighting',price:3990,dim:'Brass finish · 158 cm tall',art:'lamp',tile:2,obj:2,tag:'Bestseller'},
+ {id:2,name:'Jute Pendant',room:'Lighting',price:1490,dim:'Hand-woven · 45 cm drum',art:'pendant',tile:2,obj:4},
+ {id:3,name:'Matka Vase',room:'Decor',price:899,dim:'Hand-thrown terracotta · 28 cm',art:'vase',tile:4,obj:4},
+ {id:4,name:'Moon Mirror',room:'Decor',price:2490,dim:'Arched, brass edge · 90 cm',art:'mirror',tile:1,obj:2,tag:'New'},
+ {id:5,name:'Slub Cushion',room:'Decor',price:649,dim:'Linen · 50 × 50 cm',art:'cushion',tile:4,obj:1},
+ {id:6,name:'Seagrass Basket',room:'Storage',price:799,dim:'Hand-woven · 35 cm',art:'basket',tile:3,obj:3},
+ {id:7,name:'Brass Candle Holder',room:'Decor',price:599,dim:'Cast brass · 14 cm',art:'candle',tile:1,obj:2},
+ {id:8,name:'Chhota Stool',room:'Living',price:2490,dim:'Solid sheesham · 45 cm',art:'stool',tile:3,obj:3},
+ {id:9,name:'Dhurrie Rug',room:'Living',price:3990,dim:'Hand-woven cotton · 4 × 6 ft',art:'rug',tile:2,obj:1},
+ {id:10,name:'Khaka Shelf',room:'Storage',price:4990,dim:'Five tiers · sheesham · 180 cm',art:'shelf',tile:3,obj:3}
 ];
 var D='var(--obj-dark)';
 function art(p){
@@ -173,6 +174,8 @@ function art(p){
   case 'mirror':s+='<path d="M60 170 V80 Q60 30 100 30 Q140 30 140 80 V170 Z" fill="'+o+'"/><path d="M70 164 V80 Q70 40 100 40 Q130 40 130 80 V164 Z" fill="var(--surface)"/><path d="M82 72 L104 56 M82 96 L112 70" stroke="'+o+'" stroke-width="3" opacity=".35" stroke-linecap="round"/>';break;
   case 'shelf':s+='<rect x="46" y="22" width="108" height="150" fill="none" stroke="'+o+'" stroke-width="7"/><path d="M46 56 H154 M46 90 H154 M46 124 H154" stroke="'+o+'" stroke-width="6"/><rect x="58" y="36" width="20" height="20" fill="'+D+'" opacity=".6"/><rect x="108" y="100" width="30" height="24" fill="'+D+'" opacity=".4"/><circle cx="120" cy="76" r="12" fill="'+D+'" opacity=".5"/>';break;
   case 'cushion':s+='<path d="M44 52 Q100 38 156 52 Q166 100 156 148 Q100 162 44 148 Q34 100 44 52 Z" fill="'+o+'"/><path d="M60 70 L140 130 M140 70 L60 130" stroke="var(--surface)" stroke-width="3" opacity=".35"/>';break;
+  case 'basket':s+='<path d="M52 78 H148 L136 160 Q100 170 64 160 Z" fill="'+o+'"/><path d="M56 100 H144 M60 122 H140 M64 144 H136" stroke="var(--surface)" stroke-width="3" opacity=".5"/><path d="M52 78 Q100 40 148 78" fill="none" stroke="'+o+'" stroke-width="6"/>';break;
+  case 'candle':s+='<path d="M72 168 H128 L118 148 H82 Z" fill="'+o+'"/><rect x="94" y="92" width="12" height="56" fill="'+o+'" opacity=".8"/><rect x="84" y="88" width="32" height="8" rx="3" fill="'+o+'"/><path d="M100 50 Q112 68 100 84 Q88 68 100 50 Z" fill="var(--accent)"/>';break;
   case 'pendant':s+='<path d="M100 10 V64" stroke="'+D+'" stroke-width="3"/><path d="M52 138 Q52 74 100 64 Q148 74 148 138 Z" fill="'+o+'"/><path d="M66 124 H134 M62 108 H138 M70 92 H130" stroke="var(--surface)" stroke-width="3" opacity=".5"/><ellipse cx="100" cy="150" rx="22" ry="5" fill="var(--accent)"/>';break;
  }
  return s+'</svg>';
