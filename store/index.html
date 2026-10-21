@@ -1,0 +1,217 @@
+<title>WinkCasa</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Figtree:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: oversized wordmark with a winking "o" hero, filterable product grid, slide-in cart drawer */
+:root{
+  --bg:#EEF1F4; --surface:#FFFFFF; --fg:#14202E; --muted:#5A6878; --line:#D5DBE3;
+  --accent:#F2B705; --accent-fg:#14202E; --deep:#14202E; --deep-fg:#EEF1F4;
+  --tile1:#DCE6EF; --tile2:#F6E3B4; --tile3:#D9E8DE; --tile4:#EBD9D4;
+  --obj1:#2B4A6B; --obj2:#C98A0B; --obj3:#3E6B52; --obj4:#9C4B3C; --obj-dark:#14202E;
+  --display:'Gloock','Times New Roman',serif; --body:'Figtree',system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0E151D; --surface:#161F2A; --fg:#EAEFF4; --muted:#93A1B1; --line:#27323F;
+  --accent:#F2B705; --accent-fg:#14202E; --deep:#EAEFF4; --deep-fg:#0E151D;
+  --tile1:#1D2C3C; --tile2:#3A3118; --tile3:#1E3226; --tile4:#3A2420;
+  --obj1:#8FB2D6; --obj2:#F2B705; --obj3:#8CC4A2; --obj4:#E19B8B; --obj-dark:#EAEFF4; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E151D; --surface:#161F2A; --fg:#EAEFF4; --muted:#93A1B1; --line:#27323F;
+  --accent:#F2B705; --accent-fg:#14202E; --deep:#EAEFF4; --deep-fg:#0E151D;
+  --tile1:#1D2C3C; --tile2:#3A3118; --tile3:#1E3226; --tile4:#3A2420;
+  --obj1:#8FB2D6; --obj2:#F2B705; --obj3:#8CC4A2; --obj4:#E19B8B; --obj-dark:#EAEFF4; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.55;
+  padding-block:0;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1160px;margin:0 auto}
+a{color:inherit}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* top bar */
+.bar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:18px;flex-wrap:wrap}
+.logo{font-family:var(--display);font-size:1.6rem;letter-spacing:-.01em;text-decoration:none}
+.nav{display:flex;gap:22px;font-size:.95rem;font-weight:500}
+.nav a{text-decoration:none;color:var(--muted)}
+.nav a:hover{color:var(--fg)}
+.cartbtn{display:flex;align-items:center;gap:8px;background:var(--deep);color:var(--deep-fg);border:0;border-radius:999px;padding:9px 18px;font-weight:600}
+.cartbtn b{background:var(--accent);color:var(--accent-fg);border-radius:999px;min-width:22px;height:22px;display:inline-grid;place-items:center;font-size:.8rem}
+
+/* hero */
+.hero{padding-block:clamp(24px,5vw,56px) clamp(32px,6vw,64px);display:grid;gap:28px}
+.word{font-family:var(--display);font-size:clamp(3.4rem,15.5vw,11.5rem);line-height:.9;letter-spacing:-.03em;margin:0;display:flex;align-items:center;flex-wrap:wrap}
+.idot{position:relative;display:inline-block}
+.idot::after{content:"";position:absolute;left:50%;top:.08em;width:.17em;height:.17em;margin-left:-.085em;border-radius:50%;background:var(--accent);transform-origin:50% 50%;animation:wink 5s infinite}
+.hero-row{display:grid;grid-template-columns:1.2fr 1fr;gap:28px;align-items:end}
+.hero p{margin:0;font-size:1.15rem;max-width:34em;color:var(--muted)}
+.hero p strong{color:var(--fg);font-weight:600}
+.cta{display:inline-flex;gap:10px;align-items:center;background:var(--accent);color:var(--accent-fg);text-decoration:none;font-weight:700;padding:14px 24px;border-radius:999px;justify-self:start}
+.facts{display:flex;gap:28px;flex-wrap:wrap;font-size:.9rem;color:var(--muted);border-top:1px solid var(--line);padding-top:18px}
+.facts span b{color:var(--fg);font-weight:600}
+@keyframes wink{0%,88%,100%{transform:scaleY(1)}92%{transform:scaleY(.08)}}
+@media (prefers-reduced-motion:reduce){.idot::after{animation:none}}
+
+/* shop */
+.shophead{display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap;padding-top:28px;border-top:1px solid var(--line)}
+h2{font-family:var(--display);font-weight:400;font-size:clamp(1.9rem,4vw,2.8rem);line-height:1.05;margin:0;text-wrap:balance}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:transparent;border-radius:999px;padding:7px 16px;font-size:.9rem;font-weight:500}
+.chip[aria-pressed="true"]{background:var(--deep);color:var(--deep-fg);border-color:var(--deep)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:22px;padding-block:26px 56px}
+.card{display:flex;flex-direction:column;gap:12px;min-width:0}
+.tile{aspect-ratio:1/1;border-radius:6px;display:grid;place-items:center;position:relative;overflow:hidden}
+.tile svg{width:78%;height:78%}
+.tag{position:absolute;top:10px;left:10px;background:var(--surface);color:var(--fg);font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 9px;border-radius:999px}
+.meta{display:flex;justify-content:space-between;gap:12px;align-items:baseline}
+.meta h3{margin:0;font-size:1.05rem;font-weight:600}
+.price{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+.dim{margin:0;color:var(--muted);font-size:.88rem}
+.add{border:1.5px solid var(--fg);background:transparent;border-radius:999px;padding:9px 16px;font-weight:600;font-size:.92rem;align-self:flex-start}
+.add:hover{background:var(--fg);color:var(--bg)}
+
+/* promise band */
+.band{background:var(--deep);color:var(--deep-fg);margin-inline:calc(-1 * max(16px,env(safe-area-inset-left,0px)));padding-block:48px;padding-inline:max(16px,env(safe-area-inset-left,0px))}
+.band .wrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:28px}
+.band h3{font-family:var(--display);font-weight:400;font-size:1.4rem;margin:0 0 6px}
+.band p{margin:0;opacity:.8;font-size:.95rem}
+footer{padding-block:32px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;color:var(--muted);font-size:.88rem}
+
+/* drawer */
+.scrim{position:fixed;inset:0;background:rgba(10,16,24,.5);opacity:0;pointer-events:none;transition:opacity .2s;z-index:20}
+.scrim.on{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(420px,100%);background:var(--surface);z-index:21;transform:translateX(105%);transition:transform .25s;display:flex;flex-direction:column;
+  padding:max(20px,env(safe-area-inset-top,0px)) max(20px,env(safe-area-inset-right,0px)) max(20px,env(safe-area-inset-bottom,0px)) 20px;border-left:1px solid var(--line)}
+.drawer.on{transform:none}
+@media (prefers-reduced-motion:reduce){.drawer,.scrim{transition:none}}
+.dh{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.x{border:0;background:transparent;font-size:1.6rem;line-height:1;padding:4px 8px}
+.lines{flex:1;overflow:auto;display:flex;flex-direction:column;gap:14px;padding-block:8px}
+.line{display:grid;grid-template-columns:64px 1fr auto;gap:12px;align-items:center}
+.line .tile{aspect-ratio:1;border-radius:4px}
+.line .tile svg{width:86%;height:86%}
+.line h4{margin:0;font-size:.95rem}
+.qty{display:inline-flex;align-items:center;gap:8px;margin-top:4px}
+.qty button{width:26px;height:26px;border-radius:50%;border:1px solid var(--line);background:transparent;line-height:1}
+.empty{color:var(--muted);margin:auto;text-align:center}
+.tot{border-top:1px solid var(--line);padding-top:14px;display:grid;gap:12px}
+.tot .row{display:flex;justify-content:space-between;font-weight:600;font-size:1.1rem}
+.pay{border:0;background:var(--accent);color:var(--accent-fg);border-radius:999px;padding:14px;font-weight:700}
+.pay:disabled{opacity:.45;cursor:not-allowed}
+.note{margin:0;font-size:.82rem;color:var(--muted);min-height:1.3em}
+
+@media (max-width:720px){.hero-row{grid-template-columns:1fr}.nav{display:none}}
+</style>
+
+<div class="wrap">
+  <header class="bar">
+    <a class="logo" href="#top">WinkCasa</a>
+    <nav class="nav" aria-label="Sections"><a href="#shop">Shop</a><a href="#promise">Our promise</a></nav>
+    <button class="cartbtn" id="openCart" aria-label="Open cart">Cart <b id="count">0</b></button>
+  </header>
+
+  <section class="hero" id="top">
+    <h1 class="word" aria-label="WinkCasa">W<span class="idot">ı</span>nkCasa</h1>
+    <div class="hero-row">
+      <p><strong>Furniture and decor for rooms that have a sense of humour.</strong> Small-batch sofas, lamps, rugs and objects, made in India from sheesham, jute, cotton and brass.</p>
+      <a class="cta" href="#shop">Shop the collection →</a>
+    </div>
+    <div class="facts"><span><b>Free delivery</b> above ₹5,000</span><span><b>30-day</b> returns</span><span><b>2-year</b> frame warranty</span></div>
+  </section>
+
+  <section id="shop">
+    <div class="shophead">
+      <h2>The collection</h2>
+      <div class="chips" id="chips" role="group" aria-label="Filter by room"></div>
+    </div>
+    <div class="grid" id="grid"></div>
+  </section>
+</div>
+
+<section class="band" id="promise">
+  <div class="wrap">
+    <div><h3>Made to order</h3><p>Each sofa and shelf is built after you order it, so nothing sits in a warehouse for months.</p></div>
+    <div><h3>Real materials</h3><p>Solid sheesham, hand-woven jute and cotton, cast brass. Fittings you can replace, not glue.</p></div>
+    <div><h3>Easy returns</h3><p>If it doesn't suit your room, send it back within 30 days. We collect it from your door.</p></div>
+  </div>
+</section>
+<div class="wrap"><footer><span>© WinkCasa</span><span>Sample catalogue. Prices in Indian rupees, inclusive of GST.</span></footer></div>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-label="Your cart" aria-hidden="true">
+  <div class="dh"><h2 style="font-size:1.6rem">Your cart</h2><button class="x" id="closeCart" aria-label="Close cart">×</button></div>
+  <div class="lines" id="lines"></div>
+  <div class="tot">
+    <div class="row"><span>Total</span><span id="total">₹0</span></div>
+    <button class="pay" id="pay" disabled>Place order</button>
+    <p class="note" id="note" role="status"></p>
+  </div>
+</aside>
+
+<script>
+var PRODUCTS=[
+ {id:1,name:'Bhola Sofa',room:'Living',price:42900,dim:'3-seater · 210 cm · cotton boucle',art:'sofa',tile:1,obj:1,tag:'Bestseller'},
+ {id:2,name:'Arch Floor Lamp',room:'Lighting',price:8900,dim:'Brass · 158 cm tall',art:'lamp',tile:2,obj:2},
+ {id:3,name:'Matka Vase',room:'Decor',price:1450,dim:'Hand-thrown terracotta · 28 cm',art:'vase',tile:4,obj:4},
+ {id:4,name:'Chhota Stool',room:'Living',price:3200,dim:'Solid sheesham · 45 cm',art:'stool',tile:3,obj:3},
+ {id:5,name:'Dhurrie Rug',room:'Living',price:12500,dim:'Hand-woven cotton · 5 × 8 ft',art:'rug',tile:2,obj:1,tag:'New'},
+ {id:6,name:'Moon Mirror',room:'Decor',price:6800,dim:'Arched, brass edge · 90 cm',art:'mirror',tile:1,obj:2},
+ {id:7,name:'Khaka Shelf',room:'Storage',price:15900,dim:'Five tiers · sheesham · 180 cm',art:'shelf',tile:3,obj:3},
+ {id:8,name:'Slub Cushion',room:'Decor',price:950,dim:'Linen · 50 × 50 cm',art:'cushion',tile:4,obj:1},
+ {id:9,name:'Jute Pendant',room:'Lighting',price:4200,dim:'Hand-woven · 45 cm drum',art:'pendant',tile:2,obj:4}
+];
+var D='var(--obj-dark)';
+function art(p){
+ var o='var(--obj'+p.obj+')', s='<svg viewBox="0 0 200 200" aria-hidden="true">';
+ s+='<ellipse cx="100" cy="176" rx="64" ry="7" fill="'+D+'" opacity=".12"/>';
+ switch(p.art){
+  case 'sofa':s+='<rect x="34" y="70" width="132" height="52" rx="14" fill="'+o+'"/><rect x="20" y="92" width="34" height="54" rx="12" fill="'+o+'"/><rect x="146" y="92" width="34" height="54" rx="12" fill="'+o+'"/><rect x="48" y="104" width="104" height="42" rx="10" fill="'+o+'" opacity=".78"/><rect x="40" y="146" width="6" height="22" fill="'+D+'"/><rect x="154" y="146" width="6" height="22" fill="'+D+'"/>';break;
+  case 'lamp':s+='<path d="M60 172 L140 172" stroke="'+D+'" stroke-width="6" stroke-linecap="round"/><path d="M100 172 V70 Q100 28 142 36" fill="none" stroke="'+o+'" stroke-width="5" stroke-linecap="round"/><path d="M126 38 L160 36 L152 66 L134 66 Z" fill="'+o+'"/>';break;
+  case 'vase':s+='<path d="M86 40 H114 V62 Q148 84 144 124 Q140 170 100 170 Q60 170 56 124 Q52 84 86 62 Z" fill="'+o+'"/><path d="M80 120 Q100 134 120 120" fill="none" stroke="var(--surface)" stroke-width="4" opacity=".6"/>';break;
+  case 'stool':s+='<ellipse cx="100" cy="86" rx="54" ry="14" fill="'+o+'"/><rect x="46" y="86" width="108" height="14" fill="'+o+'" opacity=".8"/><path d="M64 100 L52 170 M136 100 L148 170 M100 100 V172" stroke="'+D+'" stroke-width="7" stroke-linecap="round"/>';break;
+  case 'rug':s+='<path d="M30 70 H170 L186 150 H14 Z" fill="'+o+'"/><path d="M42 86 H158 L170 136 H30 Z" fill="none" stroke="var(--surface)" stroke-width="4" opacity=".7"/><path d="M52 100 H148 M48 112 H152 M44 124 H156" stroke="var(--surface)" stroke-width="3" opacity=".5"/>';break;
+  case 'mirror':s+='<path d="M60 170 V80 Q60 30 100 30 Q140 30 140 80 V170 Z" fill="'+o+'"/><path d="M70 164 V80 Q70 40 100 40 Q130 40 130 80 V164 Z" fill="var(--surface)"/><path d="M82 72 L104 56 M82 96 L112 70" stroke="'+o+'" stroke-width="3" opacity=".35" stroke-linecap="round"/>';break;
+  case 'shelf':s+='<rect x="46" y="22" width="108" height="150" fill="none" stroke="'+o+'" stroke-width="7"/><path d="M46 56 H154 M46 90 H154 M46 124 H154" stroke="'+o+'" stroke-width="6"/><rect x="58" y="36" width="20" height="20" fill="'+D+'" opacity=".6"/><rect x="108" y="100" width="30" height="24" fill="'+D+'" opacity=".4"/><circle cx="120" cy="76" r="12" fill="'+D+'" opacity=".5"/>';break;
+  case 'cushion':s+='<path d="M44 52 Q100 38 156 52 Q166 100 156 148 Q100 162 44 148 Q34 100 44 52 Z" fill="'+o+'"/><path d="M60 70 L140 130 M140 70 L60 130" stroke="var(--surface)" stroke-width="3" opacity=".35"/>';break;
+  case 'pendant':s+='<path d="M100 10 V64" stroke="'+D+'" stroke-width="3"/><path d="M52 138 Q52 74 100 64 Q148 74 148 138 Z" fill="'+o+'"/><path d="M66 124 H134 M62 108 H138 M70 92 H130" stroke="var(--surface)" stroke-width="3" opacity=".5"/><ellipse cx="100" cy="150" rx="22" ry="5" fill="var(--accent)"/>';break;
+ }
+ return s+'</svg>';
+}
+var rupee=function(n){return '₹'+n.toLocaleString('en-IN')};
+var cart={}, filter='All';
+var rooms=['All'].concat(PRODUCTS.map(function(p){return p.room}).filter(function(r,i,a){return a.indexOf(r)===i}));
+var $=function(id){return document.getElementById(id)};
+
+function renderChips(){
+ $('chips').innerHTML=rooms.map(function(r){return '<button class="chip" aria-pressed="'+(r===filter)+'" data-r="'+r+'">'+r+'</button>'}).join('');
+}
+function renderGrid(){
+ $('grid').innerHTML=PRODUCTS.filter(function(p){return filter==='All'||p.room===filter}).map(function(p){
+  return '<article class="card"><div class="tile" style="background:var(--tile'+p.tile+')">'+(p.tag?'<span class="tag">'+p.tag+'</span>':'')+art(p)+'</div>'+
+  '<div class="meta"><h3>'+p.name+'</h3><span class="price">'+rupee(p.price)+'</span></div><p class="dim">'+p.dim+'</p>'+
+  '<button class="add" data-add="'+p.id+'">Add to cart</button></article>';
+ }).join('');
+}
+function renderCart(){
+ var ids=Object.keys(cart), n=0, t=0;
+ $('lines').innerHTML=ids.length?ids.map(function(id){
+  var p=PRODUCTS.filter(function(x){return x.id==id})[0], q=cart[id]; n+=q; t+=q*p.price;
+  return '<div class="line"><div class="tile" style="background:var(--tile'+p.tile+')">'+art(p)+'</div><div><h4>'+p.name+'</h4><div class="qty"><button data-dec="'+id+'" aria-label="Fewer">−</button><span>'+q+'</span><button data-inc="'+id+'" aria-label="More">+</button></div></div><span class="price">'+rupee(q*p.price)+'</span></div>';
+ }).join(''):'<p class="empty">Your cart is empty.<br>Add something with a bit of personality.</p>';
+ $('count').textContent=n; $('total').textContent=rupee(t); $('pay').disabled=!ids.length;
+}
+function open(v){$('drawer').classList.toggle('on',v);$('scrim').classList.toggle('on',v);$('drawer').setAttribute('aria-hidden',!v)}
+document.addEventListener('click',function(e){
+ var b=e.target.closest('button'); if(!b)return;
+ if(b.dataset.r){filter=b.dataset.r;renderChips();renderGrid()}
+ else if(b.dataset.add){cart[b.dataset.add]=(cart[b.dataset.add]||0)+1;renderCart();open(true)}
+ else if(b.dataset.inc){cart[b.dataset.inc]++;renderCart()}
+ else if(b.dataset.dec){if(--cart[b.dataset.dec]<=0)delete cart[b.dataset.dec];renderCart()}
+});
+$('openCart').onclick=function(){open(true)};
+$('closeCart').onclick=function(){open(false)};
+$('scrim').onclick=function(){open(false)};
+document.addEventListener('keydown',function(e){if(e.key==='Escape')open(false)});
+$('pay').onclick=function(){$('note').textContent='Checkout is not connected yet. Add a payment provider such as Razorpay before taking real orders.'};
+renderChips();renderGrid();renderCart();
+</script>
