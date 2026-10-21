@@ -113,7 +113,7 @@ footer{padding-block:32px;display:flex;justify-content:space-between;gap:12px;fl
   <section class="hero" id="top">
     <h1 class="word" aria-label="WinkCasa">W<span class="idot">ı</span>nkCasa</h1>
     <div class="hero-row">
-      <p><strong>Furniture and decor for rooms that have a sense of humour.</strong> Small-batch sofas, lamps, rugs and objects, made in India from sheesham, jute, cotton and brass.</p>
+      <p><strong>The everyday things people keep reordering.</strong> Chargers, bottles, skincare, fitness gear, fashion and home pieces, chosen for what India buys most online.</p>
       <a class="cta" href="#shop">Shop the collection →</a>
     </div>
     <div class="facts"><span><b>Free delivery</b> above ₹999</span><span><b>30-day</b> returns</span><span><b>2-year</b> frame warranty</span></div>
@@ -122,7 +122,7 @@ footer{padding-block:32px;display:flex;justify-content:space-between;gap:12px;fl
   <section id="shop">
     <div class="shophead">
       <h2>The collection</h2>
-      <div class="chips" id="chips" role="group" aria-label="Filter by room"></div>
+      <div class="chips" id="chips" role="group" aria-label="Filter by category"></div>
     </div>
     <div class="grid" id="grid"></div>
   </section>
@@ -130,8 +130,8 @@ footer{padding-block:32px;display:flex;justify-content:space-between;gap:12px;fl
 
 <section class="band" id="promise">
   <div class="wrap">
-    <div><h3>Made to order</h3><p>Each sofa and shelf is built after you order it, so nothing sits in a warehouse for months.</p></div>
-    <div><h3>Real materials</h3><p>Solid sheesham, hand-woven jute and cotton, cast brass. Fittings you can replace, not glue.</p></div>
+    <div><h3>Chosen by demand</h3><p>We stock categories with proven repeat orders: tech accessories, beauty, fitness, kitchen, fashion and home.</p></div>
+    <div><h3>Packed to arrive</h3><p>Fragile items get double-wall boxes, so what you order reaches you in one piece.</p></div>
     <div><h3>Easy returns</h3><p>If it doesn't suit your room, send it back within 30 days. We collect it from your door.</p></div>
   </div>
 </section>
@@ -150,16 +150,18 @@ footer{padding-block:32px;display:flex;justify-content:space-between;gap:12px;fl
 
 <script>
 var PRODUCTS=[
- {id:1,name:'Arch Floor Lamp',room:'Lighting',price:3990,dim:'Brass finish · 158 cm tall',art:'lamp',tile:2,obj:2,tag:'Bestseller'},
- {id:2,name:'Jute Pendant',room:'Lighting',price:1490,dim:'Hand-woven · 45 cm drum',art:'pendant',tile:2,obj:4},
- {id:3,name:'Matka Vase',room:'Decor',price:899,dim:'Hand-thrown terracotta · 28 cm',art:'vase',tile:4,obj:4},
- {id:4,name:'Moon Mirror',room:'Decor',price:2490,dim:'Arched, brass edge · 90 cm',art:'mirror',tile:1,obj:2,tag:'New'},
- {id:5,name:'Slub Cushion',room:'Decor',price:649,dim:'Linen · 50 × 50 cm',art:'cushion',tile:4,obj:1},
- {id:6,name:'Seagrass Basket',room:'Storage',price:799,dim:'Hand-woven · 35 cm',art:'basket',tile:3,obj:3},
- {id:7,name:'Brass Candle Holder',room:'Decor',price:599,dim:'Cast brass · 14 cm',art:'candle',tile:1,obj:2},
- {id:8,name:'Chhota Stool',room:'Living',price:2490,dim:'Solid sheesham · 45 cm',art:'stool',tile:3,obj:3},
- {id:9,name:'Dhurrie Rug',room:'Living',price:3990,dim:'Hand-woven cotton · 4 × 6 ft',art:'rug',tile:2,obj:1},
- {id:10,name:'Khaka Shelf',room:'Storage',price:4990,dim:'Five tiers · sheesham · 180 cm',art:'shelf',tile:3,obj:3}
+ {id:1,name:'30W Fast Charger',room:'Tech',price:799,dim:'USB-C · GaN · 1.5 m cable',art:'charger',tile:1,obj:1,tag:'Bestseller'},
+ {id:2,name:'Power Bank 10000',room:'Tech',price:1299,dim:'10,000 mAh · 22.5W · slim',art:'powerbank',tile:1,obj:1},
+ {id:3,name:'Folding Laptop Stand',room:'Tech',price:999,dim:'Aluminium · 6 height levels',art:'stand',tile:3,obj:3},
+ {id:4,name:'Steel Water Bottle',room:'Kitchen',price:499,dim:'Insulated · 750 ml',art:'bottle',tile:3,obj:3,tag:'Bestseller'},
+ {id:5,name:'Non-Slip Yoga Mat',room:'Fitness',price:699,dim:'6 mm TPE · 183 cm',art:'mat',tile:2,obj:2},
+ {id:6,name:'Vitamin C Serum',room:'Beauty',price:449,dim:'30 ml · dropper bottle',art:'serum',tile:4,obj:4},
+ {id:7,name:'Pearl Hoop Earrings',room:'Fashion',price:349,dim:'Gold-plated · lightweight',art:'earrings',tile:2,obj:2,tag:'New'},
+ {id:8,name:'Oversized Graphic Tee',room:'Fashion',price:599,dim:'Cotton · 220 GSM · S to XXL',art:'tee',tile:4,obj:4},
+ {id:9,name:'Jute Pendant',room:'Home',price:1490,dim:'Hand-woven · 45 cm drum',art:'pendant',tile:2,obj:4},
+ {id:10,name:'Seagrass Basket',room:'Home',price:799,dim:'Hand-woven · 35 cm',art:'basket',tile:3,obj:3},
+ {id:11,name:'Brass Candle Holder',room:'Home',price:599,dim:'Cast brass · 14 cm',art:'candle',tile:1,obj:2},
+ {id:12,name:'Arch Floor Lamp',room:'Home',price:3990,dim:'Brass finish · 158 cm tall',art:'lamp',tile:2,obj:2}
 ];
 var D='var(--obj-dark)';
 function art(p){
@@ -174,6 +176,14 @@ function art(p){
   case 'mirror':s+='<path d="M60 170 V80 Q60 30 100 30 Q140 30 140 80 V170 Z" fill="'+o+'"/><path d="M70 164 V80 Q70 40 100 40 Q130 40 130 80 V164 Z" fill="var(--surface)"/><path d="M82 72 L104 56 M82 96 L112 70" stroke="'+o+'" stroke-width="3" opacity=".35" stroke-linecap="round"/>';break;
   case 'shelf':s+='<rect x="46" y="22" width="108" height="150" fill="none" stroke="'+o+'" stroke-width="7"/><path d="M46 56 H154 M46 90 H154 M46 124 H154" stroke="'+o+'" stroke-width="6"/><rect x="58" y="36" width="20" height="20" fill="'+D+'" opacity=".6"/><rect x="108" y="100" width="30" height="24" fill="'+D+'" opacity=".4"/><circle cx="120" cy="76" r="12" fill="'+D+'" opacity=".5"/>';break;
   case 'cushion':s+='<path d="M44 52 Q100 38 156 52 Q166 100 156 148 Q100 162 44 148 Q34 100 44 52 Z" fill="'+o+'"/><path d="M60 70 L140 130 M140 70 L60 130" stroke="var(--surface)" stroke-width="3" opacity=".35"/>';break;
+  case 'charger':s+='<rect x="64" y="48" width="72" height="64" rx="10" fill="'+o+'"/><rect x="82" y="26" width="8" height="24" fill="'+D+'"/><rect x="110" y="26" width="8" height="24" fill="'+D+'"/><path d="M100 124 Q100 150 132 154 Q158 158 160 176" fill="none" stroke="'+D+'" stroke-width="5" stroke-linecap="round"/><circle cx="100" cy="80" r="9" fill="var(--accent)"/>';break;
+  case 'powerbank':s+='<rect x="62" y="30" width="76" height="140" rx="14" fill="'+o+'"/><rect x="74" y="46" width="52" height="8" rx="4" fill="var(--surface)" opacity=".7"/><circle cx="82" cy="140" r="5" fill="var(--accent)"/><circle cx="100" cy="140" r="5" fill="var(--accent)"/><circle cx="118" cy="140" r="5" fill="var(--surface)" opacity=".6"/>';break;
+  case 'stand':s+='<path d="M40 126 L128 70 L152 112 L64 150 Z" fill="'+o+'"/><path d="M60 140 L52 170 M148 118 L160 170" stroke="'+D+'" stroke-width="6" stroke-linecap="round"/><path d="M52 170 H160" stroke="'+D+'" stroke-width="6" stroke-linecap="round"/>';break;
+  case 'bottle':s+='<rect x="84" y="22" width="32" height="20" rx="5" fill="'+D+'"/><path d="M78 44 H122 V164 Q122 172 114 172 H86 Q78 172 78 164 Z" fill="'+o+'"/><rect x="78" y="86" width="44" height="14" fill="var(--surface)" opacity=".45"/>';break;
+  case 'mat':s+='<rect x="30" y="104" width="130" height="44" rx="6" fill="'+o+'"/><circle cx="160" cy="126" r="22" fill="'+o+'"/><circle cx="160" cy="126" r="14" fill="none" stroke="var(--surface)" stroke-width="3" opacity=".6"/><circle cx="160" cy="126" r="6" fill="none" stroke="var(--surface)" stroke-width="3" opacity=".6"/><path d="M44 126 H130" stroke="var(--surface)" stroke-width="3" opacity=".4"/>';break;
+  case 'serum':s+='<rect x="92" y="20" width="16" height="28" rx="4" fill="'+D+'"/><path d="M82 48 H118 V58 H82 Z" fill="'+D+'"/><rect x="66" y="58" width="68" height="108" rx="12" fill="'+o+'"/><rect x="78" y="96" width="44" height="40" rx="4" fill="var(--surface)" opacity=".75"/>';break;
+  case 'earrings':s+='<circle cx="76" cy="84" r="26" fill="none" stroke="'+o+'" stroke-width="8"/><circle cx="124" cy="84" r="26" fill="none" stroke="'+o+'" stroke-width="8"/><circle cx="76" cy="128" r="9" fill="var(--surface)" stroke="'+D+'" stroke-width="2"/><circle cx="124" cy="128" r="9" fill="var(--surface)" stroke="'+D+'" stroke-width="2"/>';break;
+  case 'tee':s+='<path d="M64 36 L40 56 L54 82 L68 74 V160 H132 V74 L146 82 L160 56 L136 36 Q100 56 64 36 Z" fill="'+o+'"/><circle cx="100" cy="108" r="14" fill="var(--accent)"/>';break;
   case 'basket':s+='<path d="M52 78 H148 L136 160 Q100 170 64 160 Z" fill="'+o+'"/><path d="M56 100 H144 M60 122 H140 M64 144 H136" stroke="var(--surface)" stroke-width="3" opacity=".5"/><path d="M52 78 Q100 40 148 78" fill="none" stroke="'+o+'" stroke-width="6"/>';break;
   case 'candle':s+='<path d="M72 168 H128 L118 148 H82 Z" fill="'+o+'"/><rect x="94" y="92" width="12" height="56" fill="'+o+'" opacity=".8"/><rect x="84" y="88" width="32" height="8" rx="3" fill="'+o+'"/><path d="M100 50 Q112 68 100 84 Q88 68 100 50 Z" fill="var(--accent)"/>';break;
   case 'pendant':s+='<path d="M100 10 V64" stroke="'+D+'" stroke-width="3"/><path d="M52 138 Q52 74 100 64 Q148 74 148 138 Z" fill="'+o+'"/><path d="M66 124 H134 M62 108 H138 M70 92 H130" stroke="var(--surface)" stroke-width="3" opacity=".5"/><ellipse cx="100" cy="150" rx="22" ry="5" fill="var(--accent)"/>';break;
