@@ -84,6 +84,7 @@
   async function pay() {
     if (busy || CLOSED) return;
     var f = $('co'); if (!f.reportValidity()) return;
+    try { gtag('event', 'begin_checkout', { currency: 'INR' }); } catch (x) {}
     var customer = {}; ['name', 'phone', 'email', 'address', 'city', 'pincode', 'state'].forEach(function (k) { customer[k] = f.elements[k].value; });
     var items = lines().map(function (l) { return { id: l.p.id, qty: l.q }; });
     setBusy(true); say('Creating your order…');
@@ -105,6 +106,7 @@
 
   function done(ref, d, c) {
     var placed = parseUtc(d.placedAt), mn = parseUtc(d.deliveryMinAt), mx = parseUtc(d.deliveryMaxAt);
+    try { gtag('event', 'purchase', { transaction_id: ref, value: d.amount / 100, currency: 'INR' }); } catch (x) {}
     WC.clear();
     document.title = 'Order confirmed | WinkCasa';
     root.innerHTML = '<div class="done"><h1>Thank you, your order is confirmed</h1><p style="color:var(--muted)">We have received your payment. Keep your order number to track delivery.</p>' +

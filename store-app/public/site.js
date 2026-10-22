@@ -36,6 +36,7 @@
   document.addEventListener('click', function (e) {
     var b = e.target.closest && e.target.closest('[data-add],[data-buy]'); if (!b) return;
     if (b.disabled) return;
+    try { gtag('event', 'add_to_cart', { currency: 'INR', items: [{ item_id: b.getAttribute('data-add') || b.getAttribute('data-buy') }] }); } catch (x) {}
     if (b.hasAttribute('data-buy')) { e.preventDefault(); add(b.getAttribute('data-buy')); location.href = '/cart'; return; }
     add(b.getAttribute('data-add')); toast('Added to your cart.', true);
   });
@@ -76,6 +77,7 @@
   window.WC = { cart: load, save: save, count: count, paint: paint, fmtD: fmtD, fmtDT: fmtDT, window3to7: window3to7, etaHtml: etaHtml, toast: toast,
     set: function (id, q) { var c = load(); if (q <= 0) delete c[id]; else c[id] = Math.min(10, q); save(); },
     clear: function () { mem = {}; save(); } };
+  try { var mp = location.pathname.match(/^\/p\/(\d+)-/); if (mp) gtag('event', 'view_item', { items: [{ item_id: mp[1] }] }); } catch (x) {}
   paint(); paintEta();
   window.addEventListener('pageshow', paint);
 })();

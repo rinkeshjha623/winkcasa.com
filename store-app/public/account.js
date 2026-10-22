@@ -35,7 +35,7 @@
     f.onsubmit = function (e) {
       e.preventDefault(); msg('amsg', signup ? 'Creating your account…' : 'Logging in…');
       var body = { action: mode }; ['name', 'email', 'phone', 'password', 'website'].forEach(function (k) { if (f.elements[k]) body[k] = f.elements[k].value; });
-      api(body).then(function (d) { D = d; hint(true); if (safeNext) { location.href = safeNext; return; } view(); }).catch(function (er) { msg('amsg', er.message); });
+      api(body).then(function (d) { try { gtag('event', signup ? 'sign_up' : 'login', { method: 'email' }); } catch (x) {} D = d; hint(true); if (safeNext) { location.href = safeNext; return; } view(); }).catch(function (er) { msg('amsg', er.message); });
     };
   }
 
