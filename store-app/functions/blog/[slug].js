@@ -22,7 +22,7 @@ export async function onRequestGet({ params, env }) {
   const main = `<main class="wrap"><nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a> › <a href="/blog">Blog</a> › <span>${esc(trim(post.title, 40))}</span></nav>
 <article class="article"><p class="label">${esc(day(post.published_at || post.created_at))}</p><h1>${esc(post.title)}</h1><div class="by">By ${esc(post.author)} · ${Math.max(1, Math.round(wordsOf(post.body) / 200))} min read</div>
 ${post.image ? `<img class="hero" src="${esc(post.image)}" alt="${esc(post.title)}" width="900" height="600">` : ''}${markdown(post.body)}
-<p style="margin-top:30px"><a class="btn" href="/#shop">Shop WinkCasa</a></p></article>
+${PIN_SLUGS.has(post.slug) ? `<figure class="pinfig"><img src="/pins/${esc(post.slug)}.png" alt="${esc(post.title)}: WinkCasa style guide" width="400" height="600" loading="lazy"><figcaption>Save this guide for later.</figcaption></figure>` : ''}<p style="margin-top:30px"><a class="btn" href="/try">Find your face shape</a> &nbsp; <a class="btn alt" href="/#shop">Shop WinkCasa</a></p></article>
 ${more.length ? `<section class="sec"><h2>More to read</h2><div class="posts" style="padding-block:10px 0">${more.map((p) => `<article class="post"><a href="/blog/${esc(p.slug)}"><h2>${esc(p.title)}</h2><p>${esc(p.excerpt)}</p></a></article>`).join('')}</div></section>` : ''}</main>`;
   const html = pageShell({
     head: headTags({ title: trim(post.seo_title || post.title + ' | WinkCasa', 70), description: trim(post.seo_description || post.excerpt, 160), canonical: url, image: post.image || (PIN_SLUGS.has(post.slug) ? '/pins/' + post.slug + '.png' : S.seo.ogImage), type: 'article' }),

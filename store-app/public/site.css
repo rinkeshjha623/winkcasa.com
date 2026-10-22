@@ -187,3 +187,4 @@ header.bar .rt{justify-self:end;display:flex;align-items:center}
 
 .consent{border:1px solid var(--line);background:var(--surface);padding:16px;margin-bottom:24px;font-size:.88rem}.consent label{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;color:var(--muted)}.consent input{margin-top:4px}
 .tryinfo{padding-bottom:56px;max-width:760px}.tryinfo h2{margin-top:28px}
+.pinfig{margin:28px 0}.pinfig img{max-width:100%;height:auto;border:1px solid var(--line)}.pinfig figcaption{color:var(--muted);font-size:.85rem;margin-top:6px}
