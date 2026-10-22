@@ -130,8 +130,9 @@ export function cardHtml(p, closed) {
   const price = money(p.price);
   const tile = `background:var(--tile${p.tile})`;
   const img = p.image ? `<img src="${esc(p.image)}" alt="${esc(p.name)}" loading="lazy" decoding="async" width="800" height="1000">` : '';
+  const dim = p.dim && p.dim.length <= 100 && !/:/.test(p.dim) ? p.dim : '';
   return `<article class="card"><a class="tilelink" href="${esc(p.url)}" aria-label="${esc(p.name)}"><div class="tile" style="${tile}">${p.tag ? `<span class="tag">${esc(p.tag)}</span>` : ''}${img}</div></a>
-<div class="meta"><h3><a href="${esc(p.url)}">${esc(p.name)}</a></h3><span class="price">${p.mrp ? `<span class="was">${money(p.mrp)}</span>` : ''}${price}</span></div><p class="dim">${esc(p.dim)}</p>
+<div class="meta"><h3><a href="${esc(p.url)}">${esc(p.name)}</a></h3><span class="price">${p.mrp ? `<span class="was">${money(p.mrp)}</span>` : ''}${price}</span></div>${dim ? `<p class="dim">${esc(dim)}</p>` : ''}
 ${p.soldOut || closed ? `<button class="add" disabled>${p.soldOut ? 'Sold out' : 'Unavailable'}</button>` : `<div class="cardbtns"><button class="add" data-add="${p.id}">Add to cart</button><button class="buy" data-buy="${p.id}">Buy now</button></div>`}</article>`;
 }
 

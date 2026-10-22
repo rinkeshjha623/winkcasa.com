@@ -103,3 +103,17 @@ button.btn{cursor:pointer;font-family:inherit}
 .logo-stack i{font-style:italic;font-family:var(--display);font-weight:400}
 .flogo i{font-style:italic}.flogo img{display:block;height:48px;width:auto}
 .flogo .lashico{color:var(--accent);vertical-align:middle;margin-right:8px}.flogo .flw{font-family:var(--body);font-size:1.1rem;letter-spacing:.3em;color:var(--accent)}
+
+/* Home redesign: product collage hero, category tiles */
+.arch.wide{width:min(100%,480px)}
+.collage{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;align-items:end}
+.collage a{display:block;overflow:hidden;border:1px solid var(--line);border-radius:999px 999px 2px 2px;background:var(--surface,#10221e)}
+.collage a:nth-child(1){aspect-ratio:3/5}.collage a:nth-child(2){aspect-ratio:3/6.2}.collage a:nth-child(3){aspect-ratio:3/4.4}
+.collage img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s}.collage a:hover img{transform:scale(1.05)}
+.cats{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px;padding-block:8px 64px}
+.cattile{position:relative;display:block;aspect-ratio:4/3;overflow:hidden;border:1px solid var(--line);text-decoration:none}
+.cattile img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s}.cattile:hover img{transform:scale(1.06)}
+.cattile::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(5,12,10,.85))}
+.catcap{position:absolute;left:16px;right:16px;bottom:14px;z-index:1;display:flex;justify-content:space-between;align-items:baseline;gap:10px;color:#F3EBDD}
+.catcap b{font-family:var(--display);font-weight:500;font-size:1.55rem}.catcap small{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--accent)}
+@media(max-width:760px){.arch.wide{width:100%}.collage{gap:8px}}
