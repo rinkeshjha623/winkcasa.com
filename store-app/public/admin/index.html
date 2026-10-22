@@ -44,7 +44,7 @@ th{color:var(--mut);font-weight:500;font-size:12px;white-space:nowrap}tr.row{cur
 
 <div id="login" class="login card">
   <h1>WinkCasa Admin</h1><p class="muted">Private area. Enter your admin token.</p>
-  <input id="tok" type="password" placeholder="Admin token" autocomplete="current-password">
+  <form id="lf" autocomplete="off" onsubmit="return false"><input id="tok" type="text" name="admintoken" placeholder="Paste admin token here" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" style="-webkit-text-security:disc;text-security:disc"><label style="display:flex;gap:6px;align-items:center;margin:0 0 10px"><input type="checkbox" id="showtok" style="width:auto"> Show token</label></form>
   <button class="btn" id="go" style="width:100%">Sign in</button><p id="lerr" style="color:var(--bad)"></p>
 </div>
 
@@ -108,7 +108,7 @@ async function login(){
     $('#login').classList.add('hide');$('#app').classList.remove('hide');$('#tok').value='';loadAll()}
   catch(e){$('#lerr').textContent='Wrong token.'}
 }
-$('#go').onclick=login;$('#tok').onkeydown=e=>e.key==='Enter'&&login();$('#out').onclick=signout;
+$('#showtok').onchange=e=>{$('#tok').style.webkitTextSecurity=e.target.checked?'none':'disc'};$('#go').onclick=login;$('#tok').onkeydown=e=>e.key==='Enter'&&login();$('#out').onclick=signout;
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>show(b.dataset.t));
 function show(t){document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
   $('#t-overview').classList.toggle('hide',t!=='overview');$('#t-orders').classList.toggle('hide',t!=='orders');if(t==='orders')loadOrders()}
