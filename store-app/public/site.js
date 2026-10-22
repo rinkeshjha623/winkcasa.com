@@ -100,3 +100,20 @@
       .catch(function (er) { m.textContent = er.message; }).then(function () { btn.disabled = false; });
   });
 })();
+
+/* ---- image motion: reveal on scroll (respects reduced-motion) ---- */
+(function () {
+  if (!('IntersectionObserver' in window) || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
+  var SEL = '.tile,.collage a,.article img.hero,.article .pimg,.pinfig,.ttvis,.gal .main,.thumbs img,.tcard,.cline', n = 0;
+  var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }); }, { threshold: 0.1, rootMargin: '0px 0px -5% 0px' });
+  function reg(el) {
+    if (el.__mo) return; el.__mo = 1;
+    var r = el.getBoundingClientRect();
+    el.style.setProperty('--d', (n++ % 4) * 90 + 'ms');
+    if (r.top < window.innerHeight && r.bottom > 0) { el.classList.add('ent'); return; }
+    el.classList.add('rv'); io.observe(el);
+  }
+  function scan(root) { if (root.matches && root.matches(SEL)) reg(root); [].forEach.call(root.querySelectorAll ? root.querySelectorAll(SEL) : [], reg); }
+  scan(document);
+  new MutationObserver(function (ms) { ms.forEach(function (m) { [].forEach.call(m.addedNodes, function (nd) { if (nd.nodeType === 1) scan(nd); }); }); }).observe(document.body, { childList: true, subtree: true });
+})();

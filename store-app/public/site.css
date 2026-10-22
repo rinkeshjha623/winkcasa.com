@@ -266,3 +266,16 @@ header.bar .rt{justify-self:end;display:flex;align-items:center}
 
 .pfl .btn{padding:11px 18px;font-size:.72rem}.postfoot .share{gap:6px}.postfoot .share .sh{width:36px;height:36px}
 .askline{margin:14px 0 0;color:var(--muted);font-size:.9rem}.article .askline a.tlink{color:var(--accent);text-decoration:none;border-bottom:1px solid var(--accent);padding-bottom:1px}
+/* ---- image motion: reveal on scroll, slow settle, hover zoom, gentle float ---- */
+.rv{opacity:0;transform:translateY(26px);transition:opacity .9s cubic-bezier(.2,.7,.2,1) var(--d,0ms),transform .9s cubic-bezier(.2,.7,.2,1) var(--d,0ms)}
+.rv.in{opacity:1;transform:none}
+.rv img{transform:scale(1.14);transition:transform 1.7s cubic-bezier(.2,.7,.2,1) var(--d,0ms)}
+.rv.in img{transform:scale(1)}
+.tile:hover img,.collage a:hover img,.gal .main:hover img,.pinfig:hover img,.ttvis:hover img,.article .pimg:hover img,.tcard:hover img,.cline:hover img{transform:scale(1.07)!important;transition:transform 1.1s cubic-bezier(.2,.7,.2,1)!important}
+.tile,.tcard,.pinfig,.ttvis,.gal .main,.article .pimg{overflow:hidden}
+.card .tile{transition:box-shadow .5s,transform .5s}.card:hover .tile{box-shadow:0 22px 44px -22px rgba(0,0,0,.7)}
+.collage a{animation:floaty 9s ease-in-out infinite}.collage a:nth-child(2){animation-delay:-3s}.collage a:nth-child(3){animation-delay:-6s}
+@keyframes floaty{0%,100%{translate:0 0}50%{translate:0 -9px}}
+@keyframes enter{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+.ent{animation:enter .9s cubic-bezier(.2,.7,.2,1) both}
+@media(prefers-reduced-motion:reduce){.rv,.rv img{opacity:1!important;transform:none!important;transition:none!important}.collage a,.ent{animation:none!important}.tile:hover img,.collage a:hover img{transform:none!important}}
