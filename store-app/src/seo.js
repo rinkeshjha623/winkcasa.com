@@ -112,16 +112,23 @@ export function logoHtml(S, cls = '') {
 export function footerHtml(S, cats) {
   const b = S.business, f = S.footer;
   const social = [['Instagram', S.social.instagram], ['Facebook', S.social.facebook], ['YouTube', S.social.youtube], ['WhatsApp', S.social.whatsapp]].filter(([, u]) => u);
+  const L = (h, t) => `<li><a href="${esc(h)}">${esc(t)}</a></li>`;
+  const care = [['/track', 'Track your order'], ['/returns', 'Returns & refunds'], ['/shipping', 'Shipping & delivery'], ['/#faq', 'FAQs'], ['/contact', 'Contact us']];
+  const company = [['/about', 'About WinkCasa'], ['/blog', 'The Journal'], ['/try', 'Find your look'], ['/account', 'My account']];
+  const legal = (f.links || []).filter((l) => /privacy|terms|policy|condition/i.test(l.label + l.href)).map((l) => [l.href, l.label]);
   return `<footer id="footerEl" class="sitefoot"><div class="fcols">
-<div><div class="flogo">${S.logo && S.logo.image ? `<img src="${esc(S.logo.image)}" alt="WinkCasa" height="48">` : S.logo && S.logo.style === 'lash' ? `${LASH}<span class="flw">WINKCASA</span>` : S.logo && S.logo.style === 'stacked' ? '<i>Wink</i> <i>Casa</i>' : 'WinkCasa'}</div><address>${esc(b.legalName)}<br>${esc(b.street)}, ${esc(b.city)}, ${esc(b.state)} ${esc(b.postcode)}, India<br>Phone: <a href="tel:${esc(b.phone.replace(/\s/g, ''))}">${esc(b.phone)}</a><br>Email: <a href="mailto:${esc(b.email)}">${esc(b.email)}</a>${b.gstin ? `<br>GSTIN: ${esc(b.gstin)}` : ''}</address></div>
-<div><h4>Shop</h4><ul><li><a href="/#shop">All products</a></li>${cats.map((c) => `<li><a href="${esc(c.path)}">${esc(c.name)}</a></li>`).join('')}</ul></div>
-<div><h4>Help</h4><ul>${f.links.map((l) => `<li><a href="${esc(okHref(l.href))}">${esc(l.label)}</a></li>`).join('')}</ul></div>
-${social.length ? `<div><h4>Follow us</h4><ul>${social.map(([n, u]) => `<li><a href="${esc(u)}" rel="noopener me">${n}</a></li>`).join('')}</ul></div>` : ''}
+<div class="fbrand"><div class="flogo">${S.logo && S.logo.image ? `<img src="${esc(S.logo.image)}" alt="WinkCasa" height="48">` : S.logo && S.logo.style === 'lash' ? `${LASH}<span class="flw">WINKCASA</span>` : S.logo && S.logo.style === 'stacked' ? '<i>Wink</i> <i>Casa</i>' : 'WinkCasa'}</div><p class="ftag">Considered pieces for a beautifully lived-in home.</p><address>${esc(b.legalName)}<br>${esc(b.street)}, ${esc(b.city)}, ${esc(b.state)} ${esc(b.postcode)}, India<br><a href="tel:${esc(b.phone.replace(/\s/g, ''))}">${esc(b.phone)}</a><br><a href="mailto:${esc(b.email)}">${esc(b.email)}</a>${b.gstin ? `<br><span class="fgst">GSTIN ${esc(b.gstin)}</span>` : ''}</address></div>
+<div><h4>Shop</h4><ul>${L('/#shop', 'All products')}${cats.map((c) => L(c.path, c.name)).join('')}</ul></div>
+<div><h4>Customer care</h4><ul>${care.map(([h, t]) => L(h, t)).join('')}</ul></div>
+<div><h4>Company</h4><ul>${company.map(([h, t]) => L(h, t)).join('')}</ul></div>
+<div><h4>Legal</h4><ul>${legal.map(([h, t]) => L(okHref(h), t)).join('')}</ul>${social.length ? `<h4 class="h4b">Follow us</h4><ul>${social.map(([n, u]) => `<li><a href="${esc(u)}" rel="noopener me">${n}</a></li>`).join('')}</ul>` : ''}</div>
+</div>${payMethodsHtml()}<div class="fbase"><span>${esc(f.copyright)}</span><span>${esc(f.note)}${f.showUnsplash ? ' Photos from <a href="https://unsplash.com" rel="noopener">Unsplash</a>.' : ''}</span></div></footer>`;
+}
 </div>${payMethodsHtml()}<div class="fbase"><span>${esc(f.copyright)}</span><span>${esc(f.note)}${f.showUnsplash ? ' Photos from <a href="https://unsplash.com" rel="noopener">Unsplash</a>.' : ''}</span></div></footer>`;
 }
 
 export const faqHtml = (list, heading = 'Frequently asked questions') => list.length
-  ? `<section class="faq" id="faq"><div class="wrap"><h2>${esc(heading)}</h2>${list.map((f) => `<details><summary>${esc(f.q)}</summary><p>${esc(f.a)}</p></details>`).join('')}</div></section>` : '';
+  ? `<section class="faq" id="faq"><div class="wrap faqgrid"><div class="faqhead"><p class="faqeye">Concierge</p><h2>${esc(heading)}</h2><p class="faqsub">Everything you may wish to know before you order. Can't find it? We reply within one working day.</p><a class="btn alt" href="/contact">Speak to us</a></div><div class="faqlist">${list.map((f, i) => `<details${i === 0 ? ' open' : ''}><summary><span>${esc(f.q)}</span></summary><p>${esc(f.a)}</p></details>`).join('')}</div></div></section>` : '';
 
 export const aboutHtml = (S) => S.about.text
   ? `<section class="about" id="about"><div class="wrap"><h2>${esc(S.about.title)}</h2>${S.about.text.split(/\n{2,}/).map((t) => `<p>${esc(t)}</p>`).join('')}</div></section>` : '';
