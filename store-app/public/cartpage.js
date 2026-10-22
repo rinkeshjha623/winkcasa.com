@@ -20,8 +20,8 @@
 
   function couponBox() {
     if (COUP && COUP.code && !COUP.auto) return '<div class="cpn on"><span>🏷 <b>' + esc(COUP.code) + '</b> · ' + esc(COUP.label) + ' applied</span><button type="button" id="cpRm">Remove</button></div>';
-    if (COUP && COUP.auto) return '<div class="cpn on"><span>🏷 Offer applied: <b>' + esc(COUP.label) + '</b></span></div>';
-    return '<div class="cpn"><div class="cprow"><input id="cpIn" placeholder="Discount code" autocapitalize="characters" autocomplete="off" value="' + esc(CODE) + '"><button type="button" id="cpGo">Apply</button></div>' + (CERR ? '<div class="cperr">' + esc(CERR) + '</div>' : '') + '</div>';
+    var auto = COUP && COUP.auto ? '<div class="cpn on" style="margin-bottom:8px"><span>🏷 Offer applied: <b>' + esc(COUP.label) + '</b></span></div>' : '';
+    return auto + '<div class="cpn"><div class="cprow"><input id="cpIn" placeholder="Discount code" autocapitalize="characters" autocomplete="off" value="' + esc(CODE) + '"><button type="button" id="cpGo">Apply</button></div>' + (CERR ? '<div class="cperr">' + esc(CERR) + '</div>' : '') + '</div>';
   }
   async function refreshCoupon(code, manual) {
     if (code !== undefined) CODE = code;
