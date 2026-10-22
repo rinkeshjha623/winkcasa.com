@@ -1,0 +1,9 @@
+{
+  "name": "winkcasa-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "WinkCasa Android and iOS app (Capacitor shell around www.winkcasa.com)",
+  "scripts": { "sync": "cap sync", "android": "cap open android", "ios": "cap open ios", "build:apk": "cd android && ./gradlew assembleDebug", "build:aab": "cd android && ./gradlew bundleRelease" },
+  "dependencies": { "@capacitor/core": "^7.0.0", "@capacitor/android": "^7.0.0", "@capacitor/ios": "^7.0.0", "@capacitor/splash-screen": "^7.0.0", "@capacitor/status-bar": "^7.0.0", "@capacitor/share": "^7.0.0", "@capacitor/app": "^7.0.0" },
+  "devDependencies": { "@capacitor/cli": "^7.0.0" }
+}

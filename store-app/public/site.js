@@ -55,6 +55,24 @@
   });
   paintWish();
 
+
+  // Installable app: register the service worker and offer an "Install app" button where the browser allows it.
+  if ('serviceWorker' in navigator) window.addEventListener('load', function () { navigator.serviceWorker.register('/sw.js').catch(function () {}); });
+  var standalone = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone;
+  var ios = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream, dismissed = false;
+  try { dismissed = localStorage.getItem('wc_install_no') === '1'; } catch (e) {}
+  function installBar(html, onGo) {
+    if (standalone || dismissed || document.getElementById('instbar')) return;
+    var d = document.createElement('div'); d.id = 'instbar'; d.className = 'instbar';
+    d.innerHTML = '<span>' + html + '</span>' + (onGo ? '<button type="button" id="instgo">Install</button>' : '') + '<button type="button" id="instx" aria-label="Dismiss">×</button>';
+    document.body.appendChild(d);
+    document.getElementById('instx').onclick = function () { d.remove(); try { localStorage.setItem('wc_install_no', '1'); } catch (e) {} };
+    if (onGo) document.getElementById('instgo').onclick = function () { d.remove(); onGo(); };
+  }
+  var deferred = null;
+  window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); deferred = e; setTimeout(function () { installBar('Get the <b>WinkCasa app</b> on your phone', function () { deferred.prompt(); }); }, 8000); });
+  if (ios && !standalone) setTimeout(function () { installBar('Install WinkCasa: tap <b>Share</b>, then <b>Add to Home Screen</b>'); }, 8000);
+
   window.WC = { cart: load, save: save, count: count, paint: paint, fmtD: fmtD, fmtDT: fmtDT, window3to7: window3to7, etaHtml: etaHtml, toast: toast,
     set: function (id, q) { var c = load(); if (q <= 0) delete c[id]; else c[id] = Math.min(10, q); save(); },
     clear: function () { mem = {}; save(); } };

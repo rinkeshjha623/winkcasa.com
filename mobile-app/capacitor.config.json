@@ -1,0 +1,10 @@
+{
+  "appId": "com.winkcasa.app",
+  "appName": "WinkCasa",
+  "webDir": "www",
+  "server": { "url": "https://www.winkcasa.com/?source=app", "cleartext": false, "allowNavigation": ["www.winkcasa.com", "winkcasa.com", "*.razorpay.com", "checkout.razorpay.com", "api.razorpay.com", "*.npci.org.in"] },
+  "backgroundColor": "#0B1916",
+  "android": { "allowMixedContent": false },
+  "ios": { "contentInset": "always", "backgroundColor": "#0B1916" },
+  "plugins": { "SplashScreen": { "launchShowDuration": 1200, "backgroundColor": "#0B1916", "showSpinner": false }, "StatusBar": { "style": "DARK", "backgroundColor": "#0B1916" } }
+}

@@ -1,0 +1,40 @@
+name: Build Android app
+on:
+  workflow_dispatch:
+  push:
+    paths: ['mobile-app/**', '.github/workflows/android.yml']
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: mobile-app } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 21 }
+      - run: npm install --no-audit --no-fund
+      - run: npx cap add android
+      - run: npx @capacitor/assets generate --android
+      - run: npx cap sync android
+      - name: Build debug APK (installs on any Android phone)
+        run: cd android && ./gradlew assembleDebug
+      - name: Build signed release bundle (only when signing secrets exist)
+        if: ${{ secrets.ANDROID_KEYSTORE_B64 != '' }}
+        env:
+          KS_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+          KS_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          echo "$KS_B64" | base64 -d > android/winkcasa.keystore
+          cd android && ./gradlew bundleRelease \
+            -Pandroid.injected.signing.store.file=$PWD/winkcasa.keystore \
+            -Pandroid.injected.signing.store.password="$KS_PASS" \
+            -Pandroid.injected.signing.key.alias="$KEY_ALIAS" \
+            -Pandroid.injected.signing.key.password="$KS_PASS"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: winkcasa-android
+          path: |
+            mobile-app/android/app/build/outputs/apk/debug/*.apk
+            mobile-app/android/app/build/outputs/bundle/release/*.aab
