@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Returns and refunds | WinkCasa</title>
+<meta name="description" content="How to return an item or ask for a refund at WinkCasa.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Figtree:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/policy.css">
+</head>
+<body>
+<div class="wrap">
+<header><a class="logo" href="/">WinkCasa</a><a class="back" href="/">← Back to shop</a></header>
+<main>
+<h1>Returns and refunds</h1>
+<p class="upd">Last updated 22 October 2026</p>
+
+<p>If something is not right with your order, tell us and we will fix it. This page explains how.</p>
+<h2>When you can return</h2>
+<p>You can ask for a return or replacement within 7 days of delivery if the item arrived damaged, is defective, or is not the item you ordered. Items must be unused and in their original packaging.</p>
+<h2>What we cannot take back</h2>
+<p>For hygiene and safety, we cannot accept returns on opened skincare and beauty products, earrings and other jewellery that has been worn, or items made or printed to your order, unless they arrived damaged, defective or wrong.</p>
+<h2>How to start a return</h2>
+<p>Contact us from the details on our <a href="/contact">contact page</a> within 7 days of delivery. Include your order number, a short description of the problem, and clear photos of the item and the outer box. For damaged items, keep the original packaging.</p>
+<h2>Refunds and replacements</h2>
+<p>Once we approve your request we will send a replacement or refund the amount you paid for the item. Refunds go back to your original payment method and usually reach you within 5 to 7 working days, depending on your bank. If we shipped a wrong or damaged item, we also refund the delivery fee.</p>
+<h2>Cancelling an order</h2>
+<p>You can cancel before your order is dispatched by contacting us with your order number. If it has already shipped, you can refuse it at delivery or return it under the rules above.</p>
+<h2>Cash on delivery</h2>
+<p>If we offer cash on delivery, refunds for those orders are sent by bank transfer to the account you give us.</p>
+<div class="biz" id="biz" hidden><dl id="bizdl"></dl></div>
+</main>
+<footer><a href="/returns">Returns</a><a href="/shipping">Shipping</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/contact">Contact</a><span>© WinkCasa</span></footer>
+</div>
+<script>
+fetch('/business.json').then(function(r){return r.json()}).then(function(b){
+ var rows=[['Seller','legalName'],['GSTIN','gstin'],['Address','address'],['Email','email'],['Phone','phone'],['Grievance officer','grievanceOfficer']],dl=document.getElementById('bizdl'),n=0;
+ rows.forEach(function(r){if(b[r[1]]){n++;var dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=r[0];dd.textContent=b[r[1]];dl.appendChild(dt);dl.appendChild(dd)}});
+ if(n)document.getElementById('biz').hidden=false;
+}).catch(function(){});
+</script>
+</body>
+</html>

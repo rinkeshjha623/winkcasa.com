@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Privacy policy | WinkCasa</title>
+<meta name="description" content="What personal information WinkCasa collects, why, and your choices.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Figtree:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/policy.css">
+</head>
+<body>
+<div class="wrap">
+<header><a class="logo" href="/">WinkCasa</a><a class="back" href="/">← Back to shop</a></header>
+<main>
+<h1>Privacy policy</h1>
+<p class="upd">Last updated 22 October 2026</p>
+
+<p>This policy explains how WinkCasa handles your personal information when you shop with us.</p>
+<h2>What we collect</h2>
+<p>When you place an order we collect your name, mobile number, email address, delivery address, and the items and amount you ordered. We do not see or store your card, UPI or bank details. Payments are handled by Razorpay.</p>
+<h2>Why we use it</h2>
+<p>We use your information to process and deliver your order, send order and shipping updates, handle returns and support requests, and meet tax and legal requirements. We only use it for marketing if you agree.</p>
+<h2>Who we share it with</h2>
+<p>We share only what is needed with our payment provider (Razorpay), the suppliers and couriers who prepare and deliver your order, and our hosting provider (Cloudflare). We do not sell your personal information.</p>
+<h2>How long we keep it</h2>
+<p>We keep order records for as long as the law requires for tax and accounting, and delete or anonymise other information when we no longer need it.</p>
+<h2>Your choices</h2>
+<p>You can ask to see, correct or delete the personal information we hold about you, or withdraw your consent to marketing, by contacting us on the details below. Some records we must keep by law.</p>
+<h2>Security</h2>
+<p>We use encrypted connections and limit who can see order details. No online system is perfectly secure, so please contact us right away if you think your information has been misused.</p>
+<h2>Cookies</h2>
+<p>This site does not use advertising or tracking cookies. Our payment provider may set cookies needed to complete your payment.</p>
+<h2>Changes and questions</h2>
+<p>We will update this page when our practices change. Questions or complaints can go to us through our <a href="/contact">contact page</a>.</p>
+<div class="biz" id="biz" hidden><dl id="bizdl"></dl></div>
+</main>
+<footer><a href="/returns">Returns</a><a href="/shipping">Shipping</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/contact">Contact</a><span>© WinkCasa</span></footer>
+</div>
+<script>
+fetch('/business.json').then(function(r){return r.json()}).then(function(b){
+ var rows=[['Seller','legalName'],['GSTIN','gstin'],['Address','address'],['Email','email'],['Phone','phone'],['Grievance officer','grievanceOfficer']],dl=document.getElementById('bizdl'),n=0;
+ rows.forEach(function(r){if(b[r[1]]){n++;var dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=r[0];dd.textContent=b[r[1]];dl.appendChild(dt);dl.appendChild(dd)}});
+ if(n)document.getElementById('biz').hidden=false;
+}).catch(function(){});
+</script>
+</body>
+</html>

@@ -37,4 +37,4 @@ Each order lists the customer, address, items and amount. Place the matching ord
 
 ## Before you take real orders
 
-Add return, shipping, privacy and terms pages, and your GST number in the footer. Prices in `products.json` are placeholders until you have supplier quotes.
+Fill in `public/business.json` (legal name, GSTIN, address, email, phone, grievance officer). It appears on the policy pages and contact page. Review the policy pages in `public/` (returns, shipping, privacy, terms, contact), especially the 7-day return window and delivery times, and have them checked by a lawyer if you can. Prices in `products.json` are placeholders until you have supplier quotes.

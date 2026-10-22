@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Terms of sale | WinkCasa</title>
+<meta name="description" content="The terms that apply when you buy from WinkCasa.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Figtree:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/policy.css">
+</head>
+<body>
+<div class="wrap">
+<header><a class="logo" href="/">WinkCasa</a><a class="back" href="/">← Back to shop</a></header>
+<main>
+<h1>Terms of sale</h1>
+<p class="upd">Last updated 22 October 2026</p>
+
+<p>By placing an order on this site you agree to these terms.</p>
+<h2>Who we are</h2>
+<p>WinkCasa is an online store operated from India. Our seller details are shown at the bottom of this page.</p>
+<h2>Prices and payment</h2>
+<p>All prices are in Indian rupees and include GST. Delivery charges are shown before you pay. We take payment online through Razorpay. We may cancel and refund an order if a price or description was shown wrongly by mistake.</p>
+<h2>Your order</h2>
+<p>Your order is confirmed when payment succeeds and you receive an order number. If an item turns out to be unavailable, we will tell you and refund you in full.</p>
+<h2>Products</h2>
+<p>We try to show colours, sizes and details accurately, but screens differ and handmade items vary slightly. Product descriptions are for general information.</p>
+<h2>Returns, refunds and delivery</h2>
+<p>These are covered in our <a href="/returns">returns policy</a> and <a href="/shipping">shipping policy</a>, which are part of these terms.</p>
+<h2>Using the site</h2>
+<p>Please do not misuse the site, attempt to break into it, or use it for anything unlawful. All content on the site belongs to WinkCasa or its licensors.</p>
+<h2>Our liability</h2>
+<p>To the extent the law allows, our liability for any order is limited to the amount you paid for it. Nothing here limits your rights under Indian consumer law.</p>
+<h2>Governing law</h2>
+<p>These terms are governed by the laws of India. Disputes fall under the courts at our registered business address, subject to your rights under the Consumer Protection Act, 2019.</p>
+<h2>Complaints</h2>
+<p>Write to us through the <a href="/contact">contact page</a>. We aim to acknowledge complaints within 48 hours and resolve them within one month.</p>
+<div class="biz" id="biz" hidden><dl id="bizdl"></dl></div>
+</main>
+<footer><a href="/returns">Returns</a><a href="/shipping">Shipping</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/contact">Contact</a><span>© WinkCasa</span></footer>
+</div>
+<script>
+fetch('/business.json').then(function(r){return r.json()}).then(function(b){
+ var rows=[['Seller','legalName'],['GSTIN','gstin'],['Address','address'],['Email','email'],['Phone','phone'],['Grievance officer','grievanceOfficer']],dl=document.getElementById('bizdl'),n=0;
+ rows.forEach(function(r){if(b[r[1]]){n++;var dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=r[0];dd.textContent=b[r[1]];dl.appendChild(dt);dl.appendChild(dd)}});
+ if(n)document.getElementById('biz').hidden=false;
+}).catch(function(){});
+</script>
+</body>
+</html>

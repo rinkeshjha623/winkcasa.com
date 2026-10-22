@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Shipping and delivery | WinkCasa</title>
+<meta name="description" content="Delivery charges, timelines and tracking for WinkCasa orders in India.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Figtree:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/policy.css">
+</head>
+<body>
+<div class="wrap">
+<header><a class="logo" href="/">WinkCasa</a><a class="back" href="/">← Back to shop</a></header>
+<main>
+<h1>Shipping and delivery</h1>
+<p class="upd">Last updated 22 October 2026</p>
+
+<p>We deliver across India to serviceable pincodes.</p>
+<h2>Delivery charges</h2>
+<p>Delivery is free on orders of ₹999 and above. Below that, delivery costs ₹79. The exact charge shows in your cart before you pay.</p>
+<h2>How long it takes</h2>
+<p>Orders are usually dispatched within 2 to 4 working days, and delivery usually takes 3 to 7 working days after that, depending on your location. Made-to-order items can take longer, and we will tell you when that applies. Delays can happen during festivals, sales and bad weather.</p>
+<h2>Tracking</h2>
+<p>When your order ships we will email you the courier name and tracking details. Orders may arrive in more than one parcel if items ship from different places.</p>
+<h2>Check on delivery</h2>
+<p>Please check the parcel when it arrives. If the box is damaged or open, tell the courier and contact us within 48 hours with photos, so we can raise a claim and fix your order.</p>
+<h2>Wrong address</h2>
+<p>Please check your address and mobile number before paying. If a parcel comes back to us because of a wrong or incomplete address, we may charge a re-delivery fee.</p>
+<div class="biz" id="biz" hidden><dl id="bizdl"></dl></div>
+</main>
+<footer><a href="/returns">Returns</a><a href="/shipping">Shipping</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/contact">Contact</a><span>© WinkCasa</span></footer>
+</div>
+<script>
+fetch('/business.json').then(function(r){return r.json()}).then(function(b){
+ var rows=[['Seller','legalName'],['GSTIN','gstin'],['Address','address'],['Email','email'],['Phone','phone'],['Grievance officer','grievanceOfficer']],dl=document.getElementById('bizdl'),n=0;
+ rows.forEach(function(r){if(b[r[1]]){n++;var dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=r[0];dd.textContent=b[r[1]];dl.appendChild(dt);dl.appendChild(dd)}});
+ if(n)document.getElementById('biz').hidden=false;
+}).catch(function(){});
+</script>
+</body>
+</html>

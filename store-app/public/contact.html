@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Contact us | WinkCasa</title>
+<meta name="description" content="How to reach WinkCasa for order help, returns and questions.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gloock&family=Figtree:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/policy.css">
+</head>
+<body>
+<div class="wrap">
+<header><a class="logo" href="/">WinkCasa</a><a class="back" href="/">← Back to shop</a></header>
+<main>
+<h1>Contact us</h1>
+<p class="upd">Last updated 22 October 2026</p>
+
+<p>For order help, returns or any question, reach us using the details below. Please include your order number so we can find your order quickly.</p>
+<p>We aim to reply within 2 working days.</p>
+<h2>Before you write</h2>
+<p>Many questions are answered on our <a href="/shipping">shipping</a> and <a href="/returns">returns</a> pages.</p>
+<h2>Complaints</h2>
+<p>If you are not happy with how we handled something, write to our grievance officer listed below.</p>
+<div class="biz" id="biz" hidden><dl id="bizdl"></dl></div>
+</main>
+<footer><a href="/returns">Returns</a><a href="/shipping">Shipping</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/contact">Contact</a><span>© WinkCasa</span></footer>
+</div>
+<script>
+fetch('/business.json').then(function(r){return r.json()}).then(function(b){
+ var rows=[['Seller','legalName'],['GSTIN','gstin'],['Address','address'],['Email','email'],['Phone','phone'],['Grievance officer','grievanceOfficer']],dl=document.getElementById('bizdl'),n=0;
+ rows.forEach(function(r){if(b[r[1]]){n++;var dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=r[0];dd.textContent=b[r[1]];dl.appendChild(dt);dl.appendChild(dd)}});
+ if(n)document.getElementById('biz').hidden=false;
+}).catch(function(){});
+</script>
+</body>
+</html>
