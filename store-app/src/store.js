@@ -23,7 +23,7 @@ export const DEFAULTS = {
       { label: 'Returns', href: '/returns' }, { label: 'Shipping', href: '/shipping' }, { label: 'Privacy', href: '/privacy' }, { label: 'Terms', href: '/terms' },
     ],
     note: 'Prices in Indian rupees, inclusive of GST.',
-    showUnsplash: true,
+    showUnsplash: false,
   },
   shipping: { freeShippingAbove: 999, charge: 79 },
   seo: {
