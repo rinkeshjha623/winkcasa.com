@@ -183,3 +183,4 @@ header.bar .rt{justify-self:end;display:flex;align-items:center}
 .tcard img{width:100%;aspect-ratio:1;object-fit:cover;display:block}.tcard h4{font-size:.85rem;margin:8px 0 2px;line-height:1.3}.tcard h4 a{text-decoration:none}
 .tcard .add{width:100%;margin-top:6px}
 @media(max-width:860px){.tryshell{grid-template-columns:1fr}.tgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.tryempty[hidden],.tryload[hidden]{display:none}
