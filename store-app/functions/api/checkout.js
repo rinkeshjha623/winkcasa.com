@@ -5,7 +5,8 @@ export async function onRequestPost({ request, env }) {
   const keyId = env.RAZORPAY_KEY_ID || env.key_id;
   const keySecret = env.RAZORPAY_KEY_SECRET || env.key_secret;
   if (!keyId || !keySecret || !env.DB) {
-    return json({ error: 'Checkout is not set up yet.' }, 503);
+    const missing = [!keyId && 'key id', !keySecret && 'key secret', !env.DB && 'database'].filter(Boolean).join(', ');
+    return json({ error: 'Checkout is not set up yet.', missing }, 503);
   }
   let body;
   try { body = await request.json(); } catch { return json({ error: 'Invalid request.' }, 400); }
