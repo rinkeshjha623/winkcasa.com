@@ -37,6 +37,15 @@ export const DEFAULTS = {
     phone: '+91 9798776985', email: 'support@winkcasa.com', hours: '', grievanceOfficer: 'Rinkesh Jha',
   },
   social: { instagram: '', facebook: '', youtube: '', whatsapp: '' },
+  contact: {
+    label: 'We are here to help',
+    title: 'Contact us',
+    intro: 'Questions about an order, a product or delivery? Send us a message and we will reply by email or phone.',
+    extra: 'We usually reply within one working day.',
+    successMessage: 'Thank you. We have your message and will reply soon.',
+    seoTitle: 'Contact WinkCasa | Customer support',
+    seoDescription: '',
+  },
   about: {
     title: 'About WinkCasa',
     text: 'WinkCasa is an online store based in New Delhi, India. We sell skincare, beauty tools and everyday jewellery, chosen for what shoppers reorder most. We deliver across India within 10 to 20 days, show prices in Indian rupees including GST, and take payment securely online by UPI, card or net banking through Razorpay. If an item arrives damaged, defective or wrong, tell us within 7 days and we will replace it or refund you.',

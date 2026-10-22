@@ -3,9 +3,9 @@ import { SITE, esc, headTags, pageShell, breadcrumbLd, organizationLd } from '..
 
 export async function onRequestGet({ env }) {
   const [rows, S] = await Promise.all([activeProducts(env), getSettings(env)]);
-  const cats = categoriesOf(rows, S), b = S.business;
+  const cats = categoriesOf(rows, S), b = S.business, C = S.contact;
   const main = `<main class="wrap"><nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a> › <span>Contact us</span></nav>
-<div class="cathead"><p class="label">We are here to help</p><h1>Contact us</h1><p>Questions about an order, a product or delivery? Send us a message and we will reply by email or phone.</p></div>
+<div class="cathead"><p class="label">${esc(C.label)}</p><h1>${esc(C.title)}</h1><p>${esc(C.intro)}</p>${C.extra ? `<p class="muted">${esc(C.extra)}</p>` : ''}</div>
 <div class="twocol"><div class="legal" style="padding:0;margin:0"><h2 style="margin-top:0">Our details</h2>
 <div class="bizbox" style="margin-top:0"><dl><dt>Seller</dt><dd>${esc(b.legalName)}</dd><dt>Address</dt><dd>${esc(b.street)}, ${esc(b.city)}, ${esc(b.state)} ${esc(b.postcode)}, India</dd><dt>Email</dt><dd><a href="mailto:${esc(b.email)}">${esc(b.email)}</a></dd><dt>Phone</dt><dd><a href="tel:${esc(b.phone.replace(/\s/g, ''))}">${esc(b.phone)}</a></dd>${b.hours ? `<dt>Hours</dt><dd>${esc(b.hours)}</dd>` : ''}${b.gstin ? `<dt>GSTIN</dt><dd>${esc(b.gstin)}</dd>` : ''}${b.grievanceOfficer ? `<dt>Grievance officer</dt><dd>${esc(b.grievanceOfficer)}</dd>` : ''}</dl></div>
 <p style="margin-top:18px">Already ordered? <a href="/track">Track your order</a>. See our <a href="/shipping">shipping</a> and <a href="/returns">returns</a> policies.</p></div>
@@ -16,9 +16,9 @@ export async function onRequestGet({ env }) {
   const script = `<script>(function(){var f=document.getElementById('cf'),m=document.getElementById('cmsg');f.onsubmit=async function(e){e.preventDefault();m.className='msg';m.textContent='Sending…';
 var d={};[].forEach.call(f.elements,function(x){if(x.name)d[x.name]=x.value});
 try{var r=await fetch('/api/contact',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});var j=await r.json().catch(function(){return{}});
-if(!r.ok)throw new Error(j.error||'Could not send. Please try again.');f.reset();m.className='msg ok';m.textContent='Thank you. We have your message and will reply soon.'}catch(x){m.className='msg err';m.textContent=x.message}}})();</script>`;
+if(!r.ok)throw new Error(j.error||'Could not send. Please try again.');f.reset();m.className='msg ok';m.textContent=${JSON.stringify(C.successMessage).replace(/</g, '\\u003c')}}catch(x){m.className='msg err';m.textContent=x.message}}})();</script>`;
   const html = pageShell({
-    head: headTags({ title: 'Contact WinkCasa | Customer support', description: `Contact WinkCasa in ${b.city}, India. Email ${b.email} or call ${b.phone}, or send us a message about your order.`, canonical: SITE + '/contact', image: S.seo.ogImage }),
+    head: headTags({ title: C.seoTitle || 'Contact WinkCasa | Customer support', description: C.seoDescription || `Contact WinkCasa in ${b.city}, India. Email ${b.email} or call ${b.phone}, or send us a message about your order.`, canonical: SITE + '/contact', image: S.seo.ogImage }),
     S, cats, main, scripts: script,
     jsonld: [{ '@context': 'https://schema.org', '@type': 'ContactPage', url: SITE + '/contact', name: 'Contact WinkCasa', about: { '@id': SITE + '/#organization' } },
       organizationLd(S), breadcrumbLd([{ name: 'Home', url: SITE + '/' }, { name: 'Contact us', url: SITE + '/contact' }])],
