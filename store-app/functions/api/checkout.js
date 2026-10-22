@@ -1,6 +1,7 @@
 import { activeProducts, getSettings, deliveryWindow } from '../../src/store.js';
 import { json, priceCart, cleanCustomer } from '../../src/lib.js';
 import { getCustomer } from '../../src/auth.js';
+import { resolveCoupon } from '../../src/coupons.js';
 
 export async function onRequestPost({ request, env }) {
   const keyId = env.RAZORPAY_KEY_ID || env.key_id;
@@ -29,6 +30,12 @@ export async function onRequestPost({ request, env }) {
   const cust = cleanCustomer(body.customer);
   if (cust.error) return json({ error: cust.error }, 400);
 
+  let discount = 0, shipOff = 0, couponCode = null;
+  const cp = await resolveCoupon(env, body.coupon, priced.subtotal, priced.shipping, cust.value.email);
+  if (cp.error) return json({ error: cp.error }, 400);
+  if (cp.ok && !cp.none) { discount = cp.discount; shipOff = cp.shippingOff; couponCode = cp.code; }
+  priced.discount = discount; priced.shipping -= shipOff; priced.total = priced.subtotal - discount + priced.shipping;
+
   const orderRef = 'WC-' + crypto.randomUUID().replace(/-/g, '').slice(0, 8).toUpperCase();
 
   const rz = await fetch('https://api.razorpay.com/v1/orders', {
@@ -47,12 +54,12 @@ export async function onRequestPost({ request, env }) {
   const placedAt = now.toISOString().slice(0, 19).replace('T', ' ');
   await env.DB.prepare(
     `INSERT INTO orders (order_ref, razorpay_order_id, status, subtotal_paise, shipping_paise, total_paise,
-       customer_name, phone, email, address, city, state, pincode, items_json, created_at, delivery_min_at, delivery_max_at, customer_id)
-     VALUES (?, ?, 'created', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+       customer_name, phone, email, address, city, state, pincode, items_json, created_at, delivery_min_at, delivery_max_at, customer_id, discount_paise, coupon_code)
+     VALUES (?, ?, 'created', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).bind(
     orderRef, rzOrder.id, priced.subtotal, priced.shipping, priced.total,
     cust.value.name, cust.value.phone, cust.value.email, cust.value.address,
-    cust.value.city, cust.value.state, cust.value.pincode, JSON.stringify(priced.lines), placedAt, win.min, win.max, me ? me.id : null
+    cust.value.city, cust.value.state, cust.value.pincode, JSON.stringify(priced.lines), placedAt, win.min, win.max, me ? me.id : null, discount, couponCode
   ).run();
 
   return json({ orderRef, razorpayOrderId: rzOrder.id, amount: priced.total, keyId, placedAt, deliveryMinAt: win.min, deliveryMaxAt: win.max });

@@ -58,7 +58,7 @@ th{color:var(--mut);font-weight:500;font-size:12px;white-space:nowrap}tr.row{cur
 
 <div id="app" class="hide">
 <header><h1>WinkCasa</h1>
-  <nav><button data-t="overview" class="on">Overview</button><button data-t="orders">Orders</button><button data-t="products">Products</button><button data-t="sourcing">Sourcing (CJ)</button><button data-t="blog">Blog</button><button data-t="selfies">Selfies</button><button data-t="comments">Comments</button><button data-t="messages">Messages</button><button data-t="store">Store settings</button></nav>
+  <nav><button data-t="overview" class="on">Overview</button><button data-t="orders">Orders</button><button data-t="products">Products</button><button data-t="sourcing">Sourcing (CJ)</button><button data-t="blog">Blog</button><button data-t="selfies">Selfies</button><button data-t="discounts">Discounts</button><button data-t="comments">Comments</button><button data-t="messages">Messages</button><button data-t="store">Store settings</button></nav>
   <span class="sp"></span>
   <select id="range" style="width:auto"><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="90">Last 90 days</option><option value="365">Last 12 months</option></select>
   <button class="btn ghost sm" id="refresh">Refresh</button><button class="btn ghost sm" id="csv">Export CSV</button><button class="btn ghost sm" id="out">Sign out</button>
@@ -84,6 +84,7 @@ th{color:var(--mut);font-weight:500;font-size:12px;white-space:nowrap}tr.row{cur
 <section id="t-blog" class="hide"></section>
 <section id="t-messages" class="hide"></section>
 <section id="t-comments" class="hide"></section>
+<section id="t-discounts" class="hide"></section>
 <section id="t-selfies" class="hide"></section>
 <section id="t-orders" class="hide">
   <div class="filters">
@@ -126,8 +127,8 @@ async function login(){
 $('#showtok').onchange=e=>{$('#tok').style.webkitTextSecurity=e.target.checked?'none':'disc'};$('#go').onclick=login;$('#tok').addEventListener('keydown',e=>{if(e.key==='Enter')login()});$('#out').onclick=signout;
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>show(b.dataset.t));
 function show(t){document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
-  ['overview','orders','products','sourcing','store','blog','messages','selfies','comments'].forEach(x=>$('#t-'+x).classList.toggle('hide',x!==t));
-  if(t==='orders'){loadOrders();api('cj',{method:'POST',body:JSON.stringify({action:'sync'})}).then(r=>{if(r.changed)loadOrders()}).catch(()=>{})}if(t==='products'&&window.loadProducts)loadProducts();if(t==='sourcing'&&window.loadSourcing)loadSourcing();if(t==='selfies'&&window.loadSelfies)loadSelfies();if(t==='store'&&window.loadStore)loadStore();if(t==='blog'&&window.loadBlog)loadBlog();if(t==='messages'&&window.loadMessages)loadMessages();if(t==='comments'&&window.loadComments)loadComments()}
+  ['overview','orders','products','sourcing','store','blog','messages','selfies','comments','discounts'].forEach(x=>$('#t-'+x).classList.toggle('hide',x!==t));
+  if(t==='orders'){loadOrders();api('cj',{method:'POST',body:JSON.stringify({action:'sync'})}).then(r=>{if(r.changed)loadOrders()}).catch(()=>{})}if(t==='products'&&window.loadProducts)loadProducts();if(t==='sourcing'&&window.loadSourcing)loadSourcing();if(t==='selfies'&&window.loadSelfies)loadSelfies();if(t==='store'&&window.loadStore)loadStore();if(t==='blog'&&window.loadBlog)loadBlog();if(t==='messages'&&window.loadMessages)loadMessages();if(t==='comments'&&window.loadComments)loadComments();if(t==='discounts'&&window.loadDiscounts)loadDiscounts()}
 $('#refresh').onclick=loadAll;$('#range').onchange=loadStats;
 $('#csv').onclick=async()=>{const b=await api('export');const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='winkcasa-orders.csv';a.click()};
 
@@ -173,7 +174,7 @@ async function openOrder(ref){
   <p><span class="pill p-${o.status}">${o.status==='created'?'unpaid':o.status}</span> ${o.status==='paid'?`<span class="pill p-${o.fulfilment_status}">${LBL[o.fulfilment_status]}</span>`:''} ${o.refund_status!=='none'?`<span class="pill p-refunded">refund: ${o.refund_status}</span>`:''}</p>
   <div class="card"><h3>Customer</h3><div class="kv" style="margin-top:8px"><div>Name</div><div>${esc(o.customer_name)}</div><div>Phone</div><div>${esc(o.phone)} · <a style="color:var(--acc)" target="_blank" href="${wa(o,'Hi '+o.customer_name+', this is WinkCasa about your order '+o.order_ref+'.')}">WhatsApp</a></div><div>Email</div><div><a style="color:var(--acc)" href="mailto:${esc(o.email)}?subject=${encodeURIComponent('Your WinkCasa order '+o.order_ref)}">${esc(o.email)}</a></div><div>Address</div><div id="addr">${esc(o.address)}, ${esc(o.city)}, ${esc(o.state)} ${esc(o.pincode)}</div></div><div class="acts"><button class="btn ghost sm" id="cp">Copy address for supplier</button><button class="btn ghost sm" id="slipb">Print packing slip</button></div></div>
   <div class="card" style="margin-top:10px"><h3>Items &amp; payment</h3><table style="margin-top:6px">${o.items.map(i=>`<tr><td>${esc(i.name)}</td><td>${i.qty} × ${inr(i.unitPaise)}</td><td style="text-align:right">${inr(i.qty*i.unitPaise)}</td></tr>`).join('')}
-  <tr><td colspan=2 class="muted">Shipping</td><td style="text-align:right">${inr(o.shipping_paise)}</td></tr><tr><td colspan=2><b>Total</b></td><td style="text-align:right"><b>${inr(o.total_paise)}</b></td></tr></table>
+  ${o.discount_paise?`<tr><td colspan=2 class="muted">Discount${o.coupon_code?' ('+esc(o.coupon_code)+')':''}</td><td style="text-align:right">−${inr(o.discount_paise)}</td></tr>`:''}<tr><td colspan=2 class="muted">Shipping</td><td style="text-align:right">${inr(o.shipping_paise)}</td></tr><tr><td colspan=2><b>Total</b></td><td style="text-align:right"><b>${inr(o.total_paise)}</b></td></tr></table>
   <div class="muted" style="margin-top:6px">Placed ${fdt(o.created_at)} · Paid ${fdt(o.paid_at)||'—'} · Razorpay ${esc(o.payment_id||'—')}</div>
   ${o.delivery_min_at?`<div style="margin-top:6px">Promised delivery: <b>${fdt(o.delivery_min_at)} to ${fdt(o.delivery_max_at)}</b>${o.status==='paid'&&!['delivered','cancelled','returned'].includes(o.fulfilment_status)&&new Date()>utc(o.delivery_max_at)?' <span class="pill p-cancelled">Overdue</span>':''}</div>`:''}
   ${profit!==null?`<div style="margin-top:6px">Est. profit: <b>${inr(profit)}</b> <span class="muted">(after supplier cost and ~${inr(fee)} gateway fee)</span></div>`:''}</div>

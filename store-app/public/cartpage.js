@@ -1,6 +1,6 @@
 (function () {
   var root = document.getElementById('cartRoot'); if (!root) return;
-  var P = {}, CFG = { freeShippingAbove: 999, shipping: 79 }, CLOSED = false, busy = false, S = null;
+  var COUP = null, CODE = '', CERR = '', P = {}, CFG = { freeShippingAbove: 999, shipping: 79 }, CLOSED = false, busy = false, S = null;
   var $ = function (id) { return document.getElementById(id); };
   var esc = function (t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
   var rupee = function (n) { return '₹' + Number(n).toLocaleString('en-IN'); };
@@ -13,9 +13,30 @@
   function totals(ls) {
     var sub = ls.reduce(function (a, l) { return a + l.p.price * l.q; }, 0);
     var ship = sub === 0 ? 0 : (sub >= CFG.freeShippingAbove ? 0 : CFG.shipping);
-    return { sub: sub, ship: ship, total: sub + ship };
+    var disc = COUP && COUP.discount ? COUP.discount / 100 : 0, soff = COUP && COUP.shippingOff ? COUP.shippingOff / 100 : 0;
+    ship = Math.max(0, ship - soff);
+    return { sub: sub, ship: ship, disc: disc, total: Math.max(1, sub - disc + ship) };
   }
 
+  function couponBox() {
+    if (COUP && COUP.code && !COUP.auto) return '<div class="cpn on"><span>🏷 <b>' + esc(COUP.code) + '</b> · ' + esc(COUP.label) + ' applied</span><button type="button" id="cpRm">Remove</button></div>';
+    if (COUP && COUP.auto) return '<div class="cpn on"><span>🏷 Offer applied: <b>' + esc(COUP.label) + '</b></span></div>';
+    return '<div class="cpn"><div class="cprow"><input id="cpIn" placeholder="Discount code" autocapitalize="characters" autocomplete="off" value="' + esc(CODE) + '"><button type="button" id="cpGo">Apply</button></div>' + (CERR ? '<div class="cperr">' + esc(CERR) + '</div>' : '') + '</div>';
+  }
+  async function refreshCoupon(code, manual) {
+    if (code !== undefined) CODE = code;
+    var items = lines().map(function (l) { return { id: l.p.id, qty: l.q }; });
+    if (!items.length) { COUP = null; return; }
+    var f = $('co'), email = f && f.elements.email ? f.elements.email.value : '';
+    try {
+      var r = await post('/api/coupon', { items: items, code: CODE, email: email });
+      CERR = ''; COUP = r.none ? null : r;
+    } catch (e) {
+      if (manual) { CERR = e.message; }
+      if (CODE) { CODE = ''; try { var r2 = await post('/api/coupon', { items: items, code: '', email: email }); COUP = r2.none ? null : r2; } catch (x) { COUP = null; } } else COUP = null;
+    }
+    keepForm(); render();
+  }
   function render() {
     var ls = lines(), t = totals(ls);
     if (!ls.length) {
@@ -31,8 +52,10 @@
       }).join('') + '<p style="margin-top:18px"><a href="/#shop" style="color:var(--muted)">← Continue shopping</a></p></div>' +
       '<aside class="summary"><h2>Order summary</h2>' +
       '<div class="srow"><span>Subtotal</span><span>' + rupee(t.sub) + '</span></div>' +
+      (t.disc ? '<div class="srow disc"><span>Discount' + (COUP.code ? ' (' + esc(COUP.code) + ')' : '') + '</span><span>−' + rupee(t.disc) + '</span></div>' : '') +
       '<div class="srow"><span>Delivery</span><span>' + (t.ship ? rupee(t.ship) : 'Free') + '</span></div>' +
       (t.ship ? '<div class="srow" style="font-size:.8rem">Add ' + rupee(CFG.freeShippingAbove - t.sub) + ' more for free delivery</div>' : '') +
+      couponBox() +
       '<div class="srow t"><span>Total</span><span>' + rupee(t.total) + '</span></div>' +
       '<div class="paym" aria-label="Payment options"><span class="pm">UPI</span><span class="pm">Credit &amp; debit cards</span><span class="pm">Net banking</span></div>' +
       '<form class="form" id="co" novalidate><h2 style="margin-top:14px">Delivery details</h2>' +
@@ -48,6 +71,8 @@
       '<p style="font-size:.78rem;color:var(--muted);margin:8px 0 0">Pay by UPI, card or net banking on the next screen. By paying you agree to our <a href="/terms">Terms</a> and <a href="/returns">Returns policy</a>.</p></form></aside></div>';
     WC.paint(); var e = root.querySelector('[data-eta]'); if (e) e.innerHTML = WC.etaHtml(new Date());
     $('co').onsubmit = function (ev) { ev.preventDefault(); pay(); };
+    if ($('cpGo')) { $('cpGo').onclick = function () { var v = $('cpIn').value.trim(); if (v) refreshCoupon(v.toUpperCase(), true); }; $('cpIn').onkeydown = function (e) { if (e.key === 'Enter') { e.preventDefault(); $('cpGo').click(); } }; }
+    if ($('cpRm')) $('cpRm').onclick = function () { CERR = ''; refreshCoupon('', false); };
   }
 
   root.addEventListener('click', function (e) {
@@ -57,7 +82,7 @@
     else if (b.dataset.dec) WC.set(b.dataset.dec, (c[b.dataset.dec] || 0) - 1);
     else if (b.dataset.rm) WC.set(b.dataset.rm, 0);
     else return;
-    keepForm(); render();
+    keepForm(); render(); refreshCoupon();
   });
   var saved = {};
   function keepForm() { var f = $('co'); if (!f) return; ['name', 'phone', 'email', 'address', 'city', 'pincode', 'state'].forEach(function (k) { saved[k] = f.elements[k].value; }); }
@@ -89,7 +114,7 @@
     var items = lines().map(function (l) { return { id: l.p.id, qty: l.q }; });
     setBusy(true); say('Creating your order…');
     try {
-      var d = await post('/api/checkout', { items: items, customer: customer });
+      var d = await post('/api/checkout', { items: items, customer: customer, coupon: CODE });
       if (!window.Razorpay) throw new Error('The payment window did not load. Check your connection and try again.');
       var rz = new Razorpay({ key: d.keyId, amount: d.amount, currency: 'INR', name: 'WinkCasa', description: 'Order ' + d.orderRef, order_id: d.razorpayOrderId,
         prefill: { name: customer.name, email: customer.email, contact: customer.phone }, theme: { color: '#C9A45C' },
@@ -119,6 +144,6 @@
 
   fetch('/api/catalog').then(function (r) { return r.json(); }).then(function (c) {
     c.products.forEach(function (p) { P[p.id] = p; });
-    CFG = c.config; S = c.settings; CLOSED = !S.store.open; render();
+    CFG = c.config; S = c.settings; CLOSED = !S.store.open; render(); refreshCoupon();
   }).catch(function () { root.innerHTML = '<p class="emptycart">We could not load your cart. Please refresh the page.</p>'; });
 })();

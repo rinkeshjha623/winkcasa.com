@@ -330,4 +330,43 @@
     };
     draw();
   };
+
+  /* ---------- discounts ---------- */
+  window.loadDiscounts = async function () {
+    const el = $('#t-discounts'), list = await api('coupons');
+    const lab = (c) => (c.type === 'percent' ? c.value + '% off' : c.type === 'fixed' ? inr(c.value * 100) + ' off' : 'Free delivery');
+    const state = (c) => { const n = new Date().toISOString().slice(0, 19).replace('T', ' '); return !c.active ? ['Off', 'p-cancelled'] : c.ends_at && c.ends_at < n ? ['Ended', 'p-cancelled'] : c.starts_at && c.starts_at > n ? ['Scheduled', 'p-ordered'] : c.usage_limit && c.uses >= c.usage_limit ? ['Used up', 'p-cancelled'] : ['Live', 'p-paid']; };
+    el.innerHTML = `<div class="filters"><button class="btn" id="dNew">+ New discount</button><span class="muted" style="flex:1;align-self:center">Codes shoppers type at checkout, or automatic offers that apply on their own. Discounts are worked out on the server, so they cannot be tampered with.</span></div>
+    <div class="card tw"><table><thead><tr><th>Code</th><th>Offer</th><th>Rules</th><th>Used</th><th>Given away</th><th>Status</th></tr></thead><tbody>${list.map((c) => { const [t, k] = state(c); return `<tr class="row" data-id="${c.id}"><td><b>${esc(c.code)}</b>${c.auto_apply ? ' <span class="pill p-ordered">auto</span>' : ''}<div class="muted">${esc(c.note || '')}</div></td><td>${lab(c)}${c.max_discount ? `<div class="muted">up to ${inr(c.max_discount * 100)}</div>` : ''}</td><td class="muted">${c.min_order ? 'Min ' + inr(c.min_order * 100) + '<br>' : ''}${c.ends_at ? 'Ends ' + fdt(c.ends_at) + '<br>' : ''}${c.once_per_customer ? 'Once per customer' : ''}</td><td>${c.uses}${c.usage_limit ? ' / ' + c.usage_limit : ''}</td><td>${inr(c.saved_paise)}</td><td><span class="pill ${k}">${t}</span></td></tr>`; }).join('') || '<tr><td colspan="6" class="muted">No discounts yet. Create your first one, for example WELCOME10 for 10% off a first order.</td></tr>'}</tbody></table></div>`;
+    $('#dNew').onclick = () => open(null);
+    el.querySelectorAll('tr.row').forEach((r) => (r.onclick = () => open(list.find((x) => x.id == r.dataset.id))));
+    const toIst = (u) => { if (!u) return ''; const d = new Date(u.replace(' ', 'T') + 'Z'); d.setMinutes(d.getMinutes() + 330); return d.toISOString().slice(0, 16); };
+    const fromIst = (v) => { if (!v) return ''; const d = new Date(v + ':00Z'); d.setMinutes(d.getMinutes() - 330); return d.toISOString().slice(0, 19).replace('T', ' '); };
+    function open(c) {
+      const p = c ? { ...c } : { code: '', type: 'percent', value: 10, min_order: 0, max_discount: '', starts_at: '', ends_at: '', usage_limit: '', once_per_customer: 0, auto_apply: 0, active: 1, note: '' };
+      const d = $('#drawer'); d.classList.remove('hide'); $('#scrim').classList.remove('hide'); $('#scrim').onclick = closeDrawer;
+      d.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><h2>${c ? 'Edit discount' : 'New discount'}</h2><button class="btn ghost sm" id="x">Close</button></div>
+      <label>Code (what shoppers type)</label><div class="row2"><input id="d_code" value="${esc(p.code)}" maxlength="20" placeholder="WELCOME10" style="text-transform:uppercase"><button class="btn ghost sm" id="d_gen" type="button">Generate</button></div>
+      <label>Type</label><select id="d_type"><option value="percent">Percentage off</option><option value="fixed">Fixed amount off (₹)</option><option value="freeship">Free delivery</option></select>
+      <div id="d_valw"><label id="d_vall">Percentage (1 to 90)</label><input id="d_val" type="number" min="1" value="${esc(p.value)}"></div>
+      <div id="d_maxw"><label>Maximum discount (₹, optional)</label><input id="d_max" type="number" min="1" value="${esc(p.max_discount ?? '')}" placeholder="e.g. 300"></div>
+      <label>Minimum order (₹, 0 = none)</label><input id="d_min" type="number" min="0" value="${esc(p.min_order)}">
+      <div class="row2"><div><label>Starts (India time, optional)</label><input id="d_st" type="datetime-local" value="${toIst(p.starts_at)}"></div><div><label>Ends (India time, optional)</label><input id="d_en" type="datetime-local" value="${toIst(p.ends_at)}"></div></div>
+      <label>Total uses allowed (blank = unlimited)</label><input id="d_lim" type="number" min="1" value="${esc(p.usage_limit ?? '')}">
+      <label class="sw" style="display:flex;gap:8px;align-items:center;margin-top:12px"><input type="checkbox" id="d_once" style="width:auto" ${p.once_per_customer ? 'checked' : ''}> One use per customer (by email)</label>
+      <label class="sw" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="d_auto" style="width:auto" ${p.auto_apply ? 'checked' : ''}> Apply automatically at checkout (no code needed, best offer wins)</label>
+      <label class="sw" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="d_act" style="width:auto" ${p.active ? 'checked' : ''}> Active</label>
+      <label>Private note</label><input id="d_note" value="${esc(p.note || '')}" maxlength="200" placeholder="e.g. Diwali sale, Instagram giveaway">
+      <div class="savebar"><button class="btn" id="d_save">Save</button>${c ? '<button class="btn ghost" id="d_del" style="color:var(--bad)">Delete</button>' : ''}</div>`;
+      $('#d_type').value = p.type;
+      const sync = () => { const t = $('#d_type').value; $('#d_valw').classList.toggle('hide', t === 'freeship'); $('#d_maxw').classList.toggle('hide', t !== 'percent'); $('#d_vall').textContent = t === 'fixed' ? 'Rupees off' : 'Percentage (1 to 90)'; };
+      $('#d_type').onchange = sync; sync();
+      $('#x').onclick = closeDrawer;
+      $('#d_gen').onclick = () => { $('#d_code').value = 'WINK' + Math.random().toString(36).slice(2, 6).toUpperCase(); };
+      $('#d_save').onclick = async () => {
+        try { await api('coupons', { method: 'POST', body: JSON.stringify({ id: c ? c.id : undefined, code: $('#d_code').value, type: $('#d_type').value, value: $('#d_val').value, max_discount: $('#d_max').value, min_order: $('#d_min').value, starts_at: fromIst($('#d_st').value), ends_at: fromIst($('#d_en').value), usage_limit: $('#d_lim').value, once_per_customer: $('#d_once').checked, auto_apply: $('#d_auto').checked, active: $('#d_act').checked ? 1 : 0, note: $('#d_note').value }) }); toast('Saved'); closeDrawer(); loadDiscounts(); } catch (e) { toast(e.message); }
+      };
+      if (c) $('#d_del').onclick = async () => { if (!confirm('Delete this discount? Past orders keep their discount.')) return; await api('coupons', { method: 'POST', body: JSON.stringify({ action: 'delete', id: c.id }) }); toast('Deleted'); closeDrawer(); loadDiscounts(); };
+    }
+  };
 })();

@@ -279,3 +279,19 @@ header.bar .rt{justify-self:end;display:flex;align-items:center}
 @keyframes enter{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
 .ent{animation:enter .9s cubic-bezier(.2,.7,.2,1) both}
 @media(prefers-reduced-motion:reduce){.rv,.rv img{opacity:1!important;transform:none!important;transition:none!important}.collage a,.ent{animation:none!important}.tile:hover img,.collage a:hover img{transform:none!important}}
+
+.cpn{margin:12px 0;font-size:.9rem}.cprow{display:flex;gap:8px}.cprow input{flex:1;background:var(--surface);border:1px solid var(--line);color:var(--fg);padding:10px 12px;text-transform:uppercase;letter-spacing:.08em;font:inherit;min-width:0}
+.cprow button,.cpn.on button{background:transparent;border:1px solid var(--accent);color:var(--accent);padding:0 16px;cursor:pointer;font:inherit;font-size:.78rem;letter-spacing:.14em;text-transform:uppercase}
+.cpn.on{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1px dashed var(--accent);padding:10px 12px;background:rgba(201,164,92,.08)}.cpn.on button{padding:4px 10px;border-color:var(--line);color:var(--muted)}
+.cperr{color:#EB7B7B;font-size:.82rem;margin-top:6px}.srow.disc{color:var(--accent)}
+
+/* ---- always-on image life: slow drift on every picture, light sweep on hover ---- */
+@keyframes drift{from{scale:1;translate:0 0}to{scale:1.06;translate:-1.2% -1%}}
+.tile img,.collage img,.gal .main img,.article .pimg img,.pinfig img,.ttvis img,.tcard img{animation:drift 18s ease-in-out infinite alternate;animation-delay:calc(var(--d,0ms) * -9)}
+.tile:nth-child(even) img,.tcard:nth-child(even) img{animation-duration:23s;animation-direction:alternate-reverse}
+.collage a{overflow:hidden}
+.tile,.gal .main,.collage a,.tcard,.article .pimg{position:relative}
+.tile::after,.gal .main::after,.collage a::after,.tcard::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 38%,rgba(255,255,255,.16) 50%,transparent 62%);transform:translateX(-130%);transition:transform 1s cubic-bezier(.2,.7,.2,1)}
+.tile:hover::after,.gal .main:hover::after,.collage a:hover::after,.tcard:hover::after{transform:translateX(130%)}
+.card:hover .tile{transform:translateY(-4px)}
+@media(prefers-reduced-motion:reduce){.tile img,.collage img,.gal .main img,.article .pimg img,.pinfig img,.ttvis img,.tcard img{animation:none!important}.tile::after,.gal .main::after,.collage a::after,.tcard::after{display:none}}

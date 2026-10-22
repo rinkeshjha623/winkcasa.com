@@ -104,7 +104,7 @@
 /* ---- image motion: reveal on scroll (respects reduced-motion) ---- */
 (function () {
   if (!('IntersectionObserver' in window) || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
-  var SEL = '.tile,.collage a,.article img.hero,.article .pimg,.pinfig,.ttvis,.gal .main,.thumbs img,.tcard,.cline', n = 0;
+  var SEL = '.tile,.collage a,.article img.hero,.article .pimg,.pinfig,.ttvis,.gal .main,.thumbs img,.tcard,.cline,.soc,main img:not(.tile img):not(.collage img):not(.gal img):not(.tcard img):not(.cline img):not(.pinfig img):not(.ttvis img):not(.pimg img):not(.thumbs img):not(.soc img):not(.hero)', n = 0;
   var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }); }, { threshold: 0.1, rootMargin: '0px 0px -5% 0px' });
   function reg(el) {
     if (el.__mo) return; el.__mo = 1;
