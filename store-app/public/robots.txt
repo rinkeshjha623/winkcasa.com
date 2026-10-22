@@ -1,6 +1,7 @@
 # WinkCasa: everyone, including search engines and AI assistants, is welcome to read the public store.
 User-agent: *
 Allow: /
+Disallow: /brand/
 Disallow: /admin/
 Disallow: /api/
 
