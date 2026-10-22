@@ -108,7 +108,7 @@ async function login(){
     $('#login').classList.add('hide');$('#app').classList.remove('hide');$('#tok').value='';loadAll()}
   catch(e){$('#lerr').textContent='Wrong token.'}
 }
-$('#showtok').onchange=e=>{$('#tok').style.webkitTextSecurity=e.target.checked?'none':'disc'};$('#go').onclick=login;$('#tok').onkeydown=e=>e.key==='Enter'&&login();$('#out').onclick=signout;
+$('#showtok').onchange=e=>{$('#tok').style.webkitTextSecurity=e.target.checked?'none':'disc'};$('#go').onclick=login;$('#tok').addEventListener('keydown',e=>{if(e.key==='Enter')login()});$('#out').onclick=signout;
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>show(b.dataset.t));
 function show(t){document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
   $('#t-overview').classList.toggle('hide',t!=='overview');$('#t-orders').classList.toggle('hide',t!=='orders');if(t==='orders')loadOrders()}
