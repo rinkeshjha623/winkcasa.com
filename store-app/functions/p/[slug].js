@@ -1,5 +1,5 @@
 import { getSettings, activeProducts, parseProduct, publicProduct, categoriesOf, productPath, slugify } from '../../src/store.js';
-import { SITE, esc, abs, trim, headTags, pageShell, breadcrumbLd, productLd, faqLd, cardHtml, etaHtml, payMethodsHtml } from '../../src/seo.js';
+import { SITE, esc, abs, trim, headTags, pageShell, breadcrumbLd, productLd, faqLd, cardHtml, etaHtml, payMethodsHtml, shareHtml, askHtml } from '../../src/seo.js';
 
 const money = (n) => '₹' + Number(n).toLocaleString('en-IN');
 const notFound = () => new Response('Product not found', { status: 404, headers: { 'Content-Type': 'text/plain' } });
@@ -36,6 +36,7 @@ export async function onRequestGet({ params, env }) {
 ${p.description ? `<p>${esc(p.description)}</p>` : ''}
 ${inStock && S.store.open ? `<div class="buybtns"><button class="btn" data-add="${p.id}">Add to cart</button><button class="btn alt" data-buy="${p.id}">Buy now</button></div>` : `<span class="btn off">${inStock ? 'Unavailable' : 'Sold out'}</span>`}
 ${payMethodsHtml()}
+${shareHtml({ url, title: p.name, image: imgs[0], text: p.name + ' on WinkCasa' })}${askHtml(S, p.name)}
 ${p.highlights.length ? `<ul>${p.highlights.map((h) => `<li>${esc(h)}</li>`).join('')}</ul>` : ''}
 <ul class="facts2"><li>Complimentary delivery across India above ${money(S.shipping.freeShippingAbove)}, otherwise ${money(S.shipping.charge)}</li><li>Effortless <a href="/returns">returns within 7 days</a> if it arrives damaged, defective or wrong</li>${p.material ? `<li>Material: ${esc(p.material)}</li>` : ''}${p.brand ? `<li>Brand: ${esc(p.brand)}</li>` : ''}<li>SKU: ${esc(p.sku || p.id)}</li></ul></div></div>
 ${paras.length ? `<section class="sec"><h2>About this product</h2>${paras.map((t) => `<p>${esc(t)}</p>`).join('')}</section>` : ''}

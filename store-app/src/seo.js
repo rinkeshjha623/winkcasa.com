@@ -163,3 +163,19 @@ ${jsonld.filter(Boolean).map(ld).join('\n')}
 }
 
 export { slugify, productPath, categoryPath };
+
+const enc = encodeURIComponent;
+export function shareHtml({ url, title, image, text }) {
+  const t = text || title;
+  return `<div class="share" data-share data-url="${esc(url)}" data-title="${esc(title)}"><span class="sharelbl">Share</span>
+<a class="sh sh-wa" href="https://wa.me/?text=${enc(t + ' ' + url)}" target="_blank" rel="noopener" aria-label="Share on WhatsApp">WhatsApp</a>
+<a class="sh" href="https://www.pinterest.com/pin/create/button/?url=${enc(url)}${image ? '&media=' + enc(abs(image)) : ''}&description=${enc(t)}" target="_blank" rel="noopener" aria-label="Save to Pinterest">Pinterest</a>
+<a class="sh" href="https://www.facebook.com/sharer/sharer.php?u=${enc(url)}" target="_blank" rel="noopener" aria-label="Share on Facebook">Facebook</a>
+<a class="sh" href="https://twitter.com/intent/tweet?url=${enc(url)}&text=${enc(t)}" target="_blank" rel="noopener" aria-label="Share on X">X</a>
+<button class="sh" type="button" data-copy="${esc(url)}">Copy link</button><button class="sh" type="button" data-nshare hidden>More…</button></div>`;
+}
+export function askHtml(S, subject) {
+  const num = String((S.social && S.social.whatsapp && S.social.whatsapp.replace(/\D/g, '')) || S.business.phone.replace(/\D/g, '')).replace(/^0+/, '');
+  const full = num.length === 10 ? '91' + num : num;
+  return `<p class="askwa"><a class="btn alt" href="https://wa.me/${full}?text=${enc('Hi WinkCasa, I have a question about: ' + subject)}" target="_blank" rel="noopener">Ask us on WhatsApp</a></p>`;
+}

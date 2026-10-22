@@ -313,4 +313,21 @@
     if ($r('#bDel')) $r('#bDel').onclick = async () => { if (!confirm('Delete this post permanently?')) return; try { await api('posts?id=' + post.id, { method: 'DELETE' }); dirty = false; try { localStorage.removeItem(draftKey); } catch (e) { /* ignore */ } toast('Deleted'); document.body.style.overflow = ''; root.remove(); loadBlog(); } catch (err) { toast(err.message); } };
     window.onbeforeunload = () => (dirty ? 'Unsaved changes' : undefined);
   };
+
+  /* ---------- comments moderation ---------- */
+  window.loadComments = async function () {
+    const el = $('#t-comments'), d = await api('comments'); let only = true;
+    const draw = () => {
+      const list = d.list.filter((c) => !only || c.status === 'pending');
+      el.innerHTML = `<div class="card" style="margin-bottom:12px;display:flex;gap:12px;align-items:center;flex-wrap:wrap"><label class="sw" style="margin:0;display:flex;gap:8px;align-items:center"><input type="checkbox" id="cOn" style="width:auto" ${d.enabled ? 'checked' : ''}> <b>Comments on blog posts are ${d.enabled ? 'ON' : 'OFF'}</b></label><span class="muted" style="flex:1">When ON, readers can comment. Nothing appears on the site until you approve it here.</span><label class="sw" style="margin:0"><input type="checkbox" id="cNew" style="width:auto" ${only ? 'checked' : ''}> Only waiting for review</label></div>
+      ${list.map((c) => `<div class="card" style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><b>${esc(c.name)}</b><span class="muted">${fdt(c.created_at)} <span class="pill ${c.status === 'pending' ? 'p-new' : c.status === 'approved' ? 'p-paid' : 'p-cancelled'}">${c.status}</span></span></div>
+        <div class="muted">${esc(c.email || 'no email')} · on <a href="/blog/${esc(c.post_slug || '')}" target="_blank" style="color:var(--acc)">${esc((c.post_title || 'deleted post').slice(0, 60))}</a></div><p style="white-space:pre-wrap;margin:8px 0">${esc(c.body)}</p>
+        <textarea rows="2" id="r${c.id}" placeholder="Reply as WinkCasa (shown under the comment)">${esc(c.reply || '')}</textarea>
+        <div class="acts"><button class="btn sm" data-a="approve:${c.id}">Approve</button><button class="btn ghost sm" data-a="reply:${c.id}">Save reply &amp; approve</button><button class="btn ghost sm" data-a="spam:${c.id}">Spam</button><button class="btn ghost sm" data-a="delete:${c.id}" style="color:var(--bad)">Delete</button></div></div>`).join('') || '<p class="muted">Nothing to review.</p>'}`;
+      $('#cNew').onchange = (e) => { only = e.target.checked; draw(); };
+      $('#cOn').onchange = async (e) => { await api('comments', { method: 'POST', body: JSON.stringify({ action: 'toggle', enabled: e.target.checked }) }); d.enabled = e.target.checked; toast(d.enabled ? 'Comments are ON' : 'Comments are OFF'); draw(); };
+      el.querySelectorAll('[data-a]').forEach((b) => (b.onclick = async () => { const [a, id] = b.dataset.a.split(':'); if (a === 'delete' && !confirm('Delete this comment?')) return; await api('comments', { method: 'POST', body: JSON.stringify({ action: a, id: +id, reply: a === 'reply' ? $('#r' + id).value : undefined }) }); const c = d.list.find((x) => x.id == id); if (a === 'delete') d.list = d.list.filter((x) => x.id != id); else { c.status = a === 'spam' ? 'spam' : 'approved'; if (a === 'reply') c.reply = $('#r' + id).value; } draw(); }));
+    };
+    draw();
+  };
 })();

@@ -243,3 +243,15 @@ header.bar .rt{justify-self:end;display:flex;align-items:center}
 .howto ol,.sources ol{padding-left:20px}.howto li{margin-bottom:12px}.howto li p{margin:4px 0 0;color:var(--muted)}
 .postfaq{padding-block:28px 0;border-top:0}.postfaq h2{font-size:1.6rem}
 .article a.btn{color:var(--accent-fg)}.article a.btn.alt{color:var(--fg)}.article a.btn.alt:hover{color:var(--accent-fg)}
+
+/* ---- share + comments ---- */
+.share{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0}
+.sharelbl{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-right:4px}
+.share .sh{font:inherit;font-size:.74rem;letter-spacing:.08em;color:var(--fg);background:transparent;border:1px solid var(--line);padding:7px 13px;text-decoration:none;cursor:pointer;border-radius:99px}
+.share .sh:hover{border-color:var(--accent);color:var(--accent)}.share .sh-wa{border-color:var(--accent)}
+.article .share a.sh{color:var(--fg)}.article .share a.sh:hover{color:var(--accent)}
+.askwa{margin:18px 0}
+.comments{margin-top:36px;border-top:1px solid var(--line);padding-top:8px;position:relative}
+.cmt{border-bottom:1px solid var(--line);padding:14px 0}.cmt p{margin:6px 0 0}.cmt .muted{color:var(--muted);font-size:.8rem;margin-left:6px}
+.cmtr{margin:10px 0 0 18px;padding:8px 14px;border-left:2px solid var(--accent);background:var(--surface)}.cmtr b{color:var(--accent);font-size:.78rem;letter-spacing:.14em;text-transform:uppercase}
+#cform{display:grid;gap:10px;max-width:560px;margin-top:22px}#cform input,#cform textarea{width:100%;background:var(--surface);border:1px solid var(--line);color:var(--fg);padding:11px 14px;font:inherit}

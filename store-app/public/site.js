@@ -81,3 +81,22 @@
   paint(); paintEta();
   window.addEventListener('pageshow', paint);
 })();
+
+/* ---- share + comments ---- */
+(function () {
+  document.addEventListener('click', function (e) {
+    var c = e.target.closest && e.target.closest('[data-copy]');
+    if (c) { var u = c.getAttribute('data-copy'), t = c.textContent; (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(function () { c.textContent = 'Copied'; }).catch(function () { window.prompt('Copy this link', u); }); setTimeout(function () { c.textContent = t; }, 1800); }
+    var n = e.target.closest && e.target.closest('[data-nshare]');
+    if (n) { var w = n.closest('[data-share]'); navigator.share({ title: w.getAttribute('data-title'), url: w.getAttribute('data-url') }).catch(function () {}); }
+  });
+  if (navigator.share) [].forEach.call(document.querySelectorAll('[data-nshare]'), function (b) { b.hidden = false; });
+  var f = document.getElementById('cform');
+  if (f) f.addEventListener('submit', function (e) {
+    e.preventDefault(); var m = document.getElementById('cmsg'), d = new FormData(f), btn = f.querySelector('button');
+    btn.disabled = true; m.textContent = 'Sending…';
+    fetch('/api/comments', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ post: Number(f.dataset.post), name: d.get('name'), email: d.get('email'), body: d.get('body'), website: d.get('website') }) })
+      .then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.error || 'Could not send.'); m.textContent = j.message; f.reset(); }); })
+      .catch(function (er) { m.textContent = er.message; }).then(function () { btn.disabled = false; });
+  });
+})();

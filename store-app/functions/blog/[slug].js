@@ -1,7 +1,7 @@
 import { getSettings, activeProducts, categoriesOf, markdown, wordsOf, headingsOf } from '../../src/store.js';
 import { publishedPosts } from '../../src/blog.js';
 import { PIN_SLUGS } from '../../src/guides.js';
-import { SITE, abs, esc, trim, headTags, pageShell, breadcrumbLd, faqLd } from '../../src/seo.js';
+import { SITE, abs, esc, trim, headTags, pageShell, breadcrumbLd, faqLd, shareHtml, askHtml } from '../../src/seo.js';
 
 function faqFrom(body) {
   const m = String(body || '').split(/^## Frequently asked questions\s*$/m)[1]; if (!m) return [];
@@ -12,6 +12,11 @@ function faqFrom(body) {
 const J = (t) => { try { const v = JSON.parse(t || '[]'); return Array.isArray(v) ? v : []; } catch { return []; } };
 const iso = (t) => new Date(t.replace(' ', 'T') + 'Z').toISOString();
 const day = (t) => new Date(t.replace(' ', 'T') + 'Z').toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Kolkata' });
+
+const commentsHtml = (post, list) => `<section class="comments" id="comments"><h2>${list.length ? list.length + (list.length === 1 ? ' comment' : ' comments') : 'Comments'}</h2>
+${list.map((c) => `<div class="cmt"><b>${esc(c.name)}</b> <span class="muted">${esc(day(c.created_at))}</span><p>${esc(c.body)}</p>${c.reply ? `<div class="cmtr"><b>WinkCasa</b><p>${esc(c.reply)}</p></div>` : ''}</div>`).join('')}
+<form id="cform" data-post="${post.id}" novalidate><h3>Leave a comment</h3><input name="name" placeholder="Your name" maxlength="60" required><input name="email" type="email" placeholder="Email (optional, never shown)" maxlength="120"><textarea name="body" rows="4" maxlength="1000" placeholder="Your comment" required></textarea>
+<input name="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px" aria-hidden="true"><button class="btn" type="submit">Post comment</button><p class="fine" id="cmsg">Comments are reviewed before they appear.</p></form></section>`;
 
 export async function onRequestGet({ params, env }) {
   const [rows, S, posts] = await Promise.all([activeProducts(env), getSettings(env), publishedPosts(env)]);
@@ -29,10 +34,13 @@ export async function onRequestGet({ params, env }) {
   const edited = post.updated_at && Date.parse(post.updated_at.replace(' ', 'T') + 'Z') - Date.parse(published.replace(' ', 'T') + 'Z') > 2 * 86400000;
   const mins = Math.max(1, Math.round(wordsOf(post.body) / 200));
   const personAuthor = post.author && post.author !== 'WinkCasa Team';
+  const on = await env.DB.prepare("SELECT value FROM settings WHERE key='comments_on'").first();
+  const comments = on && on.value === '1' ? (await env.DB.prepare("SELECT name, body, reply, created_at FROM comments WHERE post_id=? AND status='approved' ORDER BY id").bind(post.id).all()).results : null;
   const cover = post.image || (PIN_SLUGS.has(post.slug) ? '/pins/' + post.slug + '.png' : '');
 
   const main = `<main class="wrap"><nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a> › <a href="/blog">Blog</a> › <span>${esc(trim(post.crumb_title || post.title, 40))}</span></nav>
 <article class="article"><p class="label">${post.category ? esc(post.category) + ' · ' : ''}${esc(day(published))}</p><h1>${esc(post.title)}</h1><div class="by">By ${post.author_url ? `<a href="${esc(post.author_url)}" rel="author noopener">${esc(post.author)}</a>` : esc(post.author)} · ${mins} min read${edited ? ` · Updated ${esc(day(post.updated_at))}` : ''}</div>
+${shareHtml({ url: canonical, title: post.title, image: cover })}
 ${post.tldr ? `<div class="tldr" data-speakable><b>Short answer</b><p>${esc(post.tldr)}</p></div>` : ''}
 ${cover && post.image ? `<img class="hero" src="${esc(post.image)}" alt="${esc(post.img_alt || post.title)}" width="900" height="600">` : ''}
 ${takeaways.length ? `<div class="takeaways"><b>Key takeaways</b><ul>${takeaways.map((t) => `<li>${esc(t)}</li>`).join('')}</ul></div>` : ''}
@@ -43,7 +51,10 @@ ${faq.length ? `<section class="faq postfaq"><h2>Frequently asked questions</h2>
 ${sources.length ? `<section class="sources"><h2>Sources</h2><ol>${sources.map((s) => `<li><a href="${esc(s.url)}" rel="noopener nofollow">${esc(s.title)}</a></li>`).join('')}</ol></section>` : ''}
 ${PIN_SLUGS.has(post.slug) ? `<figure class="pinfig"><img src="/pins/${esc(post.slug)}.png" alt="${esc(post.title)}: WinkCasa style guide" width="400" height="600" loading="lazy"><figcaption>Save this guide for later.</figcaption></figure>` : ''}
 ${post.author_bio ? `<aside class="authorbox"><b>About ${esc(post.author)}</b><p>${esc(post.author_bio)}</p></aside>` : ''}
-<p style="margin-top:30px"><a class="btn" href="/try">Find your face shape</a> &nbsp; <a class="btn alt" href="/#shop">Shop WinkCasa</a></p></article>
+<p style="margin-top:30px"><a class="btn" href="/try">Find your face shape</a> &nbsp; <a class="btn alt" href="/#shop">Shop WinkCasa</a></p>
+${shareHtml({ url: canonical, title: post.title, image: cover, text: 'Worth a read: ' + post.title })}
+${askHtml(S, post.title)}
+${comments ? commentsHtml(post, comments) : ''}</article>
 ${more.length ? `<section class="sec"><h2>More to read</h2><div class="posts" style="padding-block:10px 0">${more.map((p) => `<article class="post"><a href="/blog/${esc(p.slug)}"><h2>${esc(p.title)}</h2><p>${esc(p.excerpt)}</p></a></article>`).join('')}</div></section>` : ''}</main>`;
 
   const robots = post.noindex || post.nofollow || post.noarchive
