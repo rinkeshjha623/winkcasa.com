@@ -164,7 +164,7 @@ footer a{color:var(--muted)}
     <div><h3>Easy returns</h3><p>If an item arrives damaged, defective or wrong, tell us within 7 days and we will replace it or refund you.</p></div>
   </div>
 </section>
-<div class="wrap"><footer><span>© WinkCasa Retail</span><span><a href="/returns">Returns</a> · <a href="/shipping">Shipping</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/contact">Contact</a></span><span>Prices in Indian rupees, inclusive of GST.</span></footer></div>
+<div class="wrap"><footer><span>© WinkCasa Retail</span><span><a href="/returns">Returns</a> · <a href="/shipping">Shipping</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/contact">Contact</a></span><span>Prices in Indian rupees, inclusive of GST. Photos from <a href="https://unsplash.com" rel="noopener">Unsplash</a>.</span></footer></div>
 
 <div class="scrim" id="scrim"></div>
 <aside class="drawer" id="drawer" aria-label="Your cart" aria-hidden="true">
@@ -194,7 +194,7 @@ footer a{color:var(--muted)}
 var PRODUCTS=[], CONFIG={freeShippingAbove:999,shipping:79};
 var D='var(--obj-dark)';
 function art(p){
- if(p.image)return '<img src="/'+p.image+'" alt="'+p.name+'" loading="lazy" decoding="async">';
+ if(p.image){var src=/^https?:/.test(p.image)?p.image:'/'+p.image;return '<img src="'+src+'" alt="'+p.name+'" loading="lazy" decoding="async">';}
  return artSvg(p);
 }
 function artSvg(p){
