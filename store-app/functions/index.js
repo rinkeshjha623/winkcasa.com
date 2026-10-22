@@ -1,5 +1,5 @@
 import { getSettings, activeProducts, publicProduct, categoriesOf } from '../src/store.js';
-import { SITE, esc, rich, headTags, ld, organizationLd, websiteLd, faqLd, itemListLd, cardHtml, footerHtml, faqHtml, aboutHtml, tryTeaserHtml, headerHtml, etaHtml, payMethodsHtml } from '../src/seo.js';
+import { SITE, esc, rich, headTags, ld, organizationLd, websiteLd, faqLd, homePageLd, cardHtml, footerHtml, faqHtml, aboutHtml, tryTeaserHtml, headerHtml, etaHtml, payMethodsHtml } from '../src/seo.js';
 
 // Home page: the static page, with real content and structured data filled in on the server
 // so search engines and AI assistants see everything without running JavaScript.
@@ -10,9 +10,9 @@ export async function onRequestGet({ request, env }) {
   try { [rows, S] = await Promise.all([activeProducts(env), getSettings(env)]); } catch { return res; }
   const prods = rows.map(publicProduct), cats = categoriesOf(rows, S), closed = !S.store.open;
   const h = S.hero;
-  const head = headTags({ title: S.seo.title, description: S.seo.description, canonical: SITE + '/', image: S.seo.ogImage || prods.find((p) => p.image)?.image })
+  const head = headTags({ title: S.seo.title, description: S.seo.description, canonical: SITE + '/', image: S.seo.ogImage || prods.find((p) => p.image)?.image, noindex: S.seo.noindex, ogTitle: S.seo.ogTitle, ogDescription: S.seo.ogDescription })
     .replace(/<title>.*<\/title>\n/, '');
-  const jsonld = [organizationLd(S), websiteLd(S), itemListLd(rows), faqLd(S.faq)].filter(Boolean).map(ld).join('\n');
+  const jsonld = [organizationLd(S), websiteLd(S), homePageLd(S, prods), faqLd(S.faq)].filter(Boolean).map(ld).join('\n');
 
   // Home layout: product collage in the hero, category tiles, and a mixed "featured" grid (full lists live on collection pages).
   const withImg = prods.filter((p) => p.image);

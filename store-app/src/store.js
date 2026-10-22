@@ -27,9 +27,10 @@ export const DEFAULTS = {
   },
   shipping: { freeShippingAbove: 999, charge: 79 },
   seo: {
-    title: 'WinkCasa | Skincare, beauty tools and jewellery online in India',
-    description: 'Shop skincare, beauty tools and everyday jewellery online at WinkCasa. Free delivery above ₹999 across India, secure online payment and 7-day returns on damaged or wrong items.',
+    title: 'Jewellery Online in India | Earrings & Hair Clips | WinkCasa',
+    description: 'Shop jewellery online in India at WinkCasa: earrings, necklaces, hair accessories and beauty tools. Free delivery above ₹999 and 7-day returns.',
     ogImage: '',
+    keyword: 'jewellery online in India', ogTitle: '', ogDescription: '', noindex: false, founder: 'Rinkesh Kumar Jha',
   },
   business: {
     name: 'WinkCasa Retail', legalName: 'Rinkesh Kumar Jha, trading as WinkCasa Retail', gstin: '07AURPJ3347A1ZQ',

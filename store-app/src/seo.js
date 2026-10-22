@@ -44,8 +44,21 @@ export function organizationLd(S) {
     contactPoint: { '@type': 'ContactPoint', contactType: 'customer support', email: b.email, telephone: b.phone, areaServed: 'IN', availableLanguage: ['en', 'hi'] },
     openingHours: b.hours || undefined,
     sameAs: sameAs(S).length ? sameAs(S) : undefined,
+    image: abs(S.seo.ogImage) || SITE + '/icon.svg',
+    slogan: 'Refined pieces, made for every day.',
+    founder: S.seo.founder ? { '@type': 'Person', name: S.seo.founder } : undefined,
+    foundingLocation: { '@type': 'Place', address: { '@type': 'PostalAddress', addressLocality: b.city, addressCountry: 'IN' } },
+    knowsAbout: ['Jewellery', 'Earrings', 'Necklaces', 'Hair accessories', 'Beauty tools'],
   };
 }
+
+// The home page itself, tied to the organisation and website, with a product list that carries images and prices.
+export const homePageLd = (S, prods) => ({ '@context': 'https://schema.org', '@type': ['WebPage', 'CollectionPage'], '@id': SITE + '/#webpage', url: SITE + '/', name: S.seo.title, description: S.seo.description,
+  inLanguage: 'en-IN', isPartOf: { '@id': SITE + '/#website' }, about: { '@id': SITE + '/#organization' }, publisher: { '@id': SITE + '/#organization' },
+  primaryImageOfPage: abs(S.seo.ogImage || prods.find((p) => p.image)?.image) || undefined,
+  mainEntity: { '@type': 'ItemList', numberOfItems: prods.length, itemListElement: prods.slice(0, 24).map((p, i) => ({ '@type': 'ListItem', position: i + 1, url: abs(p.url),
+    item: { '@type': 'Product', name: p.name, url: abs(p.url), image: p.image ? abs(p.image) : undefined, brand: { '@type': 'Brand', name: 'WinkCasa' },
+      offers: { '@type': 'Offer', priceCurrency: 'INR', price: String(p.price), availability: 'https://schema.org/InStock', url: abs(p.url) } } })) } });
 export const websiteLd = (S) => ({ '@context': 'https://schema.org', '@type': 'WebSite', '@id': SITE + '/#website', url: SITE + '/', name: 'WinkCasa', inLanguage: 'en-IN', publisher: { '@id': SITE + '/#organization' } });
 
 export const faqLd = (list) => list.length ? ({ '@context': 'https://schema.org', '@type': 'FAQPage',

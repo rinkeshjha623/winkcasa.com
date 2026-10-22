@@ -1,13 +1,67 @@
 /* Products + Store settings editor. Uses helpers from index.html: $, api, esc, inr, toast */
 let PRODUCTS = [], SETTINGS = null;
 
+/* ---------------- SEO marks (Rank Math style) ---------------- */
+const wc = (s) => String(s || '').split(/\s+/).filter(Boolean).length;
+const badge = (n, max) => { const pc = n / max * 100; const c = pc >= 80 ? '#3FAE77' : pc >= 50 ? '#E7A93B' : '#D95C5C'; return `<span style="display:inline-block;min-width:44px;text-align:center;padding:3px 9px;border-radius:999px;font-weight:700;font-size:.8rem;background:${c}22;color:${c};border:1px solid ${c}66">${n}/${max}</span>`; };
+function prodScore(p) {
+  const kw = String(p.focus_keyword || '').toLowerCase().trim(), has = (x) => kw && String(x || '').toLowerCase().includes(kw), hl = p.highlights || [];
+  const checks = [['Focus keyword set', !!kw], ['Keyword in title', has(p.seo_title)], ['Keyword in description', has(p.seo_description)], ['Title 30 to 65 characters', (p.seo_title || '').length >= 30 && p.seo_title.length <= 65],
+    ['Description 110 to 165 characters', (p.seo_description || '').length >= 110 && p.seo_description.length <= 165], ['Quick answer 25 to 60 words', wc(p.ai_answer) >= 25 && wc(p.ai_answer) <= 60], ['Details 120+ words', wc(p.details) >= 120],
+    ['3+ customer questions', (p.faq || []).filter((f) => f.q && f.a).length >= 3], ['Photo description added', !!p.img_alt], ['Material or key points added', !!p.material || hl.length >= 2]];
+  return { ok: checks.filter((c) => c[1]).length, checks };
+}
+
+// Home page score out of 100, grouped like Rank Math (basic, additional, content, structured data).
+function homeScore(S, prods) {
+  const kw = (S.seo.keyword || '').toLowerCase().trim(), t = S.seo.title || '', d = S.seo.description || '', has = (x) => kw && String(x || '').toLowerCase().includes(kw);
+  const h1 = `${S.hero.headline} ${S.hero.accent}`.toLowerCase(), first = kw.split(/\s+/)[0] || '';
+  const b = S.business, socials = Object.values(S.social).filter((u) => /^https?:\/\//.test(u)).length;
+  const live = prods.filter((p) => p.active), avg = live.length ? live.reduce((a, p) => a + prodScore(p).ok, 0) / live.length : 0;
+  const faqN = S.faq.filter((f) => f.q && f.a).length, aboutWords = wc(S.about.text), catsOk = S.categories.length && S.categories.every((c) => (c.description || '').length >= 60);
+  const G = [
+    ['Basic SEO', [
+      ['Focus keyphrase is set', !!kw, 10, 'Type the phrase shoppers search for, such as “jewellery online in India”.'],
+      ['Keyphrase is in the page title', has(t), 10, 'Use the exact phrase in the home page title.'],
+      ['Keyphrase is near the start of the title', !!kw && t.toLowerCase().indexOf(kw) >= 0 && t.toLowerCase().indexOf(kw) <= 25, 5, 'Put the phrase in the first few words of the title.'],
+      ['Keyphrase is in the search description', has(d), 10, 'Mention the phrase naturally in the description.'],
+      ['Keyphrase is in the opening paragraph', has(S.hero.text), 10, 'Use the phrase in the paragraph under the banner heading.'],
+      ['Main heading contains the first keyword', !!first && h1.includes(first), 5, 'Add the main word (for example “jewellery”) to the banner heading.'],
+      ['Title is 30 to 60 characters', t.length >= 30 && t.length <= 60, 5, `Now ${t.length}. Google cuts titles near 60.`],
+      ['Description is 120 to 160 characters', d.length >= 120 && d.length <= 160, 5, `Now ${d.length}. Aim for about 155.`],
+    ]],
+    ['Additional', [
+      ['Share image is set', !!S.seo.ogImage, 5, 'Upload an image so shared links look good.'],
+      ['Brand name is in the title', /wink\s?casa/i.test(t), 2, 'End the title with “| WinkCasa”.'],
+      ['2 or more social profiles linked', socials >= 2, 5, 'Add Instagram, Facebook or YouTube links under Social profiles. They go into your Google brand data.'],
+      ['Address, phone and email are complete', !!(b.street && b.city && b.postcode && b.phone && b.email), 5, 'Fill every field under Business details.'],
+      ['Opening hours are set', !!b.hours, 3, 'Add hours such as Mo-Sa 10:00-18:00.'],
+      ['Founder name is set (trust signal)', !!S.seo.founder, 2, 'Add the founder name for brand data.'],
+    ]],
+    ['Content', [
+      [`About text is 120+ words (now ${aboutWords})`, aboutWords >= 120, 5, 'Write who you are, where you are and what you sell.'],
+      ['Keyphrase appears in the About text', has(S.about.text), 3, 'Mention the phrase once in a natural sentence.'],
+      [`5+ questions in the FAQ (now ${faqN})`, faqN >= 5, 7, 'AI assistants quote FAQs. Add real customer questions.'],
+      ['Every collection has a description of 60+ characters', !!catsOk, 4, 'Describe each collection in one or two sentences.'],
+      [`10+ live products (now ${live.length})`, live.length >= 10, 4, 'More live products gives search engines more to index.'],
+      [`Product pages average 9/10 or better (now ${avg.toFixed(1)})`, avg >= 9, 6, 'Open Products and fix the lowest SEO marks.'],
+    ]],
+    ['Structured data (automatic)', [
+      ['Organisation, WebSite, WebPage, product list and FAQ data are added to the page', !S.seo.noindex, 5, 'Switch off “Hide from Google” to publish the data.'],
+    ]],
+  ];
+  let got = 0, max = 0;
+  G.forEach(([, items]) => items.forEach((i) => { max += i[2]; if (i[1]) got += i[2]; }));
+  return { score: Math.round(got / max * 100), G };
+}
+
 /* ---------------- Products ---------------- */
 window.loadProducts = async function () {
   PRODUCTS = await api('products');
   const el = $('#t-products');
   const cats = [...new Set(PRODUCTS.map((p) => p.category))];
   el.innerHTML = `<div class="filters"><input id="pq" placeholder="Search products"><select id="pc"><option value="">All categories</option>${cats.map((c) => `<option>${esc(c)}</option>`).join('')}</select><button class="btn" id="padd">+ Add product</button></div>
-  <div class="card tw"><table><thead><tr><th></th><th>Product</th><th>Price</th><th>Cost</th><th>Stock</th><th>Status</th><th></th></tr></thead><tbody id="prows"></tbody></table><p id="pnone" class="muted hide">No products yet. Click “Add product”.</p></div>`;
+  <div class="card tw"><table><thead><tr><th></th><th>Product</th><th>Price</th><th>Cost</th><th>Stock</th><th>SEO</th><th>Status</th><th></th></tr></thead><tbody id="prows"></tbody></table><p id="pnone" class="muted hide">No products yet. Click “Add product”.</p></div>`;
   const draw = () => {
     const q = $('#pq').value.toLowerCase(), c = $('#pc').value;
     const list = PRODUCTS.filter((p) => (!c || p.category === c) && (!q || (p.name + p.category).toLowerCase().includes(q)));
@@ -17,6 +71,7 @@ window.loadProducts = async function () {
       <td>${inr(p.price * 100)}${p.mrp ? `<div class="muted" style="text-decoration:line-through">${inr(p.mrp * 100)}</div>` : ''}</td>
       <td>${p.cost ? inr(p.cost * 100) + `<div class="muted">margin ${Math.round((p.price - p.cost) / p.price * 100)}%</div>` : '<span class="muted">—</span>'}</td>
       <td>${p.stock === null ? '<span class="muted">Unlimited</span>' : p.stock <= 0 ? '<span class="pill p-cancelled">Sold out</span>' : p.stock <= 3 ? `<span class="pill p-new">${p.stock} left</span>` : p.stock}</td>
+      <td title="${esc(prodScore(p).checks.filter((c) => !c[1]).map((c) => 'Missing: ' + c[0]).join('\n') || 'All SEO checks pass')}">${badge(prodScore(p).ok, 10)}</td>
       <td><span class="pill ${p.active ? 'p-paid' : 'p-cancelled'}">${p.active ? 'Live' : 'Hidden'}</span></td>
       <td><button class="btn ghost sm" data-tog="${p.id}">${p.active ? 'Hide' : 'Show'}</button></td></tr>`).join('');
     document.querySelectorAll('#prows tr').forEach((r) => (r.onclick = (e) => { if (e.target.dataset.tog) return; openProduct(+r.dataset.id); }));
@@ -150,7 +205,9 @@ const getp = (o, path) => path.split('.').reduce((a, k) => a?.[k], o);
 const setp = (o, path, v) => { const ks = path.split('.'); const last = ks.pop(); ks.reduce((a, k) => a[k], o)[last] = v; };
 
 window.loadStore = async function () {
-  SETTINGS = await api('settings'); drawStore();
+  SETTINGS = await api('settings');
+  try { PRODUCTS = await api('products'); } catch { /* score just ignores product pages */ }
+  drawStore();
 };
 
 function drawStore() {
@@ -175,7 +232,12 @@ function drawStore() {
     <h3 style="margin-top:16px">Three promises band</h3>${S.promise.map((x, i) => `<label>Box ${i + 1}</label><input data-p="promise.${i}.title" value="${esc(x.title)}"><textarea rows="2" data-p="promise.${i}.text" style="margin-top:6px">${esc(x.text)}</textarea>`).join('')}</div>
   <div class="card sect"><h3>Footer</h3>${txt('Copyright line', 'footer.copyright')}${txt('Note on the right', 'footer.note')}${chk('Credit Unsplash for photos (turn off once all photos are yours)', 'footer.showUnsplash')}${links('footer.links', 'Footer links')}</div>
   <div class="card sect"><h3>Search &amp; AI visibility</h3><p class="hint">Controls how WinkCasa appears on Google and in AI answers (ChatGPT, Perplexity, Gemini, Claude).</p>
-    ${txt('Home page title (about 60 characters)', 'seo.title')}${txt('Home page description (about 155 characters)', 'seo.description', '', true)}
+    <div id="homeSeo" class="card" style="padding:12px;margin-bottom:10px;border:1px solid var(--accent)"></div>
+    ${txt('Focus keyphrase (what shoppers type into Google)', 'seo.keyword', 'jewellery online in India')}
+    ${txt('Home page title (30 to 60 characters)', 'seo.title')}<div class="hint" id="cnt_t"></div>${txt('Home page description (120 to 160 characters)', 'seo.description', '', true)}<div class="hint" id="cnt_d"></div>
+    ${txt('Share title for Facebook, WhatsApp, X (blank = same as title)', 'seo.ogTitle')}${txt('Share description (blank = same as description)', 'seo.ogDescription', '', true)}
+    ${txt('Founder name (shown to search engines as brand data)', 'seo.founder')}
+    ${chk('Hide the home page from Google and AI search', 'seo.noindex')}
     <label>Share image (shown when your link is shared)</label><div class="lrow"><input data-p="seo.ogImage" value="${esc(S.seo.ogImage)}" placeholder="Upload or paste a link"><label class="btn ghost sm" style="margin:0;cursor:pointer;color:var(--fg)">Upload<input id="og_file" type="file" accept="image/*" hidden></label></div>
     <p class="hint">Leave blank to use your first product photo.</p></div>
   <div class="card sect"><h3>Business details (shown in footer &amp; to search engines)</h3><p class="hint">Keep these identical to your Google Business Profile, GST record and Contact page.</p>
@@ -196,6 +258,16 @@ function drawStore() {
   </div>
   <p class="muted">The WinkCasa logo, the policy pages (Returns, Shipping, Privacy, Terms, Contact) and your business details are edited by me in code, so ask whenever you need them changed.</p>
   <div class="savebar"><button class="btn" id="s_save">Save and publish</button><a class="btn ghost" href="/" target="_blank">View store</a><span class="muted">Changes appear on the store immediately.</span></div>`;
+  const paintHome = () => {
+    const r = homeScore(S, PRODUCTS || []), c = r.score >= 81 ? '#3FAE77' : r.score >= 51 ? '#E7A93B' : '#D95C5C';
+    const t = S.seo.title || '', d = S.seo.description || '';
+    if ($('#cnt_t')) { $('#cnt_t').textContent = t.length + ' characters'; $('#cnt_d').textContent = d.length + ' characters'; }
+    $('#homeSeo').innerHTML = `<div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><div style="width:74px;height:74px;border-radius:50%;border:5px solid ${c};display:flex;align-items:center;justify-content:center;flex-direction:column;line-height:1"><b style="font-size:1.4rem;color:${c}">${r.score}</b><small class="muted">/100</small></div>
+      <div style="flex:1;min-width:200px"><b>Home page SEO score</b><div class="muted">Green is 81 and above, orange 51 to 80, red 50 or below.</div></div></div>
+      <div style="background:#fff;color:#202124;border-radius:10px;padding:12px;margin:12px 0"><div style="font-size:.75rem;color:#4d5156">winkcasa.com</div><div style="font-size:1.1rem;color:#1a0dab;margin:2px 0">${esc(t.slice(0, 60))}</div><div style="font-size:.85rem;color:#4d5156">${esc(d.slice(0, 160))}</div></div>
+      ${r.G.map(([name, items]) => `<details ${items.some((i) => !i[1]) ? 'open' : ''} style="margin-top:6px"><summary style="cursor:pointer;font-weight:600">${name} <span class="muted">${items.filter((i) => i[1]).length}/${items.length}</span></summary>${items.map((i) => `<div style="padding:4px 0 4px 6px;font-size:.88rem"><span style="color:${i[1] ? '#3FAE77' : '#D95C5C'}">${i[1] ? '✓' : '✗'}</span> ${esc(i[0])}${i[1] ? '' : `<div class="muted" style="margin-left:18px">${esc(i[3])}</div>`}</div>`).join('')}</details>`).join('')}`;
+  };
+  paintHome(); el.oninput = paintHome; el.onchange = paintHome;
   el.querySelectorAll('[data-p]').forEach((i) => (i.oninput = () => setp(S, i.dataset.p, i.value)));
   el.querySelectorAll('[data-n]').forEach((i) => (i.oninput = () => setp(S, i.dataset.n, Number(i.value || 0))));
   el.querySelectorAll('[data-b]').forEach((i) => (i.onchange = () => setp(S, i.dataset.b, i.checked)));
