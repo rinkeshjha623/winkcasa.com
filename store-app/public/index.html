@@ -61,6 +61,7 @@ h2{font-family:var(--display);font-weight:400;font-size:clamp(2rem,4.4vw,3rem);l
 .card{display:flex;flex-direction:column;gap:12px;min-width:0}
 .tile{aspect-ratio:4/5;border:1px solid var(--line);border-radius:999px 999px 2px 2px;display:grid;place-items:center;position:relative;overflow:hidden}
 .tile svg{width:72%;height:72%;margin-top:14%}
+.tile img{width:100%;height:100%;object-fit:cover;display:block}
 .tag{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:var(--bg);color:var(--accent);font-size:.64rem;letter-spacing:.2em;text-transform:uppercase;padding:4px 12px;white-space:nowrap}
 .meta{display:flex;justify-content:space-between;gap:12px;align-items:baseline}
 .meta h3{margin:0;font-family:var(--display);font-size:1.4rem;font-weight:500;line-height:1.15}
@@ -91,6 +92,7 @@ footer a{color:var(--muted)}
 .line{display:grid;grid-template-columns:60px 1fr auto;gap:14px;align-items:center}
 .line .tile{aspect-ratio:4/5}
 .line .tile svg{width:80%;height:80%;margin-top:10%}
+.line .tile img{width:100%;height:100%;object-fit:cover}
 .line h4{margin:0;font-family:var(--display);font-size:1.15rem;font-weight:500}
 .qty{display:inline-flex;align-items:center;gap:10px;margin-top:4px}
 .qty button{width:26px;height:26px;border:1px solid var(--line);background:transparent;line-height:1}
@@ -130,8 +132,8 @@ footer a{color:var(--muted)}
   <section class="hero" id="top">
     <div>
       <p class="eyebrow">WinkCasa Retail · New Delhi</p>
-      <h1>Everyday things, <em>chosen with care.</em></h1>
-      <p>Chargers, bottles, skincare, fitness gear, fashion and home pieces, picked for what India reorders most.</p>
+      <h1>Beauty and jewellery, <em>chosen with care.</em></h1>
+      <p>Skincare, beauty tools and everyday jewellery, picked for what India reorders most.</p>
       <a class="cta" href="#shop">Shop the collection</a>
       <div class="facts"><span><b>Free delivery</b> above ₹999</span><span><b>7-day</b> returns on damaged or wrong items</span></div>
     </div>
@@ -157,8 +159,8 @@ footer a{color:var(--muted)}
 
 <section class="band" id="promise">
   <div class="wrap">
-    <div><h3>Chosen by demand</h3><p>We stock categories with proven repeat orders: tech accessories, beauty, fitness, kitchen, fashion and home.</p></div>
-    <div><h3>Packed to arrive</h3><p>Fragile items get double-wall boxes, so what you order reaches you in one piece.</p></div>
+    <div><h3>Chosen by demand</h3><p>We stock skincare and jewellery, two of the categories Indian shoppers buy online most often.</p></div>
+    <div><h3>Packed to arrive</h3><p>Glass bottles and delicate jewellery ship in padded, double-wall boxes.</p></div>
     <div><h3>Easy returns</h3><p>If an item arrives damaged, defective or wrong, tell us within 7 days and we will replace it or refund you.</p></div>
   </div>
 </section>
@@ -192,6 +194,10 @@ footer a{color:var(--muted)}
 var PRODUCTS=[], CONFIG={freeShippingAbove:999,shipping:79};
 var D='var(--obj-dark)';
 function art(p){
+ if(p.image)return '<img src="/'+p.image+'" alt="'+p.name+'" loading="lazy" decoding="async">';
+ return artSvg(p);
+}
+function artSvg(p){
  var o='var(--obj'+p.obj+')', s='<svg viewBox="0 0 200 200" aria-hidden="true">';
  s+='<ellipse cx="100" cy="176" rx="64" ry="7" fill="'+D+'" opacity=".12"/>';
  switch(p.art){
@@ -211,6 +217,11 @@ function art(p){
   case 'serum':s+='<rect x="92" y="20" width="16" height="28" rx="4" fill="'+D+'"/><path d="M82 48 H118 V58 H82 Z" fill="'+D+'"/><rect x="66" y="58" width="68" height="108" rx="12" fill="'+o+'"/><rect x="78" y="96" width="44" height="40" rx="4" fill="var(--surface)" opacity=".75"/>';break;
   case 'earrings':s+='<circle cx="76" cy="84" r="26" fill="none" stroke="'+o+'" stroke-width="8"/><circle cx="124" cy="84" r="26" fill="none" stroke="'+o+'" stroke-width="8"/><circle cx="76" cy="128" r="9" fill="var(--surface)" stroke="'+D+'" stroke-width="2"/><circle cx="124" cy="128" r="9" fill="var(--surface)" stroke="'+D+'" stroke-width="2"/>';break;
   case 'tee':s+='<path d="M64 36 L40 56 L54 82 L68 74 V160 H132 V74 L146 82 L160 56 L136 36 Q100 56 64 36 Z" fill="'+o+'"/><circle cx="100" cy="108" r="14" fill="var(--accent)"/>';break;
+  case 'tube':s+='<path d="M70 44 H130 L124 160 Q100 170 76 160 Z" fill="'+o+'"/><rect x="84" y="24" width="32" height="20" fill="'+D+'"/><rect x="80" y="86" width="40" height="30" fill="var(--surface)" opacity=".6"/>';break;
+  case 'gua':s+='<path d="M36 118 Q36 66 100 66 Q164 66 164 118 Q132 156 100 118 Q68 156 36 118 Z" fill="'+o+'"/><circle cx="100" cy="84" r="5" fill="var(--surface)" opacity=".7"/>';break;
+  case 'necklace':s+='<path d="M44 40 Q100 190 156 40" fill="none" stroke="'+o+'" stroke-width="4" stroke-linecap="round"/><circle cx="100" cy="127" r="11" fill="var(--accent)"/><circle cx="100" cy="127" r="4" fill="var(--surface)"/>';break;
+  case 'ring':s+='<circle cx="100" cy="122" r="42" fill="none" stroke="'+o+'" stroke-width="12"/><path d="M84 68 L100 44 L116 68 L100 82 Z" fill="var(--accent)"/>';break;
+  case 'bracelet':s+='<ellipse cx="100" cy="108" rx="62" ry="40" fill="none" stroke="'+o+'" stroke-width="8"/><circle cx="100" cy="148" r="8" fill="var(--accent)"/><circle cx="58" cy="132" r="5" fill="var(--accent)"/><circle cx="142" cy="132" r="5" fill="var(--accent)"/>';break;
   case 'basket':s+='<path d="M52 78 H148 L136 160 Q100 170 64 160 Z" fill="'+o+'"/><path d="M56 100 H144 M60 122 H140 M64 144 H136" stroke="var(--surface)" stroke-width="3" opacity=".5"/><path d="M52 78 Q100 40 148 78" fill="none" stroke="'+o+'" stroke-width="6"/>';break;
   case 'candle':s+='<path d="M72 168 H128 L118 148 H82 Z" fill="'+o+'"/><rect x="94" y="92" width="12" height="56" fill="'+o+'" opacity=".8"/><rect x="84" y="88" width="32" height="8" rx="3" fill="'+o+'"/><path d="M100 50 Q112 68 100 84 Q88 68 100 50 Z" fill="var(--accent)"/>';break;
   case 'pendant':s+='<path d="M100 10 V64" stroke="'+D+'" stroke-width="3"/><path d="M52 138 Q52 74 100 64 Q148 74 148 138 Z" fill="'+o+'"/><path d="M66 124 H134 M62 108 H138 M70 92 H130" stroke="var(--surface)" stroke-width="3" opacity=".5"/><ellipse cx="100" cy="150" rx="22" ry="5" fill="var(--accent)"/>';break;
