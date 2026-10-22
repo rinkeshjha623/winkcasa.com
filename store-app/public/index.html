@@ -53,7 +53,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .hero p{margin:0 0 28px;max-width:34em;color:var(--muted);font-size:1.05rem}
 .cta{display:inline-block;background:var(--accent);color:var(--accent-fg);text-decoration:none;padding:15px 30px;font-size:.74rem;letter-spacing:.2em;text-transform:uppercase;font-weight:600}
 .cta:hover{background:var(--fg)}
-.facts{display:flex;gap:10px 30px;flex-wrap:wrap;margin-top:34px;font-size:.84rem;color:var(--muted)}
+.facts{display:grid;grid-template-columns:repeat(2,minmax(0,max-content));gap:14px 34px;margin-top:34px;font-size:.86rem;color:var(--muted)}.facts span{display:flex;align-items:center;gap:10px}.facts span:before{content:"✦";color:var(--accent);font-size:.8rem}@media(max-width:640px){.facts{grid-template-columns:1fr;gap:10px}}
 .facts b{color:var(--fg);font-weight:500}
 .arch{justify-self:center;width:min(100%,360px)}
 .arch svg{display:block;width:100%;height:auto}
@@ -148,7 +148,7 @@ footer a{color:var(--muted)}
       <h1 id="heroH1">Beauty and jewellery, <em>chosen with care.</em></h1>
       <p id="heroText">Skincare, beauty tools and everyday jewellery, picked for what India reorders most.</p>
       <a class="cta" id="heroCta" href="#shop">Shop the collection</a>
-      <div class="facts" id="heroFacts"><span><b>Delivered in 10–20 days</b> across India</span><span><b>Free delivery</b> above ₹999</span><span><b>7-day</b> returns on damaged or wrong items</span></div>
+      <div class="facts" id="heroFacts"><span><b>Handpicked</b> trending styles, added every week</span><span><b>Free delivery</b> on orders above ₹999</span><span><b>Secure checkout</b> with UPI, cards and net banking</span><span><b>Easy returns</b> on damaged or wrong items</span></div>
       <div id="heroPay"></div>
     </div>
     <div class="arch" id="heroArt" aria-hidden="true">

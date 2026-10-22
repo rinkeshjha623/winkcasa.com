@@ -8,7 +8,7 @@ export const DEFAULTS = {
     accent: 'chosen with care.',
     text: 'Skincare, beauty tools and everyday jewellery, picked for what India reorders most.',
     ctaLabel: 'Shop the collection', ctaLink: '#shop',
-    facts: ['**Delivered in 10–20 days** across India', '**Free delivery** above ₹999', '**7-day** returns on damaged or wrong items'],
+    facts: ['**Handpicked** trending styles, added every week', '**Free delivery** on orders above ₹999', '**Secure checkout** with UPI, cards and net banking', '**Easy returns** on damaged or wrong items'],
   },
   collection: { label: 'The collection', title: 'Pieces we keep restocking' },
   promise: [
