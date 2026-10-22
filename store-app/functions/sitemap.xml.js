@@ -11,6 +11,7 @@ export async function onRequestGet({ env }) {
     u('/', latest, '1.0', 'daily'),
     ...categoriesOf(rows, S).map((c) => u(c.path, latest, '0.8', 'daily')),
     ...rows.map((r) => u(productPath(r), r.updated_at, '0.9', 'weekly')),
+    u('/try', null, '0.7', 'monthly'),
     u('/blog', posts[0]?.updated_at, '0.7', 'weekly'),
     ...posts.map((p) => u('/blog/' + p.slug, p.updated_at, '0.6', 'monthly')),
     u('/about', '', '0.5', 'yearly'), u('/contact', '', '0.5', 'yearly'),

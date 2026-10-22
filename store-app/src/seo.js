@@ -90,8 +90,8 @@ export function headerHtml(S, cats = []) {
   return `<header class="bar"><div class="navwrap"><nav class="nav" aria-label="Main">
 <a href="/">Home</a>
 <div class="dd"><a href="/#shop" aria-haspopup="true">Categories ▾</a><div class="ddl"><a href="/#shop">All products</a>${shop}</div></div>
-<a href="/blog">Blog</a><a href="/about">About us</a><a href="/contact">Contact us</a></nav>
-<details class="mmenu"><summary>Menu</summary><div class="mlist"><a href="/">Home</a>${shop}<a href="/#shop">All products</a><a href="/blog">Blog</a><a href="/about">About us</a><a href="/contact">Contact us</a><a href="/track">Track your order</a><a class="macct" href="/account">My account</a></div></details></div>
+<a href="/try">Find your look</a><a href="/blog">Blog</a><a href="/about">About us</a><a href="/contact">Contact us</a></nav>
+<details class="mmenu"><summary>Menu</summary><div class="mlist"><a href="/">Home</a>${shop}<a href="/#shop">All products</a><a href="/try">Find your look</a><a href="/blog">Blog</a><a href="/about">About us</a><a href="/contact">Contact us</a><a href="/track">Track your order</a><a class="macct" href="/account">My account</a></div></details></div>
 ${logoHtml(S)}<div class="rt"><a class="acctlink" href="/account" data-acct>Account</a><a class="cartbtn" href="/cart" aria-label="View cart">Cart <b data-cartcount>0</b></a></div></header>`;
 }
 
