@@ -1,4 +1,5 @@
 import { json, hmacHex, safeEqual } from '../../src/lib.js';
+import { applyStock } from '../../src/admin.js';
 
 // Called by the browser right after Razorpay reports a successful payment.
 export async function onRequestPost({ request, env }) {
@@ -10,10 +11,14 @@ export async function onRequestPost({ request, env }) {
   const expected = await hmacHex(env.RAZORPAY_KEY_SECRET || env.key_secret, oid + '|' + pid);
   if (!safeEqual(expected, sig)) return json({ error: 'Payment could not be verified.' }, 400);
 
-  await env.DB.prepare(
+  const upd = await env.DB.prepare(
     `UPDATE orders SET status='paid', payment_id=?, paid_at=datetime('now')
      WHERE razorpay_order_id=? AND status='created'`
   ).bind(pid, oid).run();
+  if (upd.meta?.changes) {
+    const o = await env.DB.prepare('SELECT order_ref FROM orders WHERE razorpay_order_id=?').bind(oid).first();
+    if (o) await applyStock(env, o.order_ref);
+  }
 
   const row0 = await env.DB.prepare('SELECT order_ref FROM orders WHERE razorpay_order_id=?').bind(oid).first();
   if (row0) await env.DB.prepare("INSERT INTO order_events (order_ref, text) SELECT ?, ? WHERE NOT EXISTS (SELECT 1 FROM order_events WHERE order_ref=? AND text LIKE 'Payment received%')")

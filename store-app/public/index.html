@@ -118,24 +118,32 @@ footer a{color:var(--muted)}
   .hero{grid-template-columns:1fr}.arch{order:-1;width:min(60%,240px);justify-self:start}
   .bar{grid-template-columns:auto 1fr}.nav{display:none}.logo{font-size:1.7rem}
 }
+
+.announce{background:var(--accent);color:#1a1405;text-align:center;padding:9px 16px;font-size:13px;font-weight:600}
+.announce a{color:inherit;text-decoration:underline}
+.was{color:var(--muted,#9DB0A8);text-decoration:line-through;font-size:.85em;margin-right:6px;font-weight:400}
+.add:disabled{opacity:.5;cursor:not-allowed}
+.closedbar{background:#3a1f1f;color:#f3d6d6;padding:10px 16px;text-align:center;font-size:13px}
 </style>
 </head>
 <body>
 
+<div class="announce" id="announce" hidden></div>
+<div class="closedbar" id="closedbar" hidden></div>
 <div class="wrap">
   <header class="bar">
-    <nav class="nav" aria-label="Sections"><a href="#shop">Shop</a><a href="#promise">Promise</a></nav>
+    <nav class="nav" id="navlinks" aria-label="Sections"><a href="#shop">Shop</a><a href="#promise">Promise</a></nav>
     <a class="logo" href="#top" aria-label="WinkCasa">W<span class="idot">ı</span>nkCasa</a>
     <button class="cartbtn" id="openCart" aria-label="Open cart">Cart <b id="count">0</b></button>
   </header>
 
   <section class="hero" id="top">
     <div>
-      <p class="eyebrow">WinkCasa Retail · New Delhi</p>
-      <h1>Beauty and jewellery, <em>chosen with care.</em></h1>
-      <p>Skincare, beauty tools and everyday jewellery, picked for what India reorders most.</p>
-      <a class="cta" href="#shop">Shop the collection</a>
-      <div class="facts"><span><b>Free delivery</b> above ₹999</span><span><b>7-day</b> returns on damaged or wrong items</span></div>
+      <p class="eyebrow" id="heroEyebrow">WinkCasa Retail · New Delhi</p>
+      <h1 id="heroH1">Beauty and jewellery, <em>chosen with care.</em></h1>
+      <p id="heroText">Skincare, beauty tools and everyday jewellery, picked for what India reorders most.</p>
+      <a class="cta" id="heroCta" href="#shop">Shop the collection</a>
+      <div class="facts" id="heroFacts"><span><b>Free delivery</b> above ₹999</span><span><b>7-day</b> returns on damaged or wrong items</span></div>
     </div>
     <div class="arch" aria-hidden="true">
       <svg viewBox="0 0 120 160" fill="none" stroke="#C9A45C" stroke-width="1">
@@ -150,7 +158,7 @@ footer a{color:var(--muted)}
 
   <section id="shop">
     <div class="shophead">
-      <div><p class="label">The collection</p><h2>Pieces we keep restocking</h2></div>
+      <div><p class="label" id="shopLabel">The collection</p><h2 id="shopTitle">Pieces we keep restocking</h2></div>
       <div class="chips" id="chips" role="group" aria-label="Filter by category"></div>
     </div>
     <div class="grid" id="grid"></div>
@@ -158,13 +166,13 @@ footer a{color:var(--muted)}
 </div>
 
 <section class="band" id="promise">
-  <div class="wrap">
+  <div class="wrap" id="promiseWrap">
     <div><h3>Chosen by demand</h3><p>We stock skincare and jewellery, two of the categories Indian shoppers buy online most often.</p></div>
     <div><h3>Packed to arrive</h3><p>Glass bottles and delicate jewellery ship in padded, double-wall boxes.</p></div>
     <div><h3>Easy returns</h3><p>If an item arrives damaged, defective or wrong, tell us within 7 days and we will replace it or refund you.</p></div>
   </div>
 </section>
-<div class="wrap"><footer><span>© WinkCasa Retail</span><span><a href="/returns">Returns</a> · <a href="/shipping">Shipping</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/contact">Contact</a></span><span>Prices in Indian rupees, inclusive of GST. Photos from <a href="https://unsplash.com" rel="noopener">Unsplash</a>.</span></footer></div>
+<div class="wrap"><footer id="footerEl"><span>© WinkCasa Retail</span><span><a href="/returns">Returns</a> · <a href="/shipping">Shipping</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/contact">Contact</a></span><span>Prices in Indian rupees, inclusive of GST. Photos from <a href="https://unsplash.com" rel="noopener">Unsplash</a>.</span></footer></div>
 
 <div class="scrim" id="scrim"></div>
 <aside class="drawer" id="drawer" aria-label="Your cart" aria-hidden="true">
@@ -194,7 +202,7 @@ footer a{color:var(--muted)}
 var PRODUCTS=[], CONFIG={freeShippingAbove:999,shipping:79};
 var D='var(--obj-dark)';
 function art(p){
- if(p.image){var src=/^https?:/.test(p.image)?p.image:'/'+p.image;return '<img src="'+src+'" alt="'+p.name+'" loading="lazy" decoding="async">';}
+ if(p.image){var src=/^https?:/.test(p.image)?p.image:(p.image.charAt(0)==='/'?p.image:'/'+p.image);return '<img src="'+esc(src)+'" alt="'+esc(p.name)+'" loading="lazy" decoding="async">';}
  return artSvg(p);
 }
 function artSvg(p){
@@ -228,30 +236,33 @@ function artSvg(p){
  }
  return s+'</svg>';
 }
+var esc=function(t){return String(t==null?'':t).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})};
+var okHref=function(h){return /^(https?:\/\/|\/|#|mailto:|tel:)/i.test(h||'')?h:'#'};
+var rich=function(t){return esc(t).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>')};
 var rupee=function(n){return '₹'+n.toLocaleString('en-IN')};
-var cart={}, filter='All', step='cart', busy=false, TOTAL=0;
+var cart={}, filter='All', step='cart', busy=false, TOTAL=0, CLOSED=false;
 var rooms=['All'];
 var $=function(id){return document.getElementById(id)};
 
 function renderChips(){
- $('chips').innerHTML=rooms.map(function(r){return '<button class="chip" aria-pressed="'+(r===filter)+'" data-r="'+r+'">'+r+'</button>'}).join('');
+ $('chips').innerHTML=rooms.map(function(r){return '<button class="chip" aria-pressed="'+(r===filter)+'" data-r="'+esc(r)+'">'+esc(r)+'</button>'}).join('');
 }
 function renderGrid(){
  $('grid').innerHTML=PRODUCTS.filter(function(p){return filter==='All'||p.room===filter}).map(function(p){
-  return '<article class="card"><div class="tile" style="background:var(--tile'+p.tile+')">'+(p.tag?'<span class="tag">'+p.tag+'</span>':'')+art(p)+'</div>'+
-  '<div class="meta"><h3>'+p.name+'</h3><span class="price">'+rupee(p.price)+'</span></div><p class="dim">'+p.dim+'</p>'+
-  '<button class="add" data-add="'+p.id+'">Add to cart</button></article>';
+  return '<article class="card"><div class="tile" style="background:var(--tile'+p.tile+')">'+(p.tag?'<span class="tag">'+esc(p.tag)+'</span>':'')+art(p)+'</div>'+
+  '<div class="meta"><h3>'+esc(p.name)+'</h3><span class="price">'+(p.mrp?'<span class="was">'+rupee(p.mrp)+'</span>':'')+rupee(p.price)+'</span></div><p class="dim">'+esc(p.dim)+'</p>'+
+  (p.soldOut||CLOSED?'<button class="add" disabled>'+(p.soldOut?'Sold out':'Unavailable')+'</button>':'<button class="add" data-add="'+p.id+'">Add to cart</button>')+'</article>';
  }).join('');
 }
 function renderCart(){
  var ids=Object.keys(cart), n=0, t=0;
  $('lines').innerHTML=ids.length?ids.map(function(id){
-  var p=PRODUCTS.filter(function(x){return x.id==id})[0], q=cart[id]; n+=q; t+=q*p.price;
-  return '<div class="line"><div class="tile" style="background:var(--tile'+p.tile+')">'+art(p)+'</div><div><h4>'+p.name+'</h4><div class="qty"><button data-dec="'+id+'" aria-label="Fewer">−</button><span>'+q+'</span><button data-inc="'+id+'" aria-label="More">+</button></div></div><span class="price">'+rupee(q*p.price)+'</span></div>';
+  var p=PRODUCTS.filter(function(x){return x.id==id})[0]; if(!p){delete cart[id];return ''} var q=cart[id]; n+=q; t+=q*p.price;
+  return '<div class="line"><div class="tile" style="background:var(--tile'+p.tile+')">'+art(p)+'</div><div><h4>'+esc(p.name)+'</h4><div class="qty"><button data-dec="'+id+'" aria-label="Fewer">−</button><span>'+q+'</span><button data-inc="'+id+'" aria-label="More">+</button></div></div><span class="price">'+rupee(q*p.price)+'</span></div>';
  }).join(''):'<p class="empty">Your cart is empty.<br>Add something with a bit of personality.</p>';
  var sh=t===0?0:(t>=CONFIG.freeShippingAbove?0:CONFIG.shipping);
  $('count').textContent=n; $('subtotal').textContent=rupee(t); $('ship').textContent=t===0?'₹0':(sh?rupee(sh):'Free'); $('total').textContent=rupee(t+sh); TOTAL=t+sh;
- $('pay').disabled=!ids.length||busy; $('pay').textContent=step==='details'?'Pay '+rupee(TOTAL):'Continue to checkout';
+ $('pay').disabled=!ids.length||busy||CLOSED; $('pay').textContent=step==='details'?'Pay '+rupee(TOTAL):'Continue to checkout';
 }
 function open(v){$('drawer').classList.toggle('on',v);$('scrim').classList.toggle('on',v);$('drawer').setAttribute('aria-hidden',!v)}
 document.addEventListener('click',function(e){
@@ -304,8 +315,20 @@ $('pay').onclick=async function(){
   rz.open();
  }catch(e){say(e.message);setBusy(false)}
 };
-fetch('/products.json').then(function(r){return r.json()}).then(function(c){
- PRODUCTS=c.products;CONFIG=c.config;
+function applySettings(S){
+ if(!S)return;
+ var a=$('announce');if(S.announcement.enabled&&S.announcement.text){a.hidden=false;a.innerHTML=S.announcement.link?'<a href="'+esc(okHref(S.announcement.link))+'">'+esc(S.announcement.text)+'</a>':esc(S.announcement.text)}else a.hidden=true;
+ CLOSED=!S.store.open;var cb=$('closedbar');cb.hidden=!CLOSED;cb.textContent=S.store.closedMessage;
+ $('navlinks').innerHTML=S.header.links.map(function(l){return '<a href="'+esc(okHref(l.href))+'">'+esc(l.label)+'</a>'}).join('');
+ var h=S.hero;$('heroEyebrow').textContent=h.eyebrow;$('heroH1').innerHTML=esc(h.headline)+(h.accent?' <em>'+esc(h.accent)+'</em>':'');
+ $('heroText').textContent=h.text;var c=$('heroCta');c.textContent=h.ctaLabel;c.href=okHref(h.ctaLink);
+ $('heroFacts').innerHTML=h.facts.filter(Boolean).map(function(f){return '<span>'+rich(f)+'</span>'}).join('');
+ $('shopLabel').textContent=S.collection.label;$('shopTitle').textContent=S.collection.title;
+ $('promiseWrap').innerHTML=S.promise.map(function(x){return '<div><h3>'+esc(x.title)+'</h3><p>'+esc(x.text)+'</p></div>'}).join('');
+ var f=S.footer;$('footerEl').innerHTML='<span>'+esc(f.copyright)+'</span><span>'+f.links.map(function(l){return '<a href="'+esc(okHref(l.href))+'">'+esc(l.label)+'</a>'}).join(' · ')+'</span><span>'+esc(f.note)+(f.showUnsplash?' Photos from <a href="https://unsplash.com" rel="noopener">Unsplash</a>.':'')+'</span>';
+}
+fetch('/api/catalog').then(function(r){if(!r.ok)throw 0;return r.json()}).catch(function(){return fetch('/products.json').then(function(r){return r.json()})}).then(function(c){
+ PRODUCTS=c.products;CONFIG=c.config;applySettings(c.settings);
  rooms=['All'].concat(PRODUCTS.map(function(p){return p.room}).filter(function(r,i,a){return a.indexOf(r)===i}));
  renderChips();renderGrid();renderCart();
 }).catch(function(){$('grid').innerHTML='<p class="dim">The catalogue could not load. Refresh the page.</p>'});

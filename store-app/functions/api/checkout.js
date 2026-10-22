@@ -1,4 +1,4 @@
-import catalog from '../../public/products.json';
+import { activeProducts, getSettings } from '../../src/store.js';
 import { json, priceCart, cleanCustomer } from '../../src/lib.js';
 
 export async function onRequestPost({ request, env }) {
@@ -11,8 +11,20 @@ export async function onRequestPost({ request, env }) {
   let body;
   try { body = await request.json(); } catch { return json({ error: 'Invalid request.' }, 400); }
 
+  const [rows, settings] = await Promise.all([activeProducts(env), getSettings(env)]);
+  if (!settings.store.open) return json({ error: settings.store.closedMessage }, 503);
+  const catalog = {
+    products: rows.map((r) => ({ id: r.id, name: r.name, price: r.price, stock: r.stock })),
+    config: { freeShippingAbove: settings.shipping.freeShippingAbove, shipping: settings.shipping.charge },
+  };
   const priced = priceCart(catalog, body.items);
   if (priced.error) return json({ error: priced.error }, 400);
+  for (const l of priced.lines) {
+    const p = catalog.products.find((x) => x.id === l.id);
+    if (p.stock !== null && p.stock < l.qty) {
+      return json({ error: p.stock > 0 ? `Only ${p.stock} of "${p.name}" left.` : `"${p.name}" is sold out.` }, 409);
+    }
+  }
   const cust = cleanCustomer(body.customer);
   if (cust.error) return json({ error: cust.error }, 400);
 

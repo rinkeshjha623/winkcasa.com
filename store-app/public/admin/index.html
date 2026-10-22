@@ -40,6 +40,14 @@ th{color:var(--mut);font-weight:500;font-size:12px;white-space:nowrap}tr.row{cur
 #toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--acc);color:#1a1405;padding:9px 16px;border-radius:8px;font-weight:600;z-index:50}
 @media print{body *{visibility:hidden}#slip,#slip *{visibility:visible}#slip{position:absolute;inset:0;background:#fff;color:#000;padding:24px}}
 #slip{display:none}
+.thumb{width:44px;height:54px;object-fit:cover;border-radius:6px;background:var(--card2);display:block}
+.imgs{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0}.imgs div{position:relative}.imgs img{width:84px;height:104px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
+.imgs button{position:absolute;top:3px;right:3px;background:#000a;color:#fff;border:0;border-radius:50%;width:22px;height:22px;cursor:pointer;line-height:1}
+.imgs .main{position:absolute;left:3px;bottom:3px;background:var(--acc);color:#1a1405;font-size:10px;padding:1px 6px;border-radius:99px;font-weight:700}
+.lrow{display:flex;gap:8px;margin-bottom:6px}.lrow input{flex:1}.lrow button{flex:0 0 auto}
+.sect{margin-bottom:12px}.sect h3{margin-bottom:4px}.hint{color:var(--mut);font-size:12px;margin:2px 0 6px}
+.sw{display:flex;gap:8px;align-items:center;margin:10px 0 0}.sw input{width:auto}
+.savebar{position:sticky;bottom:0;background:var(--bg);padding:10px 0;border-top:1px solid var(--line);display:flex;gap:10px;align-items:center}
 </style></head><body>
 
 <div id="login" class="login card">
@@ -50,7 +58,7 @@ th{color:var(--mut);font-weight:500;font-size:12px;white-space:nowrap}tr.row{cur
 
 <div id="app" class="hide">
 <header><h1>WinkCasa</h1>
-  <nav><button data-t="overview" class="on">Overview</button><button data-t="orders">Orders</button></nav>
+  <nav><button data-t="overview" class="on">Overview</button><button data-t="orders">Orders</button><button data-t="products">Products</button><button data-t="store">Store settings</button></nav>
   <span class="sp"></span>
   <select id="range" style="width:auto"><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="90">Last 90 days</option><option value="365">Last 12 months</option></select>
   <button class="btn ghost sm" id="refresh">Refresh</button><button class="btn ghost sm" id="csv">Export CSV</button><button class="btn ghost sm" id="out">Sign out</button>
@@ -70,6 +78,8 @@ th{color:var(--mut);font-weight:500;font-size:12px;white-space:nowrap}tr.row{cur
   </div>
 </section>
 
+<section id="t-products" class="hide"></section>
+<section id="t-store" class="hide"></section>
 <section id="t-orders" class="hide">
   <div class="filters">
     <input id="q" placeholder="Search order, name, phone, email, tracking, pincode">
@@ -111,7 +121,8 @@ async function login(){
 $('#showtok').onchange=e=>{$('#tok').style.webkitTextSecurity=e.target.checked?'none':'disc'};$('#go').onclick=login;$('#tok').addEventListener('keydown',e=>{if(e.key==='Enter')login()});$('#out').onclick=signout;
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>show(b.dataset.t));
 function show(t){document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
-  $('#t-overview').classList.toggle('hide',t!=='overview');$('#t-orders').classList.toggle('hide',t!=='orders');if(t==='orders')loadOrders()}
+  ['overview','orders','products','store'].forEach(x=>$('#t-'+x).classList.toggle('hide',x!==t));
+  if(t==='orders')loadOrders();if(t==='products'&&window.loadProducts)loadProducts();if(t==='store'&&window.loadStore)loadStore()}
 $('#refresh').onclick=loadAll;$('#range').onchange=loadStats;
 $('#csv').onclick=async()=>{const b=await api('export');const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='winkcasa-orders.csv';a.click()};
 
@@ -179,4 +190,6 @@ async function openOrder(ref){
 }
 function closeDrawer(){$('#drawer').classList.add('hide');$('#scrim').classList.add('hide')}
 if(TOKEN){login()}
-</script></body></html>
+</script>
+<script src="editor.js"></script>
+</body></html>

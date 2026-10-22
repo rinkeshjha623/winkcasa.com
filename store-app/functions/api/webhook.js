@@ -1,4 +1,5 @@
 import { json, hmacHex, safeEqual } from '../../src/lib.js';
+import { applyStock } from '../../src/admin.js';
 
 // Razorpay webhook: marks orders paid even if the customer closes the tab before verify runs.
 // Add this URL in Razorpay Dashboard > Webhooks, event "payment.captured", with the same secret
@@ -18,6 +19,8 @@ export async function onRequestPost({ request, env }) {
        WHERE razorpay_order_id=? AND status='created'`
     ).bind(p.id, p.order_id).run();
     if (res.meta?.changes) {
+      const o = await env.DB.prepare('SELECT order_ref FROM orders WHERE razorpay_order_id=?').bind(p.order_id).first();
+      if (o) await applyStock(env, o.order_ref);
       await env.DB.prepare(
         "INSERT INTO order_events (order_ref, text) SELECT order_ref, ? FROM orders WHERE razorpay_order_id=?"
       ).bind('Payment received (' + p.id + ')', p.order_id).run();
