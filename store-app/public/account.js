@@ -96,7 +96,7 @@
   function set(d) { D = d; view(); }
   function bind() {
     [].forEach.call(root.querySelectorAll('[data-t]'), function (b) { b.onclick = function () { tab = b.getAttribute('data-t'); editing = null; view(); }; });
-    document.getElementById('lo').onclick = function () { api({ action: 'logout' }).then(function () { D = null; hint(false); mode = 'login'; view(); }); };
+    document.getElementById('lo').onclick = function () { api({ action: 'logout' }).then(function () { try { if (window.WC) window.WC.clear(); } catch (e) {} D = null; hint(false); mode = 'login'; view(); }); };
     var q = function (s, fn) { [].forEach.call(root.querySelectorAll(s), fn); };
     q('[data-unwish]', function (b) { b.onclick = function () { api({ action: 'wish', id: +b.getAttribute('data-unwish') }).then(set); }; });
     q('[data-edit]', function (b) { b.onclick = function () { editing = +b.getAttribute('data-edit'); view(); }; });
