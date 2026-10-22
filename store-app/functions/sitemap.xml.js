@@ -10,7 +10,7 @@ export async function onRequestGet({ env }) {
   const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` + [
     u('/', latest, '1.0', 'daily'),
     ...categoriesOf(rows, S).map((c) => u(c.path, latest, '0.8', 'daily')),
-    ...rows.map((r) => u(productPath(r), r.updated_at, '0.9', 'weekly')),
+    ...rows.filter((r) => !r.noindex).map((r) => u(productPath(r), r.updated_at, '0.9', 'weekly')),
     u('/try', null, '0.7', 'monthly'),
     u('/blog', posts[0]?.updated_at, '0.7', 'weekly'),
     ...posts.map((p) => u('/blog/' + p.slug, p.updated_at, '0.6', 'monthly')),

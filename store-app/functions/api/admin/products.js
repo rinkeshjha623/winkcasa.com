@@ -34,10 +34,11 @@ export async function onRequestPost({ request, env }) {
   const faq = (Array.isArray(b.faq) ? b.faq : []).map((f) => ({ q: s(f?.q, 160), a: s(f?.a, 600) })).filter((f) => f.q && f.a).slice(0, 6);
   const vals = [name, s(b.category, 40) || 'General', price, mrp, s(b.description, 200), s(b.tag, 20) || null,
     JSON.stringify(images), stock, b.active === false || b.active === 0 ? 0 : 1, Math.max(0, int(b.sort) || 0), s(b.supplier, 80) || null, cost,
-    s(b.seo_title, 70) || null, s(b.seo_description, 170) || null, s(b.details, 3000) || null, JSON.stringify(highlights), s(b.brand, 60) || null, s(b.sku, 40) || null, JSON.stringify(faq)];
+    s(b.seo_title, 70) || null, s(b.seo_description, 170) || null, s(b.details, 3000) || null, JSON.stringify(highlights), s(b.brand, 60) || null, s(b.sku, 40) || null, JSON.stringify(faq),
+    s(b.focus_keyword, 80) || null, s(b.ai_answer, 400) || null, s(b.img_alt, 140) || null, s(b.material, 80) || null, b.noindex ? 1 : 0];
 
   if (b.id) {
-    const r = await env.DB.prepare(`UPDATE products SET name=?,category=?,price=?,mrp=?,description=?,tag=?,images_json=?,stock=?,active=?,sort=?,supplier=?,cost=?,seo_title=?,seo_description=?,details=?,highlights_json=?,brand=?,sku=?,faq_json=?,updated_at=datetime('now') WHERE id=?`)
+    const r = await env.DB.prepare(`UPDATE products SET name=?,category=?,price=?,mrp=?,description=?,tag=?,images_json=?,stock=?,active=?,sort=?,supplier=?,cost=?,seo_title=?,seo_description=?,details=?,highlights_json=?,brand=?,sku=?,faq_json=?,focus_keyword=?,ai_answer=?,img_alt=?,material=?,noindex=?,updated_at=datetime('now') WHERE id=?`)
       .bind(...vals, Number(b.id)).run();
     if (!r.meta.changes) return json({ error: 'Product not found.' }, 404);
     return json({ ok: true, id: Number(b.id) });
@@ -45,7 +46,7 @@ export async function onRequestPost({ request, env }) {
   await ensureSeeded(env);
   const max = (await env.DB.prepare('SELECT COALESCE(MAX(sort),0) m FROM products').first()).m;
   vals[9] = vals[9] || max + 1;
-  const r = await env.DB.prepare(`INSERT INTO products (name,category,price,mrp,description,tag,images_json,stock,active,sort,supplier,cost,seo_title,seo_description,details,highlights_json,brand,sku,faq_json) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
+  const r = await env.DB.prepare(`INSERT INTO products (name,category,price,mrp,description,tag,images_json,stock,active,sort,supplier,cost,seo_title,seo_description,details,highlights_json,brand,sku,faq_json,focus_keyword,ai_answer,img_alt,material,noindex) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
     .bind(...vals).run();
   return json({ ok: true, id: r.meta.last_row_id });
 }

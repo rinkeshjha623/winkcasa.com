@@ -63,7 +63,7 @@ export function productLd(p, S) {
   const until = new Date(Date.now() + 365 * 86400000).toISOString().slice(0, 10);
   return {
     '@context': 'https://schema.org', '@type': 'Product', '@id': SITE + productPath(p) + '#product',
-    name: p.name, description: p.seo_description || p.description || p.name, sku: p.sku || String(p.id),
+    name: p.name, description: p.ai_answer || p.seo_description || p.description || p.name, material: p.material || undefined, keywords: p.focus_keyword || undefined, sku: p.sku || String(p.id),
     category: p.category, image: imgs.length ? imgs : undefined,
     brand: { '@type': 'Brand', name: p.brand || 'WinkCasa' },
     offers: {

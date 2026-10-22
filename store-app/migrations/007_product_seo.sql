@@ -1,0 +1,5 @@
+ALTER TABLE products ADD COLUMN focus_keyword TEXT;
+ALTER TABLE products ADD COLUMN ai_answer TEXT;
+ALTER TABLE products ADD COLUMN img_alt TEXT;
+ALTER TABLE products ADD COLUMN material TEXT;
+ALTER TABLE products ADD COLUMN noindex INTEGER NOT NULL DEFAULT 0;

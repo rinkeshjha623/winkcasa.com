@@ -46,7 +46,7 @@ function shrink(file) {
 }
 
 function openProduct(id) {
-  const p = id ? { ...PRODUCTS.find((x) => x.id === id) } : { name: '', category: PRODUCTS[0]?.category || 'Skincare', price: '', mrp: null, description: '', tag: '', images: [], stock: null, active: 1, supplier: '', cost: 0, seo_title: '', seo_description: '', details: '', highlights: [], brand: '', sku: '', faq: [] };
+  const p = id ? { ...PRODUCTS.find((x) => x.id === id) } : { name: '', category: PRODUCTS[0]?.category || 'Skincare', price: '', mrp: null, description: '', tag: '', images: [], stock: null, active: 1, supplier: '', cost: 0, seo_title: '', seo_description: '', details: '', highlights: [], brand: '', sku: '', faq: [], focus_keyword: '', ai_answer: '', img_alt: '', material: '', noindex: 0 };
   p.images = [...(p.images || [])]; p.highlights = [...(p.highlights || [])]; p.faq = (p.faq || []).map((f) => ({ ...f }));
   const d = $('#drawer'); d.classList.remove('hide'); $('#scrim').classList.remove('hide'); $('#scrim').onclick = closeDrawer;
   const cats = [...new Set(PRODUCTS.map((x) => x.category))];
@@ -66,24 +66,55 @@ function openProduct(id) {
     <div class="row2"><div><label>Stock (blank = unlimited)</label><input id="p_stock" type="number" min="0" step="1" value="${p.stock ?? ''}"></div>
     <div><label>Your cost incl. supplier shipping (₹)</label><input id="p_cost" type="number" min="0" step="1" value="${p.cost || ''}"></div></div>
     <label>Supplier</label><input id="p_sup" value="${esc(p.supplier || '')}" maxlength="80">
-    <h3 style="margin-top:18px">Search &amp; product page content</h3><p class="hint">This text builds this product's own web page, which Google and AI assistants (ChatGPT, Perplexity, Gemini) read. Be specific and honest.</p>
-    <div class="row2"><div><label>Brand (optional)</label><input id="p_brand" value="${esc(p.brand || '')}" maxlength="60"></div><div><label>SKU / code (optional)</label><input id="p_sku" value="${esc(p.sku || '')}" maxlength="40"></div></div>
-    <label>Search title (about 60 characters) <span id="c_t" class="muted"></span></label><input id="p_seot" value="${esc(p.seo_title || '')}" maxlength="70" placeholder="Vitamin C Serum 30 ml for glowing skin | WinkCasa">
+    <div class="card" id="seoCard" style="margin-top:18px;padding:14px;border:1px solid var(--accent)">
+    <h3 style="margin:0 0 4px">SEO · AEO · GEO for this product</h3><p class="hint" style="margin:0 0 10px">Everything Google, ChatGPT, Gemini, Perplexity and Claude read on this product's page. Be specific and honest.</p>
+    <div class="acts" style="margin:0 0 10px"><button class="btn ghost sm" id="seoAuto" type="button">Auto-fill empty fields</button><span id="seoScore" class="muted" style="align-self:center"></span></div>
+    <div id="seoPrev" class="card" style="padding:12px;margin-bottom:10px;background:#fff;color:#202124"></div>
+    <label>Focus keyword (what shoppers type into Google)</label><input id="p_kw" value="${esc(p.focus_keyword || '')}" maxlength="80" placeholder="gold plated butterfly earrings">
+    <label>Search title (about 60 characters) <span id="c_t" class="muted"></span></label><input id="p_seot" value="${esc(p.seo_title || '')}" maxlength="70" placeholder="Butterfly Earrings | Gold Plated, Lightweight | WinkCasa">
     <label>Search description (about 155 characters) <span id="c_d" class="muted"></span></label><textarea id="p_seod" rows="2" maxlength="170" placeholder="What it is, who it is for, price and delivery.">${esc(p.seo_description || '')}</textarea>
+    <label>Quick answer for AI assistants (AEO): one or two plain sentences, 25 to 60 words <span id="c_a" class="muted"></span></label><textarea id="p_ans" rows="3" maxlength="400" placeholder="Butterfly Earrings are lightweight gold-plated earrings for everyday wear, priced at ₹499 with free delivery across India above ₹999.">${esc(p.ai_answer || '')}</textarea>
     <label>Full product details (blank line = new paragraph)</label><textarea id="p_det" rows="6" maxlength="3000" placeholder="What it is, key ingredients or materials, size, how to use or care, what is in the box.">${esc(p.details || '')}</textarea>
-    <label>Key points (one per line)</label><textarea id="p_hl" rows="4" placeholder="Suitable for oily skin&#10;Gold-plated, anti-tarnish">${esc(p.highlights.join('\n'))}</textarea>
+    <label>Key points (one per line)</label><textarea id="p_hl" rows="4" placeholder="Suitable for sensitive ears&#10;Gold-plated, anti-tarnish">${esc(p.highlights.join('\n'))}</textarea>
+    <div class="row2"><div><label>Material (optional)</label><input id="p_mat" value="${esc(p.material || '')}" maxlength="80" placeholder="Stainless steel, gold plated"></div><div><label>Photo description (alt text)</label><input id="p_alt" value="${esc(p.img_alt || '')}" maxlength="140" placeholder="Gold butterfly earrings worn on an ear"></div></div>
+    <div class="row2"><div><label>Brand (optional)</label><input id="p_brand" value="${esc(p.brand || '')}" maxlength="60"></div><div><label>SKU / code (optional)</label><input id="p_sku" value="${esc(p.sku || '')}" maxlength="40"></div></div>
     <label>Questions customers ask (shown on the page and read by AI assistants)</label>
     ${p.faq.map((f, i) => `<div class="card" style="margin-bottom:8px;padding:10px"><input class="fq" data-i="${i}" value="${esc(f.q)}" placeholder="Question"><textarea class="fa" data-i="${i}" rows="2" style="margin-top:6px" placeholder="Answer">${esc(f.a)}</textarea><button class="btn ghost sm" data-fdel="${i}" style="margin-top:6px">Remove</button></div>`).join('')}
     ${p.faq.length < 6 ? '<button class="btn ghost sm" id="p_fadd">+ Add question</button>' : ''}
+    <div class="sw" style="margin-top:10px"><input type="checkbox" id="p_noi" ${p.noindex ? 'checked' : ''}><label for="p_noi" style="margin:0;color:var(--fg)">Hide this page from Google and AI search</label></div>
+    <p class="hint">This page lives at <b>/p/${p.id || 'new'}-…</b> and is added to the sitemap automatically.</p>
+    </div>
     <div class="sw"><input type="checkbox" id="p_act" ${p.active ? 'checked' : ''}><label for="p_act" style="margin:0;color:var(--fg)">Live on the store</label></div>
     <div class="savebar"><button class="btn" id="p_save">${id ? 'Save changes' : 'Create product'}</button>${id ? '<button class="btn ghost" id="p_dup">Duplicate</button><button class="btn ghost" id="p_del" style="color:var(--bad)">Delete</button>' : ''}</div>`;
     $('#x').onclick = closeDrawer;
     const keep = () => { p.name = $('#p_name').value; p.category = $('#p_cat').value; p.tag = $('#p_tag').value; p.price = $('#p_price').value; p.mrp = $('#p_mrp').value; p.description = $('#p_desc').value; p.stock = $('#p_stock').value; p.cost = $('#p_cost').value; p.supplier = $('#p_sup').value; p.active = $('#p_act').checked ? 1 : 0;
-      p.brand = $('#p_brand').value; p.sku = $('#p_sku').value; p.seo_title = $('#p_seot').value; p.seo_description = $('#p_seod').value; p.details = $('#p_det').value;
+      p.brand = $('#p_brand').value; p.sku = $('#p_sku').value; p.seo_title = $('#p_seot').value; p.seo_description = $('#p_seod').value; p.focus_keyword = $('#p_kw').value; p.ai_answer = $('#p_ans').value; p.material = $('#p_mat').value; p.img_alt = $('#p_alt').value; p.noindex = $('#p_noi').checked ? 1 : 0; p.details = $('#p_det').value;
       p.highlights = $('#p_hl').value.split('\n').map((x) => x.trim()).filter(Boolean);
       d.querySelectorAll('.fq').forEach((i) => (p.faq[+i.dataset.i].q = i.value)); d.querySelectorAll('.fa').forEach((i) => (p.faq[+i.dataset.i].a = i.value)); };
-    const cnt = () => { $('#c_t').textContent = $('#p_seot').value.length + ' characters'; $('#c_d').textContent = $('#p_seod').value.length + ' characters'; };
-    $('#p_seot').oninput = $('#p_seod').oninput = cnt; cnt();
+    const money = (n) => '₹' + Number(n || 0).toLocaleString('en-IN');
+    const free = SETTINGS?.shipping?.freeShippingAbove || 999;
+    const cnt = () => {
+      keep();
+      const t = p.seo_title || `${p.name} | ${p.category} | WinkCasa`, dsc = p.seo_description || p.description || '';
+      $('#c_t').textContent = $('#p_seot').value.length + ' characters'; $('#c_d').textContent = $('#p_seod').value.length + ' characters'; $('#c_a').textContent = $('#p_ans').value.trim().split(/\s+/).filter(Boolean).length + ' words';
+      $('#seoPrev').innerHTML = `<div style="font-size:.75rem;color:#4d5156">winkcasa.com › p › ${esc((p.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 30))}</div><div style="font-size:1.1rem;color:#1a0dab;margin:2px 0">${esc(t.slice(0, 60))}</div><div style="font-size:.85rem;color:#4d5156">${esc(dsc.slice(0, 160)) || 'Add a search description.'}</div>`;
+      const kw = (p.focus_keyword || '').toLowerCase().trim(), has = (x) => kw && String(x || '').toLowerCase().includes(kw), words = (p.details || '').split(/\s+/).filter(Boolean).length, aw = (p.ai_answer || '').split(/\s+/).filter(Boolean).length;
+      const faqN = p.faq.filter((f) => f.q && f.a).length;
+      const checks = [['Focus keyword set', !!kw], ['Keyword in title', has(p.seo_title)], ['Keyword in description', has(p.seo_description)], ['Title 30 to 65 characters', (p.seo_title || '').length >= 30 && p.seo_title.length <= 65],
+        ['Description 110 to 165 characters', (p.seo_description || '').length >= 110 && p.seo_description.length <= 165], ['Quick answer 25 to 60 words', aw >= 25 && aw <= 60], ['Details 120+ words', words >= 120], ['3+ customer questions', faqN >= 3], ['Photo description added', !!p.img_alt], ['Material or key points added', !!p.material || p.highlights.length >= 2]];
+      const ok = checks.filter((c) => c[1]).length; $('#seoScore').innerHTML = `<b style="color:${ok >= 8 ? 'var(--ok,#6bbf8a)' : ok >= 5 ? '#E7C77C' : 'var(--bad)'}">${ok}/10</b> ` + checks.filter((c) => !c[1]).map((c) => '✗ ' + c[0]).join(' · ');
+    };
+    $('#seoCard').addEventListener('input', cnt); cnt();
+    $('#seoAuto').onclick = () => {
+      keep(); const n = p.name || 'This product', cat = (p.category || 'jewellery').toLowerCase(), kw = p.focus_keyword || (n.toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').split(/\s+/).slice(0, 4).join(' '));
+      if (!p.focus_keyword) p.focus_keyword = kw;
+      if (!p.seo_title) { const t = `${n.split(/[,(]/)[0].trim().slice(0, 40)} | ${p.category} in India | WinkCasa`; p.seo_title = t.length <= 65 ? t : `${n.slice(0, 45)} | WinkCasa`; }
+      if (!p.seo_description) p.seo_description = `Buy ${n.split(/[,(]/)[0].trim()} online at WinkCasa for ${money(p.price)}. ${p.description ? p.description.slice(0, 60) + '. ' : ''}Free delivery above ${money(free)} across India and 7-day returns on damaged or wrong items.`.slice(0, 165);
+      if (!p.ai_answer) p.ai_answer = `${n.split(/[,(]/)[0].trim()} is a ${cat} piece from WinkCasa, priced at ${money(p.price)}${p.material ? ', made of ' + p.material.toLowerCase() : ''}. ${p.highlights.length ? p.highlights.slice(0, 2).join('. ') + '. ' : ''}Delivery across India is free above ${money(free)}, with 7-day returns on damaged, defective or wrong items.`.slice(0, 400);
+      if (!p.img_alt) p.img_alt = n.split(/[,(]/)[0].trim().slice(0, 120);
+      if (p.faq.filter((f) => f.q && f.a).length < 3) { const base = n.split(/[,(]/)[0].trim(), add = [[`How much does ${base} cost?`, `${base} is priced at ${money(p.price)} including GST. Delivery is free above ${money(free)} across India.`], [`Can I return ${base} if it arrives damaged?`, 'Yes. If it arrives damaged, defective or not as described, tell us within 7 days and we will replace it or refund you.'], [`Do you deliver ${base} across India?`, 'Yes, WinkCasa delivers to serviceable pincodes across India. Your estimated delivery dates are shown at checkout.']]; p.faq = p.faq.filter((f) => f.q && f.a); add.forEach((f) => { if (p.faq.length < 6) p.faq.push({ q: f[0], a: f[1] }); }); }
+      draw(); toast('Filled the empty fields. Please review and edit.');
+    };
     d.querySelectorAll('[data-fdel]').forEach((b) => (b.onclick = () => { keep(); p.faq.splice(+b.dataset.fdel, 1); draw(); }));
     if ($('#p_fadd')) $('#p_fadd').onclick = () => { keep(); p.faq.push({ q: '', a: '' }); draw(); };
     d.querySelectorAll('[data-rm]').forEach((b) => (b.onclick = () => { keep(); p.images.splice(+b.dataset.rm, 1); draw(); }));
