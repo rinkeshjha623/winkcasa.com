@@ -183,8 +183,9 @@ export function shareHtml({ url, title, image, text }) {
 <a class="sh" href="https://twitter.com/intent/tweet?url=${enc(url)}&text=${enc(t)}" target="_blank" rel="noopener" aria-label="Share on X" title="X">${ico('x')}</a>
 <button class="sh" type="button" data-copy="${esc(url)}" aria-label="Copy link" title="Copy link">${ico('link')}</button><button class="sh" type="button" data-nshare hidden aria-label="More sharing options" title="More">${ico('more')}</button></div>`;
 }
-export function askHtml(S, subject) {
+export function askHtml(S, subject, bare) {
   const num = String((S.social && S.social.whatsapp && S.social.whatsapp.replace(/\D/g, '')) || S.business.phone.replace(/\D/g, '')).replace(/^0+/, '');
   const full = num.length === 10 ? '91' + num : num;
-  return `<p class="askwa"><a class="btn alt" href="https://wa.me/${full}?text=${enc('Hi WinkCasa, I have a question about: ' + subject)}" target="_blank" rel="noopener">Ask us on WhatsApp</a></p>`;
+  const a = `<a class="btn alt" href="https://wa.me/${full}?text=${enc('Hi WinkCasa, I have a question about: ' + subject)}" target="_blank" rel="noopener">Ask us on WhatsApp</a>`;
+  return bare ? a : `<p class="askwa">${a}</p>`;
 }

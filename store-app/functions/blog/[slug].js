@@ -50,9 +50,8 @@ ${faq.length ? `<section class="faq postfaq"><h2>Frequently asked questions</h2>
 ${sources.length ? `<section class="sources"><h2>Sources</h2><ol>${sources.map((s) => `<li><a href="${esc(s.url)}" rel="noopener nofollow">${esc(s.title)}</a></li>`).join('')}</ol></section>` : ''}
 ${PIN_SLUGS.has(post.slug) ? `<figure class="pinfig"><img src="/pins/${esc(post.slug)}.png" alt="${esc(post.title)}: WinkCasa style guide" width="400" height="600" loading="lazy"><figcaption>Save this guide for later.</figcaption></figure>` : ''}
 ${post.author_bio ? `<aside class="authorbox"><b>About ${esc(post.author)}</b><p>${esc(post.author_bio)}</p></aside>` : ''}
-<p style="margin-top:30px"><a class="btn" href="/try">Find your face shape</a> &nbsp; <a class="btn alt" href="/#shop">Shop WinkCasa</a></p>
-${shareHtml({ url: canonical, title: post.title, image: cover, text: 'Worth a read: ' + post.title })}
-${askHtml(S, post.title)}
+<div class="postfoot"><div class="pfl"><a class="btn" href="/try">Find your face shape</a><a class="btn alt" href="/#shop">Shop WinkCasa</a>${askHtml(S, post.title, true)}</div>
+${shareHtml({ url: canonical, title: post.title, image: cover, text: 'Worth a read: ' + post.title })}</div>
 ${comments ? commentsHtml(post, comments) : ''}</article>
 ${more.length ? `<section class="sec"><h2>More to read</h2><div class="posts" style="padding-block:10px 0">${more.map((p) => `<article class="post"><a href="/blog/${esc(p.slug)}"><h2>${esc(p.title)}</h2><p>${esc(p.excerpt)}</p></a></article>`).join('')}</div></section>` : ''}</main>`;
 
