@@ -217,6 +217,8 @@ ${SOURCES}`,
   },
 ];
 
+export const PIN_SLUGS = new Set(GUIDES.map((g) => g.slug));
+
 export async function ensureGuides(env) {
   const done = await env.DB.prepare("SELECT value FROM settings WHERE key='guides_seeded_v1'").first();
   if (done) return;

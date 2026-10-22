@@ -1,5 +1,6 @@
 import { getSettings, activeProducts, categoriesOf, markdown, wordsOf } from '../../src/store.js';
 import { publishedPosts } from '../../src/blog.js';
+import { PIN_SLUGS } from '../../src/guides.js';
 import { SITE, abs, esc, trim, headTags, pageShell, breadcrumbLd, faqLd } from '../../src/seo.js';
 
 function faqFrom(body) {
@@ -24,7 +25,7 @@ ${post.image ? `<img class="hero" src="${esc(post.image)}" alt="${esc(post.title
 <p style="margin-top:30px"><a class="btn" href="/#shop">Shop WinkCasa</a></p></article>
 ${more.length ? `<section class="sec"><h2>More to read</h2><div class="posts" style="padding-block:10px 0">${more.map((p) => `<article class="post"><a href="/blog/${esc(p.slug)}"><h2>${esc(p.title)}</h2><p>${esc(p.excerpt)}</p></a></article>`).join('')}</div></section>` : ''}</main>`;
   const html = pageShell({
-    head: headTags({ title: trim(post.seo_title || post.title + ' | WinkCasa', 70), description: trim(post.seo_description || post.excerpt, 160), canonical: url, image: post.image || S.seo.ogImage, type: 'article' }),
+    head: headTags({ title: trim(post.seo_title || post.title + ' | WinkCasa', 70), description: trim(post.seo_description || post.excerpt, 160), canonical: url, image: post.image || (PIN_SLUGS.has(post.slug) ? '/pins/' + post.slug + '.png' : S.seo.ogImage), type: 'article' }),
     S, cats, main,
     jsonld: [faqLd(faqFrom(post.body)), breadcrumbLd([{ name: 'Home', url: SITE + '/' }, { name: 'Blog', url: SITE + '/blog' }, { name: post.title, url }]),
       { '@context': 'https://schema.org', '@type': 'BlogPosting', headline: post.title, description: post.excerpt, mainEntityOfPage: url, url,
