@@ -41,10 +41,14 @@
   function proxied(u) { return /^\//.test(u) ? u : '/api/cutout?u=' + encodeURIComponent(u); }
   function loadCut(p) {
     if (cuts[p.id]) return cuts[p.id];
+    var urls = (p.images && p.images.length ? p.images : [p.image]).slice(0, 6);
     return (cuts[p.id] = new Promise(function (ok) {
-      var im = new Image();
-      im.onload = function () { var c = null; try { c = makeCut(im); } catch (e) { c = null; } cutRes[p.id] = c || false; ok(c); };
-      im.onerror = function () { cutRes[p.id] = false; ok(null); }; im.src = proxied(p.image);
+      (function next(k) {
+        if (k >= urls.length) { cutRes[p.id] = false; ok(null); return; }
+        var im = new Image();
+        im.onload = function () { var c = null; try { c = makeCut(im); } catch (e) { c = null; } if (c) { cutRes[p.id] = c; ok(c); } else next(k + 1); };
+        im.onerror = function () { next(k + 1); }; im.src = proxied(urls[k]);
+      })(0);
     }));
   }
   function makeCut(im) {
@@ -54,11 +58,16 @@
     function edge(f) { for (i = 0; i < w; i++) { f(i); f((h - 1) * w + i); } for (j = 1; j < h - 1; j++) { f(j * w); f(j * w + w - 1); } }
     edge(function (q) { br += px[q * 4]; bg += px[q * 4 + 1]; bb += px[q * 4 + 2]; bn++; });
     br /= bn; bg /= bn; bb /= bn;
-    var like = new Uint8Array(n), TOL = 52 * 52;
-    for (i = 0; i < n; i++) { var dr = px[i * 4] - br, dg = px[i * 4 + 1] - bg, db = px[i * 4 + 2] - bb; like[i] = dr * dr + dg * dg + db * db < TOL ? 1 : 0; }
-    var edgeLike = 0; edge(function (q) { if (like[q]) edgeLike++; });
-    if (edgeLike / bn < 0.8) return null;               // busy background: not a clean product shot
-    var lab = new Int32Array(n), qu = new Int32Array(n), comps = [], cur = 0;
+    var clear = new Uint8Array(n), lab = new Int32Array(n), qu = new Int32Array(n), cur = 0, a0 = 0, b0 = 0;
+    var SEED = 75 * 75, STEP = 13 * 13, HOLE = 40 * 40;
+    function near(q) { var dr = px[q * 4] - br, dg = px[q * 4 + 1] - bg, db = px[q * 4 + 2] - bb; return dr * dr + dg * dg + db * db < SEED; }
+    function d2(a, b) { var dr = px[a * 4] - px[b * 4], dg = px[a * 4 + 1] - px[b * 4 + 1], db = px[a * 4 + 2] - px[b * 4 + 2]; return dr * dr + dg * dg + db * db; }
+    function grow(q, q2) { if (!clear[q2] && d2(q, q2) < STEP && near(q2)) { clear[q2] = 1; qu[b0++] = q2; } }
+    edge(function (q) { if (!clear[q] && near(q)) { clear[q] = 1; qu[b0++] = q; } });
+    while (a0 < b0) { var q = qu[a0++], qx = q % w, qy = (q - qx) / w;
+      if (qx > 0) grow(q, q - 1); if (qx < w - 1) grow(q, q + 1); if (qy > 0) grow(q, q - w); if (qy < h - 1) grow(q, q + w); }
+    if (b0 < n * 0.3) return null;                      // background not found: busy or lifestyle photo
+    var mr = 0, mg = 0, mb = 0; for (i = 0; i < b0; i++) { mr += px[qu[i] * 4]; mg += px[qu[i] * 4 + 1]; mb += px[qu[i] * 4 + 2]; } mr /= b0; mg /= b0; mb /= b0;
     function flood(seed, match) {
       var a = 0, b = 0, cnt = 0; qu[b++] = seed; lab[seed] = cur;
       while (a < b) { var q = qu[a++], qx = q % w, qy = (q - qx) / w; cnt++;
@@ -68,12 +77,9 @@
         if (qy < h - 1 && !lab[q + w] && match(q + w)) { lab[q + w] = cur; qu[b++] = q + w; } }
       return cnt;
     }
-    var isLike = function (q) { return like[q] === 1; }, notLike = function (q) { return like[q] === 0; };
-    var clear = new Uint8Array(n);                       // 1 = transparent
-    // 1) background connected to the border, 2) large enclosed background (inside hoops)
-    for (i = 0; i < n; i++) if (like[i] && !lab[i]) { cur++; var onEdge = false, sx = i % w, sy = (i - sx) / w; var cnt = flood(i, isLike);
-      var big = cnt >= n * 0.004; comps[cur] = big; }
-    for (i = 0; i < n; i++) if (like[i] && comps[lab[i]]) clear[i] = 1;
+    var holeLike = function (q) { var dr = px[q * 4] - mr, dg = px[q * 4 + 1] - mg, db = px[q * 4 + 2] - mb; return !clear[q] && dr * dr + dg * dg + db * db < HOLE; }, hl = [];
+    for (i = 0; i < n; i++) if (!clear[i] && !lab[i] && holeLike(i)) { cur++; var cnt = flood(i, holeLike); hl[cur] = cnt >= n * 0.004; }
+    for (i = 0; i < n; i++) if (lab[i] && hl[lab[i]]) clear[i] = 1;
     for (i = 0; i < n; i++) lab[i] = 0; cur = 0; var best = 0, bestId = 0, areas = [];
     for (i = 0; i < n; i++) if (!clear[i] && !lab[i]) { cur++; var ct = flood(i, function (q) { return !clear[q]; }); areas[cur] = ct; if (ct > best) { best = ct; bestId = cur; } }
     if (!bestId || best < n * 0.012 || best > n * 0.8) return null;
