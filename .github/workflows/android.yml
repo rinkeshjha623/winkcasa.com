@@ -6,6 +6,7 @@ on:
 jobs:
   apk:
     runs-on: ubuntu-latest
+    env: { HAS_KS: "${{ secrets.ANDROID_KEYSTORE_B64 != '' }}" }
     defaults: { run: { working-directory: mobile-app } }
     steps:
       - uses: actions/checkout@v4
@@ -20,7 +21,7 @@ jobs:
       - name: Build debug APK (installs on any Android phone)
         run: cd android && ./gradlew assembleDebug
       - name: Build signed release bundle (only when signing secrets exist)
-        if: ${{ secrets.ANDROID_KEYSTORE_B64 != '' }}
+        if: env.HAS_KS == 'true'
         env:
           KS_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
           KS_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
