@@ -263,3 +263,6 @@ header.bar .rt{justify-self:end;display:flex;align-items:center}
 .pfl{display:flex;gap:10px;flex-wrap:wrap}.pfl .btn{padding:12px 22px}
 .postfoot .share{margin:0;margin-left:auto;justify-content:flex-end}
 @media(max-width:700px){.postfoot .share{margin-left:0}}
+
+.pfl .btn{padding:11px 18px;font-size:.72rem}.postfoot .share{gap:6px}.postfoot .share .sh{width:36px;height:36px}
+.askline{margin:14px 0 0;color:var(--muted);font-size:.9rem}.article .askline a.tlink{color:var(--accent);text-decoration:none;border-bottom:1px solid var(--accent);padding-bottom:1px}
