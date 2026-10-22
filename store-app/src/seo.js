@@ -124,8 +124,6 @@ export function footerHtml(S, cats) {
 <div><h4>Legal</h4><ul>${legal.map(([h, t]) => L(okHref(h), t)).join('')}</ul>${social.length ? `<h4 class="h4b">Follow us</h4><ul>${social.map(([n, u]) => `<li><a href="${esc(u)}" rel="noopener me">${n}</a></li>`).join('')}</ul>` : ''}</div>
 </div>${payMethodsHtml()}<div class="fbase"><span>${esc(f.copyright)}</span><span>${esc(f.note)}${f.showUnsplash ? ' Photos from <a href="https://unsplash.com" rel="noopener">Unsplash</a>.' : ''}</span></div></footer>`;
 }
-</div>${payMethodsHtml()}<div class="fbase"><span>${esc(f.copyright)}</span><span>${esc(f.note)}${f.showUnsplash ? ' Photos from <a href="https://unsplash.com" rel="noopener">Unsplash</a>.' : ''}</span></div></footer>`;
-}
 
 export const faqHtml = (list, heading = 'Frequently asked questions') => list.length
   ? `<section class="faq" id="faq"><div class="wrap faqgrid"><div class="faqhead"><p class="faqeye">Concierge</p><h2>${esc(heading)}</h2><p class="faqsub">Everything you may wish to know before you order. Can't find it? We reply within one working day.</p><a class="btn alt" href="/contact">Speak to us</a></div><div class="faqlist">${list.map((f, i) => `<details${i === 0 ? ' open' : ''}><summary><span>${esc(f.q)}</span></summary><p>${esc(f.a)}</p></details>`).join('')}</div></div></section>` : '';
