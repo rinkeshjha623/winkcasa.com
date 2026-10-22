@@ -13,7 +13,7 @@ export async function onRequestGet({ env }) {
     ...rows.filter((r) => !r.noindex).map((r) => u(productPath(r), r.updated_at, '0.9', 'weekly')),
     u('/try', null, '0.7', 'monthly'),
     u('/blog', posts[0]?.updated_at, '0.7', 'weekly'),
-    ...posts.map((p) => u('/blog/' + p.slug, p.updated_at, '0.6', 'monthly')),
+    ...posts.filter((p) => !p.noindex).map((p) => u('/blog/' + p.slug, p.updated_at, '0.6', 'monthly')),
     u('/about', '', '0.5', 'yearly'), u('/contact', '', '0.5', 'yearly'),
     ...['/returns', '/shipping', '/privacy', '/terms'].map((p) => u(p, '', '0.3', 'yearly')),
   ].join('\n') + '\n</urlset>';

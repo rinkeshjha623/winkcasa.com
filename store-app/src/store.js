@@ -163,23 +163,46 @@ export function deliveryWindow(from = new Date()) {
 /* ---------- tiny, safe markdown for blog posts: ## headings, - lists, **bold**, [text](url) ---------- */
 const escHtml = (t) => String(t ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const inline = (t) => escHtml(t)
+  .replace(/`([^`]+)`/g, '<code>$1</code>')
   .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+  .replace(/(^|[^*])\*([^*\s][^*]*?)\*(?!\*)/g, '$1<em>$2</em>')
+  .replace(/!\[([^\]]*)\]\(((?:https:\/\/|\/)[^\s)]+)\)/g, '<img src="$2" alt="$1" loading="lazy">')
   .replace(/\[([^\]]+)\]\(((?:https?:\/\/|\/)[^\s)]+)\)/g, '<a href="$2">$1</a>');
+const plain = (t) => String(t || '').replace(/!\[[^\]]*\]\([^)]*\)/g, '').replace(/\[([^\]]+)\]\([^)]*\)/g, '$1').replace(/[*`_]/g, '').trim();
+export const headingId = (t) => slugify(plain(t)).slice(0, 50);
+export function headingsOf(src) {
+  const out = [];
+  for (const l of String(src || '').split('\n')) { const m = /^(##|###) (.+)$/.exec(l.trim()); if (m) out.push({ level: m[1].length, text: plain(m[2]), id: headingId(m[2]) }); }
+  return out;
+}
+function tableHtml(rows) {
+  const cells = (r) => r.replace(/^\||\|$/g, '').split('|').map((c) => c.trim());
+  const body = rows.filter((r) => !/^\|?[\s:|-]+\|?$/.test(r) || !/-/.test(r));
+  if (!body.length) return '';
+  const head = cells(body[0]);
+  return `<div class="tblwrap"><table><thead><tr>${head.map((c) => `<th>${inline(c)}</th>`).join('')}</tr></thead><tbody>${body.slice(1).map((r) => `<tr>${cells(r).map((c) => `<td>${inline(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+}
 export function markdown(src) {
-  const out = []; let list = [];
-  const flush = () => { if (list.length) { out.push('<ul>' + list.map((l) => `<li>${inline(l)}</li>`).join('') + '</ul>'); list = []; } };
-  for (const block of String(src || '').split(/\n{2,}/)) {
-    for (const line of block.split('\n')) {
-      const t = line.trim();
-      if (!t) continue;
-      if (/^- /.test(t)) { list.push(t.slice(2)); continue; }
-      flush();
-      if (/^## /.test(t)) out.push(`<h2>${inline(t.slice(3))}</h2>`);
-      else if (/^### /.test(t)) out.push(`<h3>${inline(t.slice(4))}</h3>`);
-      else out.push(`<p>${inline(t)}</p>`);
-    }
+  const out = []; let list = null, tbl = null;
+  const flush = () => {
+    if (list) { out.push(`<${list.t}>` + list.i.map((l) => `<li>${inline(l)}</li>`).join('') + `</${list.t}>`); list = null; }
+    if (tbl) { out.push(tableHtml(tbl)); tbl = null; }
+  };
+  for (const line of String(src || '').split('\n')) {
+    const t = line.trim(); let m;
+    if (!t) { flush(); continue; }
+    if ((m = /^[-*] (.*)$/.exec(t))) { if (!list || list.t !== 'ul') { flush(); list = { t: 'ul', i: [] }; } list.i.push(m[1]); continue; }
+    if ((m = /^\d+[.)] (.*)$/.exec(t))) { if (!list || list.t !== 'ol') { flush(); list = { t: 'ol', i: [] }; } list.i.push(m[1]); continue; }
+    if (t[0] === '|') { if (!tbl) { flush(); tbl = []; } tbl.push(t); continue; }
     flush();
+    if (/^## /.test(t)) out.push(`<h2 id="${headingId(t.slice(3))}">${inline(t.slice(3))}</h2>`);
+    else if (/^### /.test(t)) out.push(`<h3 id="${headingId(t.slice(4))}">${inline(t.slice(4))}</h3>`);
+    else if (/^> ?/.test(t)) out.push(`<blockquote><p>${inline(t.replace(/^> ?/, ''))}</p></blockquote>`);
+    else if (/^(---|\*\*\*)$/.test(t)) out.push('<hr>');
+    else if ((m = /^!\[([^\]]*)\]\(((?:https:\/\/|\/)[^\s)]+)\)$/.exec(t))) out.push(`<figure class="pimg"><img src="${escHtml(m[2])}" alt="${escHtml(m[1])}" loading="lazy"></figure>`);
+    else out.push(`<p>${inline(t)}</p>`);
   }
+  flush();
   return out.join('\n');
 }
 export const wordsOf = (t) => String(t || '').split(/\s+/).filter(Boolean).length;

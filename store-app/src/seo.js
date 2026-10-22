@@ -11,23 +11,23 @@ const money = (n) => '₹' + Number(n).toLocaleString('en-IN');
 
 export const ld = (obj) => `<script type="application/ld+json">${JSON.stringify(obj).replace(/</g, '\\u003c')}</script>`;
 
-export function headTags({ title, description, canonical, image, type = 'website', noindex = false }) {
-  const img = abs(image);
+export function headTags({ title, description, canonical, image, type = 'website', noindex = false, robots, ogTitle, ogDescription, ogImage, twCard, twTitle, twDescription }) {
+  const img = abs(ogImage || image), ot = ogTitle || title, od = ogDescription || description;
   return `<title>${esc(title)}</title>
 <meta name="description" content="${esc(description)}">
 <link rel="canonical" href="${esc(canonical)}">
-<meta name="robots" content="${noindex ? 'noindex,follow' : 'index,follow,max-image-preview:large,max-snippet:-1'}">
+<meta name="robots" content="${esc(robots || (noindex ? 'noindex,follow' : 'index,follow,max-image-preview:large,max-snippet:-1'))}">
 <meta name="theme-color" content="#0B1916">
 <meta property="og:site_name" content="WinkCasa">
 <meta property="og:locale" content="en_IN">
 <meta property="og:type" content="${type}">
-<meta property="og:title" content="${esc(title)}">
-<meta property="og:description" content="${esc(description)}">
+<meta property="og:title" content="${esc(ot)}">
+<meta property="og:description" content="${esc(od)}">
 <meta property="og:url" content="${esc(canonical)}">
 ${img ? `<meta property="og:image" content="${esc(img)}">` : ''}
-<meta name="twitter:card" content="${img ? 'summary_large_image' : 'summary'}">
-<meta name="twitter:title" content="${esc(title)}">
-<meta name="twitter:description" content="${esc(description)}">
+<meta name="twitter:card" content="${esc(twCard || (img ? 'summary_large_image' : 'summary'))}">
+<meta name="twitter:title" content="${esc(twTitle || ot)}">
+<meta name="twitter:description" content="${esc(twDescription || od)}">
 ${img ? `<meta name="twitter:image" content="${esc(img)}">` : ''}`;
 }
 
