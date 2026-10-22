@@ -76,8 +76,11 @@ export async function ensurePosts(env) {
   ]);
 }
 
+import { ensureGuides } from './guides.js';
+
 export async function publishedPosts(env) {
   await ensurePosts(env);
+  await ensureGuides(env);
   const { results } = await env.DB.prepare('SELECT * FROM posts WHERE published=1 ORDER BY published_at DESC, id DESC').all();
   return results;
 }

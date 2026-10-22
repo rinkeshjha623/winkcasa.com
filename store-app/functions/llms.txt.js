@@ -9,7 +9,7 @@ export async function onRequestGet({ env }) {
   const money = (n) => 'INR ' + n;
   const t = `# WinkCasa
 
-> WinkCasa is an online store in New Delhi, India selling skincare, beauty tools and everyday jewellery. Prices are in Indian rupees (INR) and include GST. We deliver across India.
+> WinkCasa is an online store in New Delhi, India selling everyday jewellery (earrings, necklaces, bracelets, rings), hair accessories and beauty tools. It also offers a free, private face shape finder (Find your look) that suggests earrings, necklaces and hair accessories for oval, round, square, heart and long faces. Prices are in Indian rupees (INR) and include GST. We deliver across India.
 
 ## Business details
 - Trading name: ${b.name} (${b.legalName})
@@ -33,6 +33,9 @@ ${rows.map(parseProduct).map((p) => `- [${p.name}](${SITE}${productPath(p)}): ${
 
 ## Guides
 ${posts.map((p) => `- [${p.title}](${SITE}/blog/${p.slug}): ${p.excerpt}`).join('\n')}
+
+## Tools
+- [Find your look: free face shape finder](${SITE}/try): detects face shape in the browser (the photo is not uploaded unless the user consents) and suggests earrings, necklaces and hair accessories.
 
 ## Pages
 - [About us](${SITE}/about)

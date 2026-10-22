@@ -1,7 +1,13 @@
 import { getSettings, activeProducts, categoriesOf, markdown, wordsOf } from '../../src/store.js';
 import { publishedPosts } from '../../src/blog.js';
-import { SITE, abs, esc, trim, headTags, pageShell, breadcrumbLd } from '../../src/seo.js';
+import { SITE, abs, esc, trim, headTags, pageShell, breadcrumbLd, faqLd } from '../../src/seo.js';
 
+function faqFrom(body) {
+  const m = String(body || '').split(/^## Frequently asked questions\s*$/m)[1]; if (!m) return [];
+  const sec = m.split(/^## /m)[0], out = [];
+  sec.split(/^### /m).slice(1).forEach((b) => { const i = b.indexOf('\n'); const q = b.slice(0, i).trim(), a = b.slice(i + 1).trim().replace(/\[([^\]]+)\]\([^)]*\)/g, '$1').replace(/\*\*/g, ''); if (q && a) out.push({ q, a }); });
+  return out;
+}
 const iso = (t) => new Date(t.replace(' ', 'T') + 'Z').toISOString();
 const day = (t) => new Date(t.replace(' ', 'T') + 'Z').toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Kolkata' });
 
@@ -20,7 +26,7 @@ ${more.length ? `<section class="sec"><h2>More to read</h2><div class="posts" st
   const html = pageShell({
     head: headTags({ title: trim(post.seo_title || post.title + ' | WinkCasa', 70), description: trim(post.seo_description || post.excerpt, 160), canonical: url, image: post.image || S.seo.ogImage, type: 'article' }),
     S, cats, main,
-    jsonld: [breadcrumbLd([{ name: 'Home', url: SITE + '/' }, { name: 'Blog', url: SITE + '/blog' }, { name: post.title, url }]),
+    jsonld: [faqLd(faqFrom(post.body)), breadcrumbLd([{ name: 'Home', url: SITE + '/' }, { name: 'Blog', url: SITE + '/blog' }, { name: post.title, url }]),
       { '@context': 'https://schema.org', '@type': 'BlogPosting', headline: post.title, description: post.excerpt, mainEntityOfPage: url, url,
         image: post.image ? [abs(post.image)] : undefined, datePublished: iso(post.published_at || post.created_at), dateModified: iso(post.updated_at),
         author: { '@type': 'Organization', name: post.author || 'WinkCasa Team' }, publisher: { '@id': SITE + '/#organization' }, inLanguage: 'en-IN' }],

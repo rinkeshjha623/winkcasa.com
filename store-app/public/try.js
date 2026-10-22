@@ -8,7 +8,7 @@
 
   var SHAPES = {
     oval: { name: 'Oval', note: 'Balanced proportions: almost every style suits you. Statement hoops, layered chains and clips all work.', ear: ['hoop', 'drop', 'stud'], neck: ['layered', 'pendant', 'choker', 'pearl'], hair: ['claw', 'headband', 'clip'] },
-    round: { name: 'Round', note: 'Soft, full cheeks. Lengthening drops and V-shaped pendants add vertical line; high clips add height.', ear: ['drop', 'stud', 'hoop'], neck: ['pendant', 'layered', 'pearl'], hair: ['claw', 'headband', 'clip'] },
+    round: { name: 'Round', note: 'Soft, full cheeks. Lengthening drops and V-shaped pendants add vertical line; high clips add height.', ear: ['drop', 'hoop'], neck: ['pendant', 'layered', 'pearl'], hair: ['claw', 'headband', 'clip'] },
     square: { name: 'Square', note: 'Strong jawline. Curved hoops and soft pearls soften angles; round shapes sit beautifully.', ear: ['hoop', 'drop', 'stud'], neck: ['pearl', 'pendant', 'layered'], hair: ['clip', 'headband', 'claw'] },
     heart: { name: 'Heart', note: 'Wider forehead, narrower chin. Pieces that widen towards the bottom, like drops, balance the face.', ear: ['drop', 'hoop', 'stud'], neck: ['choker', 'pearl', 'pendant'], hair: ['clip', 'claw', 'headband'] },
     long: { name: 'Long', note: 'Elegant length. Wide studs and hoops add width; chokers and pearls keep proportions balanced.', ear: ['hoop', 'stud', 'drop'], neck: ['choker', 'pearl', 'layered'], hair: ['clip', 'headband', 'claw'] }
