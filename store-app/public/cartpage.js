@@ -3,7 +3,7 @@
   var COUP = null, CODE = '', CERR = '', P = {}, CFG = { freeShippingAbove: 999, shipping: 79 }, CLOSED = false, busy = false, S = null;
   var $ = function (id) { return document.getElementById(id); };
   var esc = function (t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
-  var rupee = function (n) { return '₹' + Number(n).toLocaleString('en-IN'); };
+  var rupee = function (n) { n = Number(n); return '₹' + n.toLocaleString('en-IN', { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 }); };
 
   function lines() {
     var c = WC.cart(), out = [];
