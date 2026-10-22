@@ -2,7 +2,9 @@ import catalog from '../../public/products.json';
 import { json, priceCart, cleanCustomer } from '../../src/lib.js';
 
 export async function onRequestPost({ request, env }) {
-  if (!env.RAZORPAY_KEY_ID || !env.RAZORPAY_KEY_SECRET || !env.DB) {
+  const keyId = env.RAZORPAY_KEY_ID || env.key_id;
+  const keySecret = env.RAZORPAY_KEY_SECRET || env.key_secret;
+  if (!keyId || !keySecret || !env.DB) {
     return json({ error: 'Checkout is not set up yet.' }, 503);
   }
   let body;
@@ -19,7 +21,7 @@ export async function onRequestPost({ request, env }) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: 'Basic ' + btoa(env.RAZORPAY_KEY_ID + ':' + env.RAZORPAY_KEY_SECRET),
+      Authorization: 'Basic ' + btoa(keyId + ':' + keySecret),
     },
     body: JSON.stringify({ amount: priced.total, currency: 'INR', receipt: orderRef }),
   });
@@ -36,5 +38,5 @@ export async function onRequestPost({ request, env }) {
     cust.value.city, cust.value.state, cust.value.pincode, JSON.stringify(priced.lines)
   ).run();
 
-  return json({ orderRef, razorpayOrderId: rzOrder.id, amount: priced.total, keyId: env.RAZORPAY_KEY_ID });
+  return json({ orderRef, razorpayOrderId: rzOrder.id, amount: priced.total, keyId });
 }
