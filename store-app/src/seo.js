@@ -92,17 +92,28 @@ export function headerHtml(S, cats = []) {
 <div class="dd"><a href="/#shop" aria-haspopup="true">Categories ▾</a><div class="ddl"><a href="/#shop">All products</a>${shop}</div></div>
 <a href="/blog">Blog</a><a href="/about">About us</a><a href="/contact">Contact us</a></nav>
 <details class="mmenu"><summary>Menu</summary><div class="mlist"><a href="/">Home</a>${shop}<a href="/#shop">All products</a><a href="/blog">Blog</a><a href="/about">About us</a><a href="/contact">Contact us</a><a href="/track">Track your order</a></div></details></div>
-<a class="logo" href="/" aria-label="WinkCasa">W<span class="idot">ı</span>nkCasa</a><a class="cartbtn" href="/cart" aria-label="View cart">Cart <b data-cartcount>0</b></a></header>`;
+${logoHtml(S)}<a class="cartbtn" href="/cart" aria-label="View cart">Cart <b data-cartcount>0</b></a></header>`;
 }
 
 export const payMethodsHtml = () => `<div class="paym" aria-label="Payment options"><span class="pm">UPI</span><span class="pm">Credit &amp; debit cards</span><span class="pm">Net banking</span><span class="pms">Secure payment by Razorpay</span></div>`;
 export const etaHtml = () => `<p class="eta" data-eta>Delivered within <b>10–20 days</b> of your order.</p>`;
 
+const LASH = '<svg class="lashico" viewBox="0 0 48 28" width="34" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 9q19 17 38 0"/><path d="M9 13 4 19M16 17l-3 7M24 19v8M32 17l3 7M39 13l5 6"/></svg>';
+// Header/footer logo, in the style chosen in Admin → Store settings (or an uploaded image).
+export function logoHtml(S, cls = '') {
+  const L = S.logo || {};
+  const c = (x) => `class="logo ${x}${cls ? ' ' + cls : ''}"`;
+  if (L.image) return `<a ${c('logo-img')} href="/" aria-label="WinkCasa"><img src="${esc(L.image)}" alt="WinkCasa" height="44"></a>`;
+  if (L.style === 'lash') return `<a ${c('logo-lash')} href="/" aria-label="WinkCasa">${LASH}<span>WINKCASA</span></a>`;
+  if (L.style === 'stacked') return `<a ${c('logo-stack')} href="/" aria-label="WinkCasa"><i>Wink</i><i>Casa</i></a>`;
+  return `<a ${c('')} href="/" aria-label="WinkCasa">W<span class="idot">ı</span>nkCasa</a>`;
+}
+
 export function footerHtml(S, cats) {
   const b = S.business, f = S.footer;
   const social = [['Instagram', S.social.instagram], ['Facebook', S.social.facebook], ['YouTube', S.social.youtube], ['WhatsApp', S.social.whatsapp]].filter(([, u]) => u);
   return `<footer id="footerEl" class="sitefoot"><div class="fcols">
-<div><div class="flogo">WinkCasa</div><address>${esc(b.legalName)}<br>${esc(b.street)}, ${esc(b.city)}, ${esc(b.state)} ${esc(b.postcode)}, India<br>Phone: <a href="tel:${esc(b.phone.replace(/\s/g, ''))}">${esc(b.phone)}</a><br>Email: <a href="mailto:${esc(b.email)}">${esc(b.email)}</a>${b.gstin ? `<br>GSTIN: ${esc(b.gstin)}` : ''}</address></div>
+<div><div class="flogo">${S.logo && S.logo.image ? `<img src="${esc(S.logo.image)}" alt="WinkCasa" height="48">` : S.logo && S.logo.style === 'lash' ? `${LASH}<span class="flw">WINKCASA</span>` : S.logo && S.logo.style === 'stacked' ? '<i>Wink</i> <i>Casa</i>' : 'WinkCasa'}</div><address>${esc(b.legalName)}<br>${esc(b.street)}, ${esc(b.city)}, ${esc(b.state)} ${esc(b.postcode)}, India<br>Phone: <a href="tel:${esc(b.phone.replace(/\s/g, ''))}">${esc(b.phone)}</a><br>Email: <a href="mailto:${esc(b.email)}">${esc(b.email)}</a>${b.gstin ? `<br>GSTIN: ${esc(b.gstin)}` : ''}</address></div>
 <div><h4>Shop</h4><ul><li><a href="/#shop">All products</a></li>${cats.map((c) => `<li><a href="${esc(c.path)}">${esc(c.name)}</a></li>`).join('')}</ul></div>
 <div><h4>Help</h4><ul>${f.links.map((l) => `<li><a href="${esc(okHref(l.href))}">${esc(l.label)}</a></li>`).join('')}</ul></div>
 ${social.length ? `<div><h4>Follow us</h4><ul>${social.map(([n, u]) => `<li><a href="${esc(u)}" rel="noopener me">${n}</a></li>`).join('')}</ul></div>` : ''}

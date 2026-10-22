@@ -37,6 +37,7 @@ export const DEFAULTS = {
     phone: '+91 9798776985', email: 'support@winkcasa.com', hours: '', grievanceOfficer: 'Rinkesh Jha',
   },
   social: { instagram: '', facebook: '', youtube: '', whatsapp: '' },
+  logo: { style: 'classic', image: '' },
   contact: {
     label: 'We are here to help',
     title: 'Contact us',
@@ -76,7 +77,7 @@ function coerce(def, val, key = '') {
   if (typeof def === 'string') {
     const max = /^(a|text|details)$/.test(key) ? 1500 : 500;
     const s = String(val ?? def).trim().slice(0, max);
-    return /^(href|link|ctaLink|instagram|facebook|youtube|whatsapp|ogImage)$/.test(key) ? safeHref(s) : s;
+    return /^(href|link|ctaLink|instagram|facebook|youtube|whatsapp|ogImage|image)$/.test(key) ? safeHref(s) : s;
   }
   if (typeof def === 'boolean') return val === undefined ? def : !!val;
   if (typeof def === 'number') { const n = Math.round(Number(val)); return Number.isFinite(n) && n >= 0 ? Math.min(n, 1000000) : def; }
