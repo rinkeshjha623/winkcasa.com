@@ -30,11 +30,14 @@ export async function onRequestPost({ request, env }) {
   if (stock !== null && !(stock >= 0)) return json({ error: 'Stock must be 0 or more, or blank for unlimited.' }, 400);
   const images = (Array.isArray(b.images) ? b.images : []).map((u) => s(u, 600)).filter(okImg).slice(0, 6);
   const cost = Math.max(0, int(b.cost) || 0);
+  const highlights = (Array.isArray(b.highlights) ? b.highlights : []).map((h) => s(h, 120)).filter(Boolean).slice(0, 8);
+  const faq = (Array.isArray(b.faq) ? b.faq : []).map((f) => ({ q: s(f?.q, 160), a: s(f?.a, 600) })).filter((f) => f.q && f.a).slice(0, 6);
   const vals = [name, s(b.category, 40) || 'General', price, mrp, s(b.description, 200), s(b.tag, 20) || null,
-    JSON.stringify(images), stock, b.active === false || b.active === 0 ? 0 : 1, Math.max(0, int(b.sort) || 0), s(b.supplier, 80) || null, cost];
+    JSON.stringify(images), stock, b.active === false || b.active === 0 ? 0 : 1, Math.max(0, int(b.sort) || 0), s(b.supplier, 80) || null, cost,
+    s(b.seo_title, 70) || null, s(b.seo_description, 170) || null, s(b.details, 3000) || null, JSON.stringify(highlights), s(b.brand, 60) || null, s(b.sku, 40) || null, JSON.stringify(faq)];
 
   if (b.id) {
-    const r = await env.DB.prepare(`UPDATE products SET name=?,category=?,price=?,mrp=?,description=?,tag=?,images_json=?,stock=?,active=?,sort=?,supplier=?,cost=?,updated_at=datetime('now') WHERE id=?`)
+    const r = await env.DB.prepare(`UPDATE products SET name=?,category=?,price=?,mrp=?,description=?,tag=?,images_json=?,stock=?,active=?,sort=?,supplier=?,cost=?,seo_title=?,seo_description=?,details=?,highlights_json=?,brand=?,sku=?,faq_json=?,updated_at=datetime('now') WHERE id=?`)
       .bind(...vals, Number(b.id)).run();
     if (!r.meta.changes) return json({ error: 'Product not found.' }, 404);
     return json({ ok: true, id: Number(b.id) });
@@ -42,7 +45,7 @@ export async function onRequestPost({ request, env }) {
   await ensureSeeded(env);
   const max = (await env.DB.prepare('SELECT COALESCE(MAX(sort),0) m FROM products').first()).m;
   vals[9] = vals[9] || max + 1;
-  const r = await env.DB.prepare(`INSERT INTO products (name,category,price,mrp,description,tag,images_json,stock,active,sort,supplier,cost) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`)
+  const r = await env.DB.prepare(`INSERT INTO products (name,category,price,mrp,description,tag,images_json,stock,active,sort,supplier,cost,seo_title,seo_description,details,highlights_json,brand,sku,faq_json) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
     .bind(...vals).run();
   return json({ ok: true, id: r.meta.last_row_id });
 }

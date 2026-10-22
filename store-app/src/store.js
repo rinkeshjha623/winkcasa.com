@@ -27,6 +27,34 @@ export const DEFAULTS = {
     showUnsplash: true,
   },
   shipping: { freeShippingAbove: 999, charge: 79 },
+  seo: {
+    title: 'WinkCasa | Skincare, beauty tools and jewellery online in India',
+    description: 'Shop skincare, beauty tools and everyday jewellery online at WinkCasa. Free delivery above ₹999 across India, secure online payment and 7-day returns on damaged or wrong items.',
+    ogImage: '',
+  },
+  business: {
+    name: 'WinkCasa Retail', legalName: 'Rinkesh Kumar Jha, trading as WinkCasa Retail', gstin: '07AURPJ3347A1ZQ',
+    street: '155-156, Shyam Sarovar Apartment, Patparganj', city: 'Delhi', state: 'Delhi', postcode: '110091',
+    phone: '+91 9798776985', email: 'support@winkcasa.com', hours: '',
+  },
+  social: { instagram: '', facebook: '', youtube: '', whatsapp: '' },
+  about: {
+    title: 'About WinkCasa',
+    text: 'WinkCasa is an online store based in New Delhi, India. We sell skincare, beauty tools and everyday jewellery, chosen for what shoppers reorder most. We deliver across India, show prices in Indian rupees including GST, and take payment securely online through Razorpay. If an item arrives damaged, defective or wrong, tell us within 7 days and we will replace it or refund you.',
+  },
+  faq: [
+    { q: 'Do you deliver across India?', a: 'Yes. We deliver to serviceable pincodes across India. Delivery is free on orders of ₹999 and above, and costs ₹79 below that.' },
+    { q: 'How long does delivery take?', a: 'Orders are usually dispatched within 2 to 4 working days and arrive 3 to 7 working days after that, depending on your location.' },
+    { q: 'What is the return policy?', a: 'If an item arrives damaged, defective or wrong, tell us within 7 days and we will replace it or refund you. Full details are on our Returns page.' },
+    { q: 'How can I pay?', a: 'Payment is taken securely online through Razorpay when you check out.' },
+    { q: 'Are prices inclusive of GST?', a: 'Yes. All prices are in Indian rupees and include GST.' },
+    { q: 'How do I contact WinkCasa?', a: 'Email support@winkcasa.com or visit our Contact page. We reply to every message.' },
+  ],
+  categories: [
+    { name: 'Skincare', description: 'Serums, sunscreen, face mists and face oils for everyday skincare routines, delivered across India.' },
+    { name: 'Beauty tools', description: 'Facial massagers and simple beauty tools that make your daily routine easier.' },
+    { name: 'Jewellery', description: 'Lightweight everyday jewellery: earrings, necklaces, bracelets and rings you can wear daily.' },
+  ],
   store: { open: true, closedMessage: 'We are restocking and will be back soon. Please check again shortly.' },
 };
 
@@ -38,8 +66,9 @@ export function safeHref(v) {
 // Force a value to the same shape/types as the default, so bad input can never break the storefront.
 function coerce(def, val, key = '') {
   if (typeof def === 'string') {
-    const s = String(val ?? def).trim().slice(0, 500);
-    return /^(href|link|ctaLink)$/.test(key) ? safeHref(s) : s;
+    const max = /^(a|text|details)$/.test(key) ? 1500 : 500;
+    const s = String(val ?? def).trim().slice(0, max);
+    return /^(href|link|ctaLink|instagram|facebook|youtube|whatsapp|ogImage)$/.test(key) ? safeHref(s) : s;
   }
   if (typeof def === 'boolean') return val === undefined ? def : !!val;
   if (typeof def === 'number') { const n = Math.round(Number(val)); return Number.isFinite(n) && n >= 0 ? Math.min(n, 1000000) : def; }
@@ -72,10 +101,27 @@ export async function getSettings(env) {
 
 const artFor = (cat) => (/jewel/i.test(cat) ? 'earrings' : /tool/i.test(cat) ? 'gua' : 'serum');
 
+const j = (v) => { try { return JSON.parse(v) || []; } catch { return []; } };
+
+export function slugify(t) {
+  return String(t || '').toLowerCase().replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'item';
+}
+export const productPath = (p) => `/p/${p.id}-${slugify(p.name)}`;
+export const categoryPath = (name) => `/c/${slugify(name)}`;
+
 export function parseProduct(r) {
-  let images = [];
-  try { images = JSON.parse(r.images_json) || []; } catch {}
-  return { ...r, images, images_json: undefined };
+  return { ...r, images: j(r.images_json), highlights: j(r.highlights_json), faq: j(r.faq_json),
+    images_json: undefined, highlights_json: undefined, faq_json: undefined };
+}
+
+// Categories in use, with their editable descriptions.
+export function categoriesOf(rows, settings) {
+  const names = [...new Set(rows.map((r) => r.category))];
+  return names.map((name) => ({
+    name, slug: slugify(name), path: categoryPath(name),
+    description: settings.categories.find((c) => c.name.toLowerCase() === name.toLowerCase())?.description
+      || `Shop ${name} online at WinkCasa with delivery across India.`,
+  }));
 }
 
 // Shape the storefront expects (never includes cost or supplier).
@@ -83,7 +129,7 @@ export function publicProduct(r) {
   const p = parseProduct(r);
   return {
     id: p.id, name: p.name, room: p.category, price: p.price, mrp: p.mrp && p.mrp > p.price ? p.mrp : null,
-    dim: p.description, tag: p.tag || '', image: p.images[0] || '', images: p.images,
+    dim: p.description, tag: p.tag || '', url: productPath(p), image: p.images[0] || '', images: p.images,
     tile: (p.id % 4) + 1, obj: (p.id % 4) + 1, art: artFor(p.category),
     soldOut: p.stock !== null && p.stock <= 0,
   };

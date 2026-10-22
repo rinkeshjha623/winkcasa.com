@@ -28,6 +28,7 @@ window.loadProducts = async function () {
   $('#pq').oninput = draw; $('#pc').onchange = draw; $('#padd').onclick = () => openProduct(0); draw();
 };
 
+const slug = (t) => String(t || '').toLowerCase().replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'item';
 const saveProduct = (p) => api('products', { method: 'POST', body: JSON.stringify(p) });
 
 function shrink(file) {
@@ -45,12 +46,12 @@ function shrink(file) {
 }
 
 function openProduct(id) {
-  const p = id ? { ...PRODUCTS.find((x) => x.id === id) } : { name: '', category: PRODUCTS[0]?.category || 'Skincare', price: '', mrp: null, description: '', tag: '', images: [], stock: null, active: 1, supplier: '', cost: 0 };
-  p.images = [...(p.images || [])];
+  const p = id ? { ...PRODUCTS.find((x) => x.id === id) } : { name: '', category: PRODUCTS[0]?.category || 'Skincare', price: '', mrp: null, description: '', tag: '', images: [], stock: null, active: 1, supplier: '', cost: 0, seo_title: '', seo_description: '', details: '', highlights: [], brand: '', sku: '', faq: [] };
+  p.images = [...(p.images || [])]; p.highlights = [...(p.highlights || [])]; p.faq = (p.faq || []).map((f) => ({ ...f }));
   const d = $('#drawer'); d.classList.remove('hide'); $('#scrim').classList.remove('hide'); $('#scrim').onclick = closeDrawer;
   const cats = [...new Set(PRODUCTS.map((x) => x.category))];
   const draw = () => {
-    d.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><h2>${id ? 'Edit product' : 'New product'}</h2><button class="btn ghost sm" id="x">Close</button></div>
+    d.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><h2>${id ? 'Edit product' : 'New product'}</h2><span>${id ? `<a class="btn ghost sm" target="_blank" href="/p/${id}-${slug(p.name)}">View page</a> ` : ''}<button class="btn ghost sm" id="x">Close</button></span></div>
     <label>Product name</label><input id="p_name" value="${esc(p.name)}" maxlength="100">
     <div class="row2"><div><label>Category</label><input id="p_cat" list="cats" value="${esc(p.category)}"><datalist id="cats">${cats.map((c) => `<option value="${esc(c)}">`).join('')}</datalist></div>
     <div><label>Badge (optional, e.g. New, Bestseller)</label><input id="p_tag" value="${esc(p.tag || '')}" maxlength="20"></div></div>
@@ -65,10 +66,26 @@ function openProduct(id) {
     <div class="row2"><div><label>Stock (blank = unlimited)</label><input id="p_stock" type="number" min="0" step="1" value="${p.stock ?? ''}"></div>
     <div><label>Your cost incl. supplier shipping (₹)</label><input id="p_cost" type="number" min="0" step="1" value="${p.cost || ''}"></div></div>
     <label>Supplier</label><input id="p_sup" value="${esc(p.supplier || '')}" maxlength="80">
+    <h3 style="margin-top:18px">Search &amp; product page content</h3><p class="hint">This text builds this product's own web page, which Google and AI assistants (ChatGPT, Perplexity, Gemini) read. Be specific and honest.</p>
+    <div class="row2"><div><label>Brand (optional)</label><input id="p_brand" value="${esc(p.brand || '')}" maxlength="60"></div><div><label>SKU / code (optional)</label><input id="p_sku" value="${esc(p.sku || '')}" maxlength="40"></div></div>
+    <label>Search title (about 60 characters) <span id="c_t" class="muted"></span></label><input id="p_seot" value="${esc(p.seo_title || '')}" maxlength="70" placeholder="Vitamin C Serum 30 ml for glowing skin | WinkCasa">
+    <label>Search description (about 155 characters) <span id="c_d" class="muted"></span></label><textarea id="p_seod" rows="2" maxlength="170" placeholder="What it is, who it is for, price and delivery.">${esc(p.seo_description || '')}</textarea>
+    <label>Full product details (blank line = new paragraph)</label><textarea id="p_det" rows="6" maxlength="3000" placeholder="What it is, key ingredients or materials, size, how to use or care, what is in the box.">${esc(p.details || '')}</textarea>
+    <label>Key points (one per line)</label><textarea id="p_hl" rows="4" placeholder="Suitable for oily skin&#10;Gold-plated, anti-tarnish">${esc(p.highlights.join('\n'))}</textarea>
+    <label>Questions customers ask (shown on the page and read by AI assistants)</label>
+    ${p.faq.map((f, i) => `<div class="card" style="margin-bottom:8px;padding:10px"><input class="fq" data-i="${i}" value="${esc(f.q)}" placeholder="Question"><textarea class="fa" data-i="${i}" rows="2" style="margin-top:6px" placeholder="Answer">${esc(f.a)}</textarea><button class="btn ghost sm" data-fdel="${i}" style="margin-top:6px">Remove</button></div>`).join('')}
+    ${p.faq.length < 6 ? '<button class="btn ghost sm" id="p_fadd">+ Add question</button>' : ''}
     <div class="sw"><input type="checkbox" id="p_act" ${p.active ? 'checked' : ''}><label for="p_act" style="margin:0;color:var(--fg)">Live on the store</label></div>
     <div class="savebar"><button class="btn" id="p_save">${id ? 'Save changes' : 'Create product'}</button>${id ? '<button class="btn ghost" id="p_dup">Duplicate</button><button class="btn ghost" id="p_del" style="color:var(--bad)">Delete</button>' : ''}</div>`;
     $('#x').onclick = closeDrawer;
-    const keep = () => { p.name = $('#p_name').value; p.category = $('#p_cat').value; p.tag = $('#p_tag').value; p.price = $('#p_price').value; p.mrp = $('#p_mrp').value; p.description = $('#p_desc').value; p.stock = $('#p_stock').value; p.cost = $('#p_cost').value; p.supplier = $('#p_sup').value; p.active = $('#p_act').checked ? 1 : 0; };
+    const keep = () => { p.name = $('#p_name').value; p.category = $('#p_cat').value; p.tag = $('#p_tag').value; p.price = $('#p_price').value; p.mrp = $('#p_mrp').value; p.description = $('#p_desc').value; p.stock = $('#p_stock').value; p.cost = $('#p_cost').value; p.supplier = $('#p_sup').value; p.active = $('#p_act').checked ? 1 : 0;
+      p.brand = $('#p_brand').value; p.sku = $('#p_sku').value; p.seo_title = $('#p_seot').value; p.seo_description = $('#p_seod').value; p.details = $('#p_det').value;
+      p.highlights = $('#p_hl').value.split('\n').map((x) => x.trim()).filter(Boolean);
+      d.querySelectorAll('.fq').forEach((i) => (p.faq[+i.dataset.i].q = i.value)); d.querySelectorAll('.fa').forEach((i) => (p.faq[+i.dataset.i].a = i.value)); };
+    const cnt = () => { $('#c_t').textContent = $('#p_seot').value.length + ' characters'; $('#c_d').textContent = $('#p_seod').value.length + ' characters'; };
+    $('#p_seot').oninput = $('#p_seod').oninput = cnt; cnt();
+    d.querySelectorAll('[data-fdel]').forEach((b) => (b.onclick = () => { keep(); p.faq.splice(+b.dataset.fdel, 1); draw(); }));
+    if ($('#p_fadd')) $('#p_fadd').onclick = () => { keep(); p.faq.push({ q: '', a: '' }); draw(); };
     d.querySelectorAll('[data-rm]').forEach((b) => (b.onclick = () => { keep(); p.images.splice(+b.dataset.rm, 1); draw(); }));
     d.querySelectorAll('[data-main]').forEach((b) => (b.onclick = () => { keep(); const [u] = p.images.splice(+b.dataset.main, 1); p.images.unshift(u); draw(); }));
     $('#p_urladd').onclick = () => { const u = $('#p_url').value.trim(); if (!/^https:\/\//.test(u)) return toast('Link must start with https://'); keep(); p.images.push(u); draw(); };
@@ -110,7 +127,7 @@ function drawStore() {
   const txt = (label, path, ph = '', area = false) => `<label>${label}</label>${area ? `<textarea rows="2" data-p="${path}" placeholder="${esc(ph)}">${esc(getp(S, path))}</textarea>` : `<input data-p="${path}" value="${esc(getp(S, path))}" placeholder="${esc(ph)}">`}`;
   const num = (label, path) => `<label>${label}</label><input type="number" min="0" step="1" data-n="${path}" value="${getp(S, path)}">`;
   const chk = (label, path) => `<div class="sw"><input type="checkbox" id="c_${path}" data-b="${path}" ${getp(S, path) ? 'checked' : ''}><label for="c_${path}" style="margin:0;color:var(--fg)">${label}</label></div>`;
-  const links = (path, title) => `<label>${title}</label>${getp(S, path).map((l, i) => `<div class="lrow"><input data-p="${path}.${i}.label" value="${esc(l.label)}" placeholder="Label"><input data-p="${path}.${i}.href" value="${esc(l.href)}" placeholder="/page or #section or https://"><button class="btn ghost sm" data-del="${path}.${i}">×</button></div>`).join('')}<button class="btn ghost sm" data-add="${path}">+ Add link</button>`;
+  const links = (path, title) => `<label>${title}</label>${getp(S, path).map((l, i) => `<div class="lrow"><input data-p="${path}.${i}.label" value="${esc(l.label)}" placeholder="Label"><input data-p="${path}.${i}.href" value="${esc(l.href)}" placeholder="/page or #section or https://"><button class="btn ghost sm" data-del="${path}.${i}">×</button></div>`).join('')}<button class="btn ghost sm" data-add="${path}" data-tpl='{"label":"","href":""}'>+ Add link</button>`;
   el.innerHTML = `<div class="grid three">
   <div class="card sect"><h3>Store status</h3><p class="hint">Close the store while you restock or are away. Browsing still works; checkout is blocked.</p>
     ${chk('Store is open for orders', 'store.open')}${txt('Message shown when closed', 'store.closedMessage', '', true)}
@@ -126,6 +143,20 @@ function drawStore() {
   <div class="card sect"><h3>Product section heading</h3>${txt('Small label', 'collection.label')}${txt('Heading', 'collection.title')}
     <h3 style="margin-top:16px">Three promises band</h3>${S.promise.map((x, i) => `<label>Box ${i + 1}</label><input data-p="promise.${i}.title" value="${esc(x.title)}"><textarea rows="2" data-p="promise.${i}.text" style="margin-top:6px">${esc(x.text)}</textarea>`).join('')}</div>
   <div class="card sect"><h3>Footer</h3>${txt('Copyright line', 'footer.copyright')}${txt('Note on the right', 'footer.note')}${chk('Credit Unsplash for photos (turn off once all photos are yours)', 'footer.showUnsplash')}${links('footer.links', 'Footer links')}</div>
+  <div class="card sect"><h3>Search &amp; AI visibility</h3><p class="hint">Controls how WinkCasa appears on Google and in AI answers (ChatGPT, Perplexity, Gemini, Claude).</p>
+    ${txt('Home page title (about 60 characters)', 'seo.title')}${txt('Home page description (about 155 characters)', 'seo.description', '', true)}
+    <label>Share image (shown when your link is shared)</label><div class="lrow"><input data-p="seo.ogImage" value="${esc(S.seo.ogImage)}" placeholder="Upload or paste a link"><label class="btn ghost sm" style="margin:0;cursor:pointer;color:var(--fg)">Upload<input id="og_file" type="file" accept="image/*" hidden></label></div>
+    <p class="hint">Leave blank to use your first product photo.</p></div>
+  <div class="card sect"><h3>Business details (shown in footer &amp; to search engines)</h3><p class="hint">Keep these identical to your Google Business Profile, GST record and Contact page.</p>
+    ${txt('Trading name', 'business.name')}${txt('Legal name', 'business.legalName')}${txt('GSTIN', 'business.gstin')}${txt('Street address', 'business.street')}
+    <div class="row2"><div>${txt('City', 'business.city')}</div><div>${txt('State', 'business.state')}</div></div>${txt('Pincode', 'business.postcode')}${txt('Phone', 'business.phone')}${txt('Email', 'business.email')}${txt('Opening hours (optional, e.g. Mo-Sa 10:00-18:00)', 'business.hours')}</div>
+  <div class="card sect"><h3>Social profiles</h3><p class="hint">Full links. They appear in the footer and help Google and AI link your brand to your accounts.</p>
+    ${txt('Instagram', 'social.instagram', 'https://instagram.com/…')}${txt('Facebook', 'social.facebook', 'https://facebook.com/…')}${txt('YouTube', 'social.youtube', 'https://youtube.com/…')}${txt('WhatsApp link', 'social.whatsapp', 'https://wa.me/919798776985')}</div>
+  <div class="card sect"><h3>About section (home page)</h3><p class="hint">Plain facts about who you are, where you are, what you sell and how you deliver. AI assistants quote this.</p>${txt('Heading', 'about.title')}${txt('Text (blank line = new paragraph)', 'about.text', '', true)}</div>
+  <div class="card sect"><h3>Frequently asked questions (home page)</h3><p class="hint">Real questions customers ask, with short, direct answers. Shown on the home page and given to search engines.</p>
+    ${S.faq.map((f, i) => `<div style="margin-bottom:10px"><input data-p="faq.${i}.q" value="${esc(f.q)}" placeholder="Question"><textarea rows="2" data-p="faq.${i}.a" style="margin-top:6px" placeholder="Answer">${esc(f.a)}</textarea><button class="btn ghost sm" data-del="faq.${i}" style="margin-top:4px">Remove</button></div>`).join('')}<button class="btn ghost sm" data-add="faq" data-tpl='{"q":"","a":""}'>+ Add question</button></div>
+  <div class="card sect"><h3>Collection pages</h3><p class="hint">Each category gets its own page (like /c/skincare). The name must match the category used on your products.</p>
+    ${S.categories.map((c, i) => `<div style="margin-bottom:10px"><input data-p="categories.${i}.name" value="${esc(c.name)}" placeholder="Category name"><textarea rows="2" data-p="categories.${i}.description" style="margin-top:6px" placeholder="One or two sentences about this collection">${esc(c.description)}</textarea><button class="btn ghost sm" data-del="categories.${i}" style="margin-top:4px">Remove</button></div>`).join('')}<button class="btn ghost sm" data-add="categories" data-tpl='{"name":"","description":""}'>+ Add collection</button></div>
   </div>
   <p class="muted">The WinkCasa logo, the policy pages (Returns, Shipping, Privacy, Terms, Contact) and your business details are edited by me in code, so ask whenever you need them changed.</p>
   <div class="savebar"><button class="btn" id="s_save">Save and publish</button><a class="btn ghost" href="/" target="_blank">View store</a><span class="muted">Changes appear on the store immediately.</span></div>`;
@@ -133,8 +164,9 @@ function drawStore() {
   el.querySelectorAll('[data-n]').forEach((i) => (i.oninput = () => setp(S, i.dataset.n, Number(i.value || 0))));
   el.querySelectorAll('[data-b]').forEach((i) => (i.onchange = () => setp(S, i.dataset.b, i.checked)));
   el.querySelectorAll('[data-del]').forEach((b) => (b.onclick = () => { const ks = b.dataset.del.split('.'); const idx = +ks.pop(); getp(S, ks.join('.')).splice(idx, 1); drawStore(); }));
-  el.querySelectorAll('[data-add]').forEach((b) => (b.onclick = () => { const a = getp(S, b.dataset.add); if (a.length >= 12) return toast('Maximum 12 links'); a.push({ label: '', href: '' }); drawStore(); }));
+  el.querySelectorAll('[data-add]').forEach((b) => (b.onclick = () => { const a = getp(S, b.dataset.add); if (a.length >= 12) return toast('Maximum 12 links'); a.push(JSON.parse(b.dataset.tpl)); drawStore(); }));
   el.querySelectorAll('[data-addfact]').forEach((b) => (b.onclick = () => { if (S.hero.facts.length >= 6) return toast('Maximum 6'); S.hero.facts.push(''); drawStore(); }));
+  if ($('#og_file')) $('#og_file').onchange = async (e) => { try { const r = await api('upload', { method: 'POST', body: JSON.stringify({ data: await shrink(e.target.files[0]) }) }); S.seo.ogImage = r.url; drawStore(); toast('Image added'); } catch (err) { toast(err.message); } };
   $('#s_save').onclick = async () => {
     try { const r = await api('settings', { method: 'POST', body: JSON.stringify(SETTINGS) }); SETTINGS = r.settings; toast('Published to your store'); drawStore(); } catch (e) { toast(e.message); }
   };

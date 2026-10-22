@@ -1,10 +1,12 @@
 <!doctype html>
-<html lang="en">
+<html lang="en-IN">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>WinkCasa</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Hanken+Grotesk:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="/site.css">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
 <style>
 /* Premium boutique: deep forest-ink ground, ivory serif type, brass hairlines, arch-framed products. Single dark look by design. */
 :root{
@@ -64,6 +66,7 @@ h2{font-family:var(--display);font-weight:400;font-size:clamp(2rem,4.4vw,3rem);l
 .tile img{width:100%;height:100%;object-fit:cover;display:block}
 .tag{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:var(--bg);color:var(--accent);font-size:.64rem;letter-spacing:.2em;text-transform:uppercase;padding:4px 12px;white-space:nowrap}
 .meta{display:flex;justify-content:space-between;gap:12px;align-items:baseline}
+.meta h3 a{text-decoration:none}.tilelink{display:block;text-decoration:none}
 .meta h3{margin:0;font-family:var(--display);font-size:1.4rem;font-weight:500;line-height:1.15}
 .price{font-variant-numeric:tabular-nums;color:var(--accent);white-space:nowrap}
 .dim{margin:0;color:var(--muted);font-size:.86rem}
@@ -249,8 +252,8 @@ function renderChips(){
 }
 function renderGrid(){
  $('grid').innerHTML=PRODUCTS.filter(function(p){return filter==='All'||p.room===filter}).map(function(p){
-  return '<article class="card"><div class="tile" style="background:var(--tile'+p.tile+')">'+(p.tag?'<span class="tag">'+esc(p.tag)+'</span>':'')+art(p)+'</div>'+
-  '<div class="meta"><h3>'+esc(p.name)+'</h3><span class="price">'+(p.mrp?'<span class="was">'+rupee(p.mrp)+'</span>':'')+rupee(p.price)+'</span></div><p class="dim">'+esc(p.dim)+'</p>'+
+  return '<article class="card"><a class="tilelink" href="'+esc(p.url||'#')+'" aria-label="'+esc(p.name)+'"><div class="tile" style="background:var(--tile'+p.tile+')">'+(p.tag?'<span class="tag">'+esc(p.tag)+'</span>':'')+art(p)+'</div></a>'+
+  '<div class="meta"><h3><a href="'+esc(p.url||'#')+'">'+esc(p.name)+'</a></h3><span class="price">'+(p.mrp?'<span class="was">'+rupee(p.mrp)+'</span>':'')+rupee(p.price)+'</span></div><p class="dim">'+esc(p.dim)+'</p>'+
   (p.soldOut||CLOSED?'<button class="add" disabled>'+(p.soldOut?'Sold out':'Unavailable')+'</button>':'<button class="add" data-add="'+p.id+'">Add to cart</button>')+'</article>';
  }).join('');
 }
@@ -325,12 +328,14 @@ function applySettings(S){
  $('heroFacts').innerHTML=h.facts.filter(Boolean).map(function(f){return '<span>'+rich(f)+'</span>'}).join('');
  $('shopLabel').textContent=S.collection.label;$('shopTitle').textContent=S.collection.title;
  $('promiseWrap').innerHTML=S.promise.map(function(x){return '<div><h3>'+esc(x.title)+'</h3><p>'+esc(x.text)+'</p></div>'}).join('');
- var f=S.footer;$('footerEl').innerHTML='<span>'+esc(f.copyright)+'</span><span>'+f.links.map(function(l){return '<a href="'+esc(okHref(l.href))+'">'+esc(l.label)+'</a>'}).join(' · ')+'</span><span>'+esc(f.note)+(f.showUnsplash?' Photos from <a href="https://unsplash.com" rel="noopener">Unsplash</a>.':'')+'</span>';
 }
 fetch('/api/catalog').then(function(r){if(!r.ok)throw 0;return r.json()}).catch(function(){return fetch('/products.json').then(function(r){return r.json()})}).then(function(c){
  PRODUCTS=c.products;CONFIG=c.config;applySettings(c.settings);
  rooms=['All'].concat(PRODUCTS.map(function(p){return p.room}).filter(function(r,i,a){return a.indexOf(r)===i}));
  renderChips();renderGrid();renderCart();
+ var q=new URLSearchParams(location.search),aid=q.get('add');
+ if(aid&&PRODUCTS.some(function(p){return String(p.id)===aid&&!p.soldOut})&&!CLOSED){cart[aid]=(cart[aid]||0)+1;renderCart();open(true)}else if(q.get('cart')){open(true)}
+ if(aid||q.get('cart'))history.replaceState(null,'','/');
 }).catch(function(){$('grid').innerHTML='<p class="dim">The catalogue could not load. Refresh the page.</p>'});
 renderChips();renderGrid();renderCart();
 </script>
