@@ -91,8 +91,8 @@ export function headerHtml(S, cats = []) {
 <a href="/">Home</a>
 <div class="dd"><a href="/#shop" aria-haspopup="true">Categories ▾</a><div class="ddl"><a href="/#shop">All products</a>${shop}</div></div>
 <a href="/blog">Blog</a><a href="/about">About us</a><a href="/contact">Contact us</a></nav>
-<details class="mmenu"><summary>Menu</summary><div class="mlist"><a href="/">Home</a>${shop}<a href="/#shop">All products</a><a href="/blog">Blog</a><a href="/about">About us</a><a href="/contact">Contact us</a><a href="/track">Track your order</a></div></details></div>
-${logoHtml(S)}<a class="cartbtn" href="/cart" aria-label="View cart">Cart <b data-cartcount>0</b></a></header>`;
+<details class="mmenu"><summary>Menu</summary><div class="mlist"><a href="/">Home</a>${shop}<a href="/#shop">All products</a><a href="/blog">Blog</a><a href="/about">About us</a><a href="/contact">Contact us</a><a href="/track">Track your order</a><a class="macct" href="/account">My account</a></div></details></div>
+${logoHtml(S)}<div class="rt"><a class="acctlink" href="/account" data-acct>Account</a><a class="cartbtn" href="/cart" aria-label="View cart">Cart <b data-cartcount>0</b></a></div></header>`;
 }
 
 export const payMethodsHtml = () => `<div class="paym" aria-label="Payment options"><span class="pm">UPI</span><span class="pm">Credit &amp; debit cards</span><span class="pm">Net banking</span><span class="pms">Secure payment by Razorpay</span></div>`;
@@ -131,7 +131,7 @@ export function cardHtml(p, closed) {
   const tile = `background:var(--tile${p.tile})`;
   const img = p.image ? `<img src="${esc(p.image)}" alt="${esc(p.name)}" loading="lazy" decoding="async" width="800" height="1000">` : '';
   const dim = p.dim && p.dim.length <= 100 && !/:/.test(p.dim) ? p.dim : '';
-  return `<article class="card"><a class="tilelink" href="${esc(p.url)}" aria-label="${esc(p.name)}"><div class="tile" style="${tile}">${p.tag ? `<span class="tag">${esc(p.tag)}</span>` : ''}${img}</div></a>
+  return `<article class="card"><button class="wish" data-wish="${p.id}" aria-label="Save to wishlist" title="Save to wishlist">♡</button><a class="tilelink" href="${esc(p.url)}" aria-label="${esc(p.name)}"><div class="tile" style="${tile}">${p.tag ? `<span class="tag">${esc(p.tag)}</span>` : ''}${img}</div></a>
 <div class="meta"><h3><a href="${esc(p.url)}">${esc(p.name)}</a></h3><span class="price">${p.mrp ? `<span class="was">${money(p.mrp)}</span>` : ''}${price}</span></div>${dim ? `<p class="dim">${esc(dim)}</p>` : ''}
 ${p.soldOut || closed ? `<button class="add" disabled>${p.soldOut ? 'Sold out' : 'Unavailable'}</button>` : `<div class="cardbtns"><button class="add" data-add="${p.id}">Add to cart</button><button class="buy" data-buy="${p.id}">Buy now</button></div>`}</article>`;
 }

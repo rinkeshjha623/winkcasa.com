@@ -1,5 +1,6 @@
 import { activeProducts, getSettings, deliveryWindow } from '../../src/store.js';
 import { json, priceCart, cleanCustomer } from '../../src/lib.js';
+import { getCustomer } from '../../src/auth.js';
 
 export async function onRequestPost({ request, env }) {
   const keyId = env.RAZORPAY_KEY_ID || env.key_id;
@@ -41,16 +42,17 @@ export async function onRequestPost({ request, env }) {
   if (!rz.ok) return json({ error: 'Could not start payment. Please try again.' }, 502);
   const rzOrder = await rz.json();
 
+  const me = await getCustomer(request, env).catch(() => null);
   const now = new Date(), win = deliveryWindow(now);
   const placedAt = now.toISOString().slice(0, 19).replace('T', ' ');
   await env.DB.prepare(
     `INSERT INTO orders (order_ref, razorpay_order_id, status, subtotal_paise, shipping_paise, total_paise,
-       customer_name, phone, email, address, city, state, pincode, items_json, created_at, delivery_min_at, delivery_max_at)
-     VALUES (?, ?, 'created', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+       customer_name, phone, email, address, city, state, pincode, items_json, created_at, delivery_min_at, delivery_max_at, customer_id)
+     VALUES (?, ?, 'created', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).bind(
     orderRef, rzOrder.id, priced.subtotal, priced.shipping, priced.total,
     cust.value.name, cust.value.phone, cust.value.email, cust.value.address,
-    cust.value.city, cust.value.state, cust.value.pincode, JSON.stringify(priced.lines), placedAt, win.min, win.max
+    cust.value.city, cust.value.state, cust.value.pincode, JSON.stringify(priced.lines), placedAt, win.min, win.max, me ? me.id : null
   ).run();
 
   return json({ orderRef, razorpayOrderId: rzOrder.id, amount: priced.total, keyId, placedAt, deliveryMinAt: win.min, deliveryMaxAt: win.max });

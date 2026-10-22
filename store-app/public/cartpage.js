@@ -64,6 +64,14 @@
   function keepForm() { var f = $('co'); if (!f) return; ['name', 'phone', 'email', 'address', 'city', 'pincode', 'state'].forEach(function (k) { saved[k] = f.elements[k].value; }); }
   var origRender = render; render = function () { origRender(); var f = $('co'); if (f) Object.keys(saved).forEach(function (k) { f.elements[k].value = saved[k]; }); };
 
+
+  // Logged-in customers: fill the form from their default saved address.
+  if (/(?:^|;\s*)wc_in=1/.test(document.cookie)) fetch('/api/account', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (d) {
+    if (!d.customer) return; var a = (d.addresses || [])[0] || {}, c = d.customer, f = $('co');
+    var pre = { name: a.name || c.name, phone: a.phone || c.phone || '', email: c.email, address: a.address || '', city: a.city || '', pincode: a.pincode || '', state: a.state || '' };
+    Object.keys(pre).forEach(function (k) { if (!saved[k]) saved[k] = pre[k] || ''; if (f && f.elements[k] && !f.elements[k].value) f.elements[k].value = pre[k] || ''; });
+  }).catch(function () {});
+
   function say(t, cls) { var m = $('msg'); if (m) { m.textContent = t; m.className = 'msg ' + (cls || ''); } }
   function setBusy(v) { busy = v; var b = $('pay'); if (b) { b.disabled = v || CLOSED; b.textContent = v ? 'Please wait…' : 'Pay ' + rupee(totals(lines()).total) + ' securely'; } }
   async function post(url, data) {

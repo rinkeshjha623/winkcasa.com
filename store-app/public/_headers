@@ -8,3 +8,6 @@
   X-Robots-Tag: noindex
 /brand/*
   X-Robots-Tag: noindex, nofollow
+/account
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store

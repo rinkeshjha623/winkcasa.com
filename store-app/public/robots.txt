@@ -2,6 +2,7 @@
 User-agent: *
 Allow: /
 Disallow: /brand/
+Disallow: /account
 Disallow: /admin/
 Disallow: /api/
 

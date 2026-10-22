@@ -117,3 +117,41 @@ button.btn{cursor:pointer;font-family:inherit}
 .catcap{position:absolute;left:16px;right:16px;bottom:14px;z-index:1;display:flex;justify-content:space-between;align-items:baseline;gap:10px;color:#F3EBDD}
 .catcap b{font-family:var(--display);font-weight:500;font-size:1.55rem}.catcap small{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;color:var(--accent)}
 @media(max-width:760px){.arch.wide{width:100%}.collage{gap:8px}}
+
+/* ---- customer accounts ---- */
+.acctlink{font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;text-decoration:none;color:var(--muted);margin-right:14px;white-space:nowrap}
+.acctlink:hover{color:var(--fg)}
+header.bar .rt{justify-self:end;display:flex;align-items:center}
+.authbox{max-width:460px;margin:8px auto 56px}
+.seg{display:flex;gap:0;border:1px solid var(--line);border-radius:999px;overflow:hidden;margin-bottom:22px;flex-wrap:wrap}
+.seg button{flex:1;background:transparent;border:0;color:var(--muted);padding:11px 16px;font:inherit;font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;cursor:pointer}
+.seg button.on{background:var(--accent);color:var(--accent-fg);font-weight:600}
+.opt{color:var(--muted);font-size:.8em;text-transform:none;letter-spacing:0}
+.fine{color:var(--muted);font-size:.86rem;margin:10px 0}
+.fine a,.lnk{color:var(--accent)}
+.lnk{background:none;border:0;padding:0;font:inherit;cursor:pointer;text-decoration:underline}
+.msg.ok{color:#8fd1a8}
+.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--fg)}
+.acctbar{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+.acctbar .seg{margin:0}
+.tabbody{padding-bottom:56px}
+.empty{color:var(--muted);margin:8px 0 18px}
+.ord,.acard,.wcard{border:1px solid var(--line);background:var(--surface);padding:18px 20px;margin-bottom:14px}
+.ordh,.ordf{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.ordf{margin-top:10px;border-top:1px solid var(--line);padding-top:10px}
+.ord ul{margin:10px 0;padding-left:18px;color:var(--muted)}
+.pill{display:inline-block;border:1px solid var(--accent);color:var(--accent);font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;padding:2px 10px;border-radius:999px}
+.pill.s-delivered{border-color:#8fd1a8;color:#8fd1a8}
+.agrid,.wgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px;margin-bottom:20px}
+.acard p{color:var(--muted);margin:8px 0}
+.rowbtns{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.wcard img{width:100%;aspect-ratio:4/5;object-fit:cover;display:block;margin-bottom:10px}
+.wcard h3{font-size:1rem;margin:0 0 4px}
+.wcard h3 a{text-decoration:none}
+.danger{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted)}
+.danger summary{cursor:pointer}
+.wish{position:absolute;top:10px;right:10px;z-index:2;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:rgba(11,25,22,.72);color:var(--fg);font-size:1.05rem;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0}
+.wish.on{color:#e8788f;border-color:#e8788f}
+.card{position:relative}
+.mlist .macct{color:var(--accent)}
+@media(max-width:720px){.acctlink{display:none}}

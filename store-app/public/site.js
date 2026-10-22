@@ -40,6 +40,21 @@
     add(b.getAttribute('data-add')); toast('Added to your cart.', true);
   });
 
+
+  // Wishlist hearts: logged-out shoppers are sent to log in; logged-in ones toggle a saved item.
+  var wished = {}, loggedIn = /(?:^|;\s*)wc_in=1/.test(document.cookie);
+  function paintWish() { [].forEach.call(document.querySelectorAll('[data-wish]'), function (b) { var on = !!wished[b.getAttribute('data-wish')]; b.classList.toggle('on', on); b.textContent = on ? '♥' : '♡'; b.setAttribute('aria-pressed', on); }); }
+  if (loggedIn) fetch('/api/account', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (d) { (d.wishIds || []).forEach(function (i) { wished[i] = 1; }); paintWish(); }).catch(function () {});
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-wish]'); if (!b) return;
+    e.preventDefault(); var id = b.getAttribute('data-wish');
+    if (!loggedIn) { location.href = '/account?next=' + encodeURIComponent(location.pathname + location.search); return; }
+    fetch('/api/account', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'wish', id: +id }) })
+      .then(function (r) { if (r.status === 401) { loggedIn = false; location.href = '/account'; throw 0; } return r.json(); })
+      .then(function (d) { wished = {}; (d.wishIds || []).forEach(function (i) { wished[i] = 1; }); paintWish(); toast(wished[id] ? 'Saved to your wishlist.' : 'Removed from your wishlist.'); }).catch(function () {});
+  });
+  paintWish();
+
   window.WC = { cart: load, save: save, count: count, paint: paint, fmtD: fmtD, fmtDT: fmtDT, window3to7: window3to7, etaHtml: etaHtml, toast: toast,
     set: function (id, q) { var c = load(); if (q <= 0) delete c[id]; else c[id] = Math.min(10, q); save(); },
     clear: function () { mem = {}; save(); } };
