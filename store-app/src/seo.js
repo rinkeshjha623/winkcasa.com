@@ -165,14 +165,23 @@ ${jsonld.filter(Boolean).map(ld).join('\n')}
 export { slugify, productPath, categoryPath };
 
 const enc = encodeURIComponent;
+const IC = {
+  wa: '<path d="M12 2a10 10 0 0 0-8.5 15.2L2 22l4.9-1.4A10 10 0 1 0 12 2Zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.2-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.8s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .6l-.4.6c-.2.2-.3.4-.1.7.2.3.8 1.300 1.700 2.100 1.200 1 2.200 1.400 2.500 1.500.3.1.5.1.7-.1l1-1.200c.2-.3.4-.2.7-.1l1.900.9c.3.1.5.2.6.3.1.2.1.8-.2 1.500Z"/>',
+  pin: '<path d="M12 2a10 10 0 0 0-3.6 19.300c-.1-.8-.2-2 0-2.900l1.200-5s-.3-.6-.3-1.500c0-1.400.8-2.500 1.800-2.500.9 0 1.300.6 1.300 1.400 0 .9-.5 2.100-.8 3.300-.2 1 .5 1.800 1.500 1.800 1.800 0 3.200-1.900 3.200-4.600 0-2.400-1.700-4.100-4.200-4.100-2.900 0-4.600 2.200-4.600 4.400 0 .9.300 1.800.8 2.300.1.1.1.2.1.3l-.3 1.100c0 .2-.2.200-.4.100-1.300-.6-2.100-2.500-2.100-4 0-3.300 2.400-6.300 6.900-6.300 3.600 0 6.400 2.600 6.400 6 0 3.600-2.200 6.500-5.400 6.500-1.100 0-2.100-.6-2.400-1.200l-.7 2.500c-.2.900-.9 2.100-1.300 2.800A10 10 0 1 0 12 2Z"/>',
+  fb: '<path d="M22 12a10 10 0 1 0-11.600 9.900v-7H7.900V12h2.500V9.800c0-2.500 1.500-3.900 3.800-3.900 1.100 0 2.200.2 2.200.2v2.500h-1.300c-1.200 0-1.600.8-1.600 1.600V12h2.800l-.4 2.900h-2.300v7A10 10 0 0 0 22 12Z"/>',
+  x: '<path d="M17.800 3h3.100l-6.800 7.700L22 21h-6.200l-4.900-6.300L5.300 21H2.200l7.200-8.300L1.900 3h6.400l4.400 5.800L17.800 3Zm-1.100 16.200h1.700L7.200 4.700H5.400l11.300 14.500Z"/>',
+  link: '<path d="M10.600 13.400a1 1 0 0 1 0-1.400l3-3a3.500 3.500 0 1 1 5 5l-1.500 1.500a1 1 0 0 1-1.400-1.400l1.500-1.500a1.500 1.500 0 1 0-2.100-2.100l-3 3a1 1 0 0 1-1.500-.1ZM13.400 10.600a1 1 0 0 1 0 1.400l-3 3a3.500 3.500 0 1 1-5-5l1.500-1.500a1 1 0 0 1 1.400 1.400L6.800 11.400a1.500 1.500 0 1 0 2.100 2.100l3-3a1 1 0 0 1 1.500.1Z"/>',
+  more: '<path d="M18 16a3 3 0 0 0-2.200 1l-6.700-3.500a3 3 0 0 0 0-3L15.800 7a3 3 0 1 0-.8-2 3 3 0 0 0 .1.600L8.600 9A3 3 0 1 0 8.600 15l6.500 3.400A3 3 0 1 0 18 16Z"/>',
+};
+const ico = (k) => `<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">${IC[k]}</svg>`;
 export function shareHtml({ url, title, image, text }) {
   const t = text || title;
   return `<div class="share" data-share data-url="${esc(url)}" data-title="${esc(title)}"><span class="sharelbl">Share</span>
-<a class="sh sh-wa" href="https://wa.me/?text=${enc(t + ' ' + url)}" target="_blank" rel="noopener" aria-label="Share on WhatsApp">WhatsApp</a>
-<a class="sh" href="https://www.pinterest.com/pin/create/button/?url=${enc(url)}${image ? '&media=' + enc(abs(image)) : ''}&description=${enc(t)}" target="_blank" rel="noopener" aria-label="Save to Pinterest">Pinterest</a>
-<a class="sh" href="https://www.facebook.com/sharer/sharer.php?u=${enc(url)}" target="_blank" rel="noopener" aria-label="Share on Facebook">Facebook</a>
-<a class="sh" href="https://twitter.com/intent/tweet?url=${enc(url)}&text=${enc(t)}" target="_blank" rel="noopener" aria-label="Share on X">X</a>
-<button class="sh" type="button" data-copy="${esc(url)}">Copy link</button><button class="sh" type="button" data-nshare hidden>More…</button></div>`;
+<a class="sh sh-wa" href="https://wa.me/?text=${enc(t + ' ' + url)}" target="_blank" rel="noopener" aria-label="Share on WhatsApp" title="WhatsApp">${ico('wa')}</a>
+<a class="sh" href="https://www.pinterest.com/pin/create/button/?url=${enc(url)}${image ? '&media=' + enc(abs(image)) : ''}&description=${enc(t)}" target="_blank" rel="noopener" aria-label="Save to Pinterest" title="Pinterest">${ico('pin')}</a>
+<a class="sh" href="https://www.facebook.com/sharer/sharer.php?u=${enc(url)}" target="_blank" rel="noopener" aria-label="Share on Facebook" title="Facebook">${ico('fb')}</a>
+<a class="sh" href="https://twitter.com/intent/tweet?url=${enc(url)}&text=${enc(t)}" target="_blank" rel="noopener" aria-label="Share on X" title="X">${ico('x')}</a>
+<button class="sh" type="button" data-copy="${esc(url)}" aria-label="Copy link" title="Copy link">${ico('link')}</button><button class="sh" type="button" data-nshare hidden aria-label="More sharing options" title="More">${ico('more')}</button></div>`;
 }
 export function askHtml(S, subject) {
   const num = String((S.social && S.social.whatsapp && S.social.whatsapp.replace(/\D/g, '')) || S.business.phone.replace(/\D/g, '')).replace(/^0+/, '');

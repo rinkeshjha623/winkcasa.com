@@ -86,7 +86,7 @@
 (function () {
   document.addEventListener('click', function (e) {
     var c = e.target.closest && e.target.closest('[data-copy]');
-    if (c) { var u = c.getAttribute('data-copy'), t = c.textContent; (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(function () { c.textContent = 'Copied'; }).catch(function () { window.prompt('Copy this link', u); }); setTimeout(function () { c.textContent = t; }, 1800); }
+    if (c) { var u = c.getAttribute('data-copy'); (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(function () { c.classList.add('done'); c.title = 'Link copied'; }).catch(function () { window.prompt('Copy this link', u); }); setTimeout(function () { c.classList.remove('done'); c.title = 'Copy link'; }, 1800); }
     var n = e.target.closest && e.target.closest('[data-nshare]');
     if (n) { var w = n.closest('[data-share]'); navigator.share({ title: w.getAttribute('data-title'), url: w.getAttribute('data-url') }).catch(function () {}); }
   });

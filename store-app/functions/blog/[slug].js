@@ -40,7 +40,6 @@ export async function onRequestGet({ params, env }) {
 
   const main = `<main class="wrap"><nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a> › <a href="/blog">Blog</a> › <span>${esc(trim(post.crumb_title || post.title, 40))}</span></nav>
 <article class="article"><p class="label">${post.category ? esc(post.category) + ' · ' : ''}${esc(day(published))}</p><h1>${esc(post.title)}</h1><div class="by">By ${post.author_url ? `<a href="${esc(post.author_url)}" rel="author noopener">${esc(post.author)}</a>` : esc(post.author)} · ${mins} min read${edited ? ` · Updated ${esc(day(post.updated_at))}` : ''}</div>
-${shareHtml({ url: canonical, title: post.title, image: cover })}
 ${post.tldr ? `<div class="tldr" data-speakable><b>Short answer</b><p>${esc(post.tldr)}</p></div>` : ''}
 ${cover && post.image ? `<img class="hero" src="${esc(post.image)}" alt="${esc(post.img_alt || post.title)}" width="900" height="600">` : ''}
 ${takeaways.length ? `<div class="takeaways"><b>Key takeaways</b><ul>${takeaways.map((t) => `<li>${esc(t)}</li>`).join('')}</ul></div>` : ''}

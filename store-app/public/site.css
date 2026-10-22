@@ -255,3 +255,6 @@ header.bar .rt{justify-self:end;display:flex;align-items:center}
 .cmt{border-bottom:1px solid var(--line);padding:14px 0}.cmt p{margin:6px 0 0}.cmt .muted{color:var(--muted);font-size:.8rem;margin-left:6px}
 .cmtr{margin:10px 0 0 18px;padding:8px 14px;border-left:2px solid var(--accent);background:var(--surface)}.cmtr b{color:var(--accent);font-size:.78rem;letter-spacing:.14em;text-transform:uppercase}
 #cform{display:grid;gap:10px;max-width:560px;margin-top:22px}#cform input,#cform textarea{width:100%;background:var(--surface);border:1px solid var(--line);color:var(--fg);padding:11px 14px;font:inherit}
+.share .sh{width:40px;height:40px;padding:0;display:inline-grid;place-items:center;border-radius:50%}
+.share .sh.done{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.share .sh[hidden]{display:none}
