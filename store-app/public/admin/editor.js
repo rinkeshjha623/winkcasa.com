@@ -134,7 +134,7 @@ function drawStore() {
     <h3 style="margin-top:16px">Delivery charges</h3>${num('Free delivery above (₹)', 'shipping.freeShippingAbove')}${num('Delivery charge below that (₹)', 'shipping.charge')}</div>
   <div class="card sect"><h3>Top announcement bar</h3><p class="hint">A strip above the header, for offers or notices.</p>
     ${chk('Show announcement bar', 'announcement.enabled')}${txt('Text', 'announcement.text', 'Free delivery above ₹999')}${txt('Link (optional)', 'announcement.link', '#shop')}
-    <h3 style="margin-top:16px">Header menu</h3>${links('header.links', 'Menu links')}</div>
+    </div>
   <div class="card sect"><h3>Homepage banner</h3>
     ${txt('Small line above heading', 'hero.eyebrow')}${txt('Heading', 'hero.headline')}${txt('Highlighted heading words', 'hero.accent')}${txt('Paragraph', 'hero.text', '', true)}
     ${txt('Button text', 'hero.ctaLabel')}${txt('Button link', 'hero.ctaLink', '#shop')}
@@ -171,3 +171,52 @@ function drawStore() {
     try { const r = await api('settings', { method: 'POST', body: JSON.stringify(SETTINGS) }); SETTINGS = r.settings; toast('Published to your store'); drawStore(); } catch (e) { toast(e.message); }
   };
 }
+
+/* ---------------- Blog ---------------- */
+window.loadBlog = async function () {
+  const posts = await api('posts'); const el = $('#t-blog');
+  el.innerHTML = `<div class="filters"><button class="btn" id="badd">+ New post</button><span class="muted" style="flex:1;align-self:center">Posts appear at /blog and help Google and AI assistants find you.</span></div>
+  <div class="card tw"><table><thead><tr><th>Title</th><th>Status</th><th>Date</th><th></th></tr></thead><tbody>${posts.map((p) => `<tr class="row" data-id="${p.id}"><td><b>${esc(p.title)}</b><div class="muted">/blog/${esc(p.slug)}</div></td><td><span class="pill ${p.published ? 'p-paid' : 'p-new'}">${p.published ? 'Published' : 'Draft'}</span></td><td>${fdt(p.published_at || p.created_at)}</td><td><a class="btn ghost sm" target="_blank" href="/blog/${esc(p.slug)}" onclick="event.stopPropagation()">View</a></td></tr>`).join('') || '<tr><td colspan=4 class="muted">No posts yet.</td></tr>'}</tbody></table></div>`;
+  $('#badd').onclick = () => openPost(null);
+  el.querySelectorAll('tr.row').forEach((r) => (r.onclick = () => openPost(posts.find((x) => x.id == r.dataset.id))));
+};
+function openPost(post) {
+  const p = post ? { ...post } : { title: '', slug: '', excerpt: '', body: '', image: '', author: 'WinkCasa Team', published: 0, seo_title: '', seo_description: '' };
+  const d = $('#drawer'); d.classList.remove('hide'); $('#scrim').classList.remove('hide'); $('#scrim').onclick = closeDrawer;
+  const draw = () => {
+    d.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><h2>${post ? 'Edit post' : 'New post'}</h2><button class="btn ghost sm" id="x">Close</button></div>
+    <label>Title</label><input id="b_title" value="${esc(p.title)}" maxlength="120">
+    <label>Web address ending (blank = automatic)</label><input id="b_slug" value="${esc(p.slug || '')}" placeholder="how-to-choose-a-serum">
+    <label>Short summary (shown in the blog list and search results)</label><textarea id="b_ex" rows="2" maxlength="300">${esc(p.excerpt)}</textarea>
+    <label>Article</label><textarea id="b_body" rows="16" placeholder="Write normally. Use ## for a heading, - for bullet points, **bold**, and [link text](/c/skincare) for links.">${esc(p.body)}</textarea>
+    <label>Cover image</label>${p.image ? `<div class="imgs"><div><img src="${esc(p.image)}" alt=""><button id="b_rm">×</button></div></div>` : ''}
+    <div class="row2"><label class="btn ghost sm" style="margin:0;cursor:pointer;color:var(--fg)">Upload image<input id="b_file" type="file" accept="image/*" hidden></label><input id="b_url" placeholder="…or paste https:// link" value="${p.image && /^https/.test(p.image) ? esc(p.image) : ''}"></div>
+    <div class="row2"><div><label>Author</label><input id="b_au" value="${esc(p.author)}" maxlength="60"></div><div></div></div>
+    <label>Search title (optional)</label><input id="b_st" value="${esc(p.seo_title || '')}" maxlength="70"><label>Search description (optional)</label><textarea id="b_sd" rows="2" maxlength="170">${esc(p.seo_description || '')}</textarea>
+    <div class="sw"><input type="checkbox" id="b_pub" ${p.published ? 'checked' : ''}><label for="b_pub" style="margin:0;color:var(--fg)">Published (visible on the site)</label></div>
+    <div class="savebar"><button class="btn" id="b_save">Save</button>${post ? '<button class="btn ghost" id="b_del" style="color:var(--bad)">Delete</button>' : ''}</div>`;
+    $('#x').onclick = closeDrawer;
+    const keep = () => { p.title = $('#b_title').value; p.slug = $('#b_slug').value; p.excerpt = $('#b_ex').value; p.body = $('#b_body').value; p.author = $('#b_au').value; p.seo_title = $('#b_st').value; p.seo_description = $('#b_sd').value; p.published = $('#b_pub').checked ? 1 : 0; const u = $('#b_url').value.trim(); if (/^https:\/\//.test(u)) p.image = u; };
+    if ($('#b_rm')) $('#b_rm').onclick = () => { keep(); p.image = ''; draw(); };
+    $('#b_file').onchange = async (e) => { keep(); try { toast('Uploading…'); const r = await api('upload', { method: 'POST', body: JSON.stringify({ data: await shrink(e.target.files[0]) }) }); p.image = r.url; draw(); } catch (err) { toast(err.message); } };
+    $('#b_save').onclick = async () => { keep(); try { await api('posts', { method: 'POST', body: JSON.stringify({ ...p, id: post ? post.id : undefined }) }); toast('Saved'); closeDrawer(); loadBlog(); } catch (err) { toast(err.message); } };
+    if (post) $('#b_del').onclick = async () => { if (!confirm('Delete this post permanently?')) return; try { await api('posts?id=' + post.id, { method: 'DELETE' }); toast('Deleted'); closeDrawer(); loadBlog(); } catch (err) { toast(err.message); } };
+  };
+  draw();
+}
+
+/* ---------------- Messages ---------------- */
+window.loadMessages = async function () {
+  const list = await api('messages'); const el = $('#t-messages');
+  let only = true;
+  const draw = () => {
+    const shown = list.filter((m) => !only || m.status === 'new');
+    el.innerHTML = `<div class="filters"><label class="sw" style="margin:0"><input type="checkbox" id="m_new" ${only ? 'checked' : ''}> Show only new messages</label><span class="muted" style="flex:1;align-self:center">Messages from your Contact page. Reply by email or WhatsApp.</span></div>
+    ${shown.map((m) => `<div class="card" style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><b>${esc(m.name)}</b><span class="muted">${fdt(m.created_at)} <span class="pill ${m.status === 'new' ? 'p-new' : 'p-paid'}">${m.status}</span></span></div>
+    <div class="muted">${esc(m.email)}${m.phone ? ' · ' + esc(m.phone) : ''}${m.order_ref ? ' · Order ' + esc(m.order_ref) : ''}</div><p style="white-space:pre-wrap;margin:8px 0">${esc(m.message)}</p>
+    <div class="acts"><a class="btn ghost sm" href="mailto:${esc(m.email)}?subject=${encodeURIComponent('Re: your message to WinkCasa')}">Reply by email</a>${m.phone ? `<a class="btn ghost sm" target="_blank" href="https://wa.me/91${esc(m.phone.replace(/\D/g, '').slice(-10))}">WhatsApp</a>` : ''}<button class="btn ghost sm" data-st="${m.id}:${m.status === 'new' ? 'done' : 'new'}">${m.status === 'new' ? 'Mark as done' : 'Reopen'}</button></div></div>`).join('') || '<p class="muted">No messages.</p>'}`;
+    $('#m_new').onchange = (e) => { only = e.target.checked; draw(); };
+    el.querySelectorAll('[data-st]').forEach((b) => (b.onclick = async () => { const [id, status] = b.dataset.st.split(':'); await api('messages', { method: 'POST', body: JSON.stringify({ id: +id, status }) }); const m = list.find((x) => x.id == id); m.status = status; draw(); loadStats(); }));
+  };
+  draw();
+};

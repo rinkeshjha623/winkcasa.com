@@ -62,6 +62,7 @@ export async function onRequestGet({ request, env }) {
     toShip: await q("SELECT COUNT(*) n FROM orders WHERE status='paid' AND fulfilment_status='ordered'"),
     inTransit: await q("SELECT COUNT(*) n FROM orders WHERE status='paid' AND fulfilment_status='shipped'"),
     stuck: await q("SELECT COUNT(*) n FROM orders WHERE status='paid' AND fulfilment_status='shipped' AND shipped_at < datetime('now','-10 days')"),
+    messages: await q("SELECT COUNT(*) n FROM messages WHERE status='new'"),
     late: await q("SELECT COUNT(*) n FROM orders WHERE status='paid' AND fulfilment_status IN ('new','ordered') AND paid_at < datetime('now','-2 days')"),
   };
   const funnel = {};

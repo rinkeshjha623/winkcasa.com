@@ -75,8 +75,8 @@ export function productLd(p, S) {
         shippingRate: { '@type': 'MonetaryAmount', value: String(S.shipping.charge), currency: 'INR' },
         shippingDestination: { '@type': 'DefinedRegion', addressCountry: 'IN' },
         deliveryTime: { '@type': 'ShippingDeliveryTime',
-          handlingTime: { '@type': 'QuantitativeValue', minValue: 2, maxValue: 4, unitCode: 'DAY' },
-          transitTime: { '@type': 'QuantitativeValue', minValue: 3, maxValue: 7, unitCode: 'DAY' } },
+          handlingTime: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 2, unitCode: 'DAY' },
+          transitTime: { '@type': 'QuantitativeValue', minValue: 2, maxValue: 5, unitCode: 'DAY' } },
       },
       hasMerchantReturnPolicy: { '@type': 'MerchantReturnPolicy', applicableCountry: 'IN', returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow', merchantReturnDays: 7, url: SITE + '/returns' },
     },
@@ -84,14 +84,19 @@ export function productLd(p, S) {
 }
 
 /* ---------- shared HTML pieces (used by home, product and category pages) ---------- */
-export const navHtml = (S, home) => S.header.links.map((l) => {
-  let h = okHref(l.href); if (!home && h.startsWith('#')) h = '/' + h;
-  return `<a href="${esc(h)}">${esc(l.label)}</a>`;
-}).join('');
-
-export function headerHtml(S) {
-  return `<header class="bar"><nav class="nav" aria-label="Sections">${navHtml(S, false)}</nav><a class="logo" href="/" aria-label="WinkCasa">W<span class="idot">ı</span>nkCasa</a><a class="cartbtn" href="/?cart=1" aria-label="Open cart">Cart</a></header>`;
+export function headerHtml(S, cats = []) {
+  const shop = cats.map((c) => `<a href="${esc(c.path)}">${esc(c.name)}</a>`).join('');
+  const links = [['/', 'Home'], ['/#shop', 'Shop'], ['/blog', 'Blog'], ['/about', 'About us'], ['/contact', 'Contact us']];
+  return `<header class="bar"><div class="navwrap"><nav class="nav" aria-label="Main">
+<a href="/">Home</a>
+<div class="dd"><a href="/#shop" aria-haspopup="true">Categories ▾</a><div class="ddl"><a href="/#shop">All products</a>${shop}</div></div>
+<a href="/blog">Blog</a><a href="/about">About us</a><a href="/contact">Contact us</a></nav>
+<details class="mmenu"><summary>Menu</summary><div class="mlist"><a href="/">Home</a>${shop}<a href="/#shop">All products</a><a href="/blog">Blog</a><a href="/about">About us</a><a href="/contact">Contact us</a><a href="/track">Track your order</a></div></details></div>
+<a class="logo" href="/" aria-label="WinkCasa">W<span class="idot">ı</span>nkCasa</a><a class="cartbtn" href="/cart" aria-label="View cart">Cart <b data-cartcount>0</b></a></header>`;
 }
+
+export const payMethodsHtml = () => `<div class="paym" aria-label="Payment options"><span class="pm">UPI</span><span class="pm">Credit &amp; debit cards</span><span class="pm">Net banking</span><span class="pms">Secure payment by Razorpay</span></div>`;
+export const etaHtml = () => `<p class="eta" data-eta>Delivered within <b>3–7 days</b> of your order.</p>`;
 
 export function footerHtml(S, cats) {
   const b = S.business, f = S.footer;
@@ -101,7 +106,7 @@ export function footerHtml(S, cats) {
 <div><h4>Shop</h4><ul><li><a href="/#shop">All products</a></li>${cats.map((c) => `<li><a href="${esc(c.path)}">${esc(c.name)}</a></li>`).join('')}</ul></div>
 <div><h4>Help</h4><ul>${f.links.map((l) => `<li><a href="${esc(okHref(l.href))}">${esc(l.label)}</a></li>`).join('')}</ul></div>
 ${social.length ? `<div><h4>Follow us</h4><ul>${social.map(([n, u]) => `<li><a href="${esc(u)}" rel="noopener me">${n}</a></li>`).join('')}</ul></div>` : ''}
-</div><div class="fbase"><span>${esc(f.copyright)}</span><span>${esc(f.note)}${f.showUnsplash ? ' Photos from <a href="https://unsplash.com" rel="noopener">Unsplash</a>.' : ''}</span></div></footer>`;
+</div>${payMethodsHtml()}<div class="fbase"><span>${esc(f.copyright)}</span><span>${esc(f.note)}${f.showUnsplash ? ' Photos from <a href="https://unsplash.com" rel="noopener">Unsplash</a>.' : ''}</span></div></footer>`;
 }
 
 export const faqHtml = (list, heading = 'Frequently asked questions') => list.length
@@ -116,10 +121,10 @@ export function cardHtml(p, closed) {
   const img = p.image ? `<img src="${esc(p.image)}" alt="${esc(p.name)}" loading="lazy" decoding="async" width="800" height="1000">` : '';
   return `<article class="card"><a class="tilelink" href="${esc(p.url)}" aria-label="${esc(p.name)}"><div class="tile" style="${tile}">${p.tag ? `<span class="tag">${esc(p.tag)}</span>` : ''}${img}</div></a>
 <div class="meta"><h3><a href="${esc(p.url)}">${esc(p.name)}</a></h3><span class="price">${p.mrp ? `<span class="was">${money(p.mrp)}</span>` : ''}${price}</span></div><p class="dim">${esc(p.dim)}</p>
-${p.soldOut || closed ? `<button class="add" disabled>${p.soldOut ? 'Sold out' : 'Unavailable'}</button>` : `<button class="add" data-add="${p.id}">Add to cart</button>`}</article>`;
+${p.soldOut || closed ? `<button class="add" disabled>${p.soldOut ? 'Sold out' : 'Unavailable'}</button>` : `<div class="cardbtns"><button class="add" data-add="${p.id}">Add to cart</button><button class="buy" data-buy="${p.id}">Buy now</button></div>`}</article>`;
 }
 
-export function pageShell({ head, S, cats, main, jsonld = [] }) {
+export function pageShell({ head, S, cats, main, jsonld = [], scripts = '' }) {
   return `<!doctype html><html lang="en-IN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 ${head}
 <link rel="icon" href="/icon.svg" type="image/svg+xml">
@@ -127,7 +132,7 @@ ${head}
 <link rel="stylesheet" href="/page.css">
 <link rel="stylesheet" href="/site.css">
 ${jsonld.filter(Boolean).map(ld).join('\n')}
-</head><body><div class="wrap">${headerHtml(S)}</div>${main}<div class="wrap">${footerHtml(S, cats)}</div></body></html>`;
+</head><body><div class="wrap">${headerHtml(S, cats)}</div>${main}<div class="wrap">${footerHtml(S, cats)}</div><script src="/site.js" defer></script>${scripts}</body></html>`;
 }
 
 export { slugify, productPath, categoryPath };

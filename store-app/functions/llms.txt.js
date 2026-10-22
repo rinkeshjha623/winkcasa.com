@@ -1,9 +1,10 @@
 import { getSettings, activeProducts, parseProduct, categoriesOf, productPath } from '../src/store.js';
 import { SITE } from '../src/seo.js';
+import { publishedPosts } from '../src/blog.js';
 
 // llms.txt: a plain-text summary of the store for AI assistants (ChatGPT, Claude, Perplexity, Gemini...).
 export async function onRequestGet({ env }) {
-  const [rows, S] = await Promise.all([activeProducts(env), getSettings(env)]);
+  const [rows, S, posts] = await Promise.all([activeProducts(env), getSettings(env), publishedPosts(env)]);
   const b = S.business, cats = categoriesOf(rows, S);
   const money = (n) => 'INR ' + n;
   const t = `# WinkCasa
@@ -19,7 +20,8 @@ ${b.gstin ? `- GSTIN: ${b.gstin}\n` : ''}- Website: ${SITE}/
 
 ## Key facts
 - Delivery: across India to serviceable pincodes. Free above ${money(S.shipping.freeShippingAbove)}, otherwise ${money(S.shipping.charge)}.
-- Dispatch within 2 to 4 working days; delivery 3 to 7 working days after dispatch.
+- Delivery: within 3 to 7 days of the order. The expected delivery dates are shown at checkout and in the order confirmation.
+- Payment options: UPI, credit and debit cards, net banking (processed by Razorpay).
 - Returns: 7 days for items that arrive damaged, defective or wrong. See ${SITE}/returns
 - Payment: online through Razorpay at checkout.
 
@@ -28,6 +30,14 @@ ${cats.map((c) => `- [${c.name}](${SITE}${c.path}): ${c.description}`).join('\n'
 
 ## Products
 ${rows.map(parseProduct).map((p) => `- [${p.name}](${SITE}${productPath(p)}): ${money(p.price)}${p.mrp > p.price ? ` (MRP ${money(p.mrp)})` : ''}. ${p.category}. ${p.description}${p.stock !== null && p.stock <= 0 ? ' Currently sold out.' : ''}`).join('\n')}
+
+## Guides
+${posts.map((p) => `- [${p.title}](${SITE}/blog/${p.slug}): ${p.excerpt}`).join('\n')}
+
+## Pages
+- [About us](${SITE}/about)
+- [Contact us](${SITE}/contact)
+- [Track an order](${SITE}/track)
 
 ## Policies
 - [Shipping and delivery](${SITE}/shipping)

@@ -1,5 +1,5 @@
 import { getSettings, activeProducts, publicProduct, categoriesOf } from '../src/store.js';
-import { SITE, esc, rich, headTags, ld, organizationLd, websiteLd, faqLd, itemListLd, cardHtml, footerHtml, faqHtml, aboutHtml, navHtml } from '../src/seo.js';
+import { SITE, esc, rich, headTags, ld, organizationLd, websiteLd, faqLd, itemListLd, cardHtml, footerHtml, faqHtml, aboutHtml, headerHtml, etaHtml, payMethodsHtml } from '../src/seo.js';
 
 // Home page: the static page, with real content and structured data filled in on the server
 // so search engines and AI assistants see everything without running JavaScript.
@@ -20,7 +20,9 @@ export async function onRequestGet({ request, env }) {
     .on('head', { element(e) { e.append(head + '\n' + jsonld, { html: true }); } })
     .on('#announce', { element(e) { if (S.announcement.enabled && S.announcement.text) { e.removeAttribute('hidden'); e.setInnerContent(S.announcement.text); } } })
     .on('#closedbar', { element(e) { if (closed) { e.removeAttribute('hidden'); e.setInnerContent(S.store.closedMessage); } } })
-    .on('#navlinks', set(navHtml(S, true)))
+    .on('header.bar', { element(e) { e.replace(headerHtml(S, cats), { html: true }); } })
+    .on('#heroPay', set(etaHtml()))
+    .on('#payBand', set(`<div class="wrap"><h2>Pay your way</h2><p>Pay securely online by UPI, credit or debit card, or net banking. Payments are processed by Razorpay.</p>${payMethodsHtml()}<p>Delivered within 3 to 7 days of your order, with your expected delivery date shown at checkout.</p></div>`))
     .on('#heroEyebrow', { element(e) { e.setInnerContent(h.eyebrow); } })
     .on('#heroH1', set(esc(h.headline) + (h.accent ? ' <em>' + esc(h.accent) + '</em>' : '')))
     .on('#heroText', { element(e) { e.setInnerContent(h.text); } })

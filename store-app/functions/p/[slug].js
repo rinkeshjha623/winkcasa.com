@@ -1,5 +1,5 @@
 import { getSettings, activeProducts, parseProduct, publicProduct, categoriesOf, productPath, slugify } from '../../src/store.js';
-import { SITE, esc, abs, trim, headTags, pageShell, breadcrumbLd, productLd, faqLd, cardHtml } from '../../src/seo.js';
+import { SITE, esc, abs, trim, headTags, pageShell, breadcrumbLd, productLd, faqLd, cardHtml, etaHtml, payMethodsHtml } from '../../src/seo.js';
 
 const money = (n) => '₹' + Number(n).toLocaleString('en-IN');
 const notFound = () => new Response('Product not found', { status: 404, headers: { 'Content-Type': 'text/plain' } });
@@ -34,9 +34,10 @@ export async function onRequestGet({ params, env }) {
 <p class="pr">${money(p.price)}${p.mrp > p.price ? ` <s>${money(p.mrp)}</s><span class="off">${off}% off</span>` : ''}</p>
 <p class="avail">${inStock ? 'In stock' : 'Sold out'} · Inclusive of GST</p>
 ${p.description ? `<p>${esc(p.description)}</p>` : ''}
-${inStock && S.store.open ? `<a class="btn" href="/?add=${p.id}" rel="nofollow">Add to cart</a>` : `<span class="btn off">${inStock ? 'Unavailable' : 'Sold out'}</span>`}
+${inStock && S.store.open ? `<div class="buybtns"><button class="btn" data-add="${p.id}">Add to cart</button><button class="btn alt" data-buy="${p.id}">Buy now</button></div>` : `<span class="btn off">${inStock ? 'Unavailable' : 'Sold out'}</span>`}
+${etaHtml()}${payMethodsHtml()}
 ${p.highlights.length ? `<ul>${p.highlights.map((h) => `<li>${esc(h)}</li>`).join('')}</ul>` : ''}
-<ul class="facts2"><li>Delivery across India: free above ${money(S.shipping.freeShippingAbove)}, otherwise ${money(S.shipping.charge)}</li><li>Dispatch in 2–4 working days, delivery 3–7 working days after that</li><li><a href="/returns">7-day returns</a> on damaged, defective or wrong items</li>${p.brand ? `<li>Brand: ${esc(p.brand)}</li>` : ''}<li>SKU: ${esc(p.sku || p.id)}</li></ul></div></div>
+<ul class="facts2"><li>Delivery across India: free above ${money(S.shipping.freeShippingAbove)}, otherwise ${money(S.shipping.charge)}</li><li>Delivered within 3–7 days of your order</li><li><a href="/returns">7-day returns</a> on damaged, defective or wrong items</li>${p.brand ? `<li>Brand: ${esc(p.brand)}</li>` : ''}<li>SKU: ${esc(p.sku || p.id)}</li></ul></div></div>
 ${paras.length ? `<section class="sec"><h2>About this product</h2>${paras.map((t) => `<p>${esc(t)}</p>`).join('')}</section>` : ''}
 <section class="faq" id="faq"><h2>Questions about ${esc(p.name)}</h2>${faqs.map((f) => `<details><summary>${esc(f.q)}</summary><p>${esc(f.a)}</p></details>`).join('')}</section>
 ${related.length ? `<section class="sec"><h2>More in ${esc(p.category)}</h2><div class="grid" style="padding-block:20px 0">${related.map((r) => cardHtml(r, !S.store.open)).join('')}</div></section>` : ''}

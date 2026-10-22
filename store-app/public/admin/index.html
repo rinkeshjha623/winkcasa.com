@@ -58,7 +58,7 @@ th{color:var(--mut);font-weight:500;font-size:12px;white-space:nowrap}tr.row{cur
 
 <div id="app" class="hide">
 <header><h1>WinkCasa</h1>
-  <nav><button data-t="overview" class="on">Overview</button><button data-t="orders">Orders</button><button data-t="products">Products</button><button data-t="store">Store settings</button></nav>
+  <nav><button data-t="overview" class="on">Overview</button><button data-t="orders">Orders</button><button data-t="products">Products</button><button data-t="blog">Blog</button><button data-t="messages">Messages</button><button data-t="store">Store settings</button></nav>
   <span class="sp"></span>
   <select id="range" style="width:auto"><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="90">Last 90 days</option><option value="365">Last 12 months</option></select>
   <button class="btn ghost sm" id="refresh">Refresh</button><button class="btn ghost sm" id="csv">Export CSV</button><button class="btn ghost sm" id="out">Sign out</button>
@@ -80,6 +80,8 @@ th{color:var(--mut);font-weight:500;font-size:12px;white-space:nowrap}tr.row{cur
 
 <section id="t-products" class="hide"></section>
 <section id="t-store" class="hide"></section>
+<section id="t-blog" class="hide"></section>
+<section id="t-messages" class="hide"></section>
 <section id="t-orders" class="hide">
   <div class="filters">
     <input id="q" placeholder="Search order, name, phone, email, tracking, pincode">
@@ -121,8 +123,8 @@ async function login(){
 $('#showtok').onchange=e=>{$('#tok').style.webkitTextSecurity=e.target.checked?'none':'disc'};$('#go').onclick=login;$('#tok').addEventListener('keydown',e=>{if(e.key==='Enter')login()});$('#out').onclick=signout;
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>show(b.dataset.t));
 function show(t){document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
-  ['overview','orders','products','store'].forEach(x=>$('#t-'+x).classList.toggle('hide',x!==t));
-  if(t==='orders')loadOrders();if(t==='products'&&window.loadProducts)loadProducts();if(t==='store'&&window.loadStore)loadStore()}
+  ['overview','orders','products','store','blog','messages'].forEach(x=>$('#t-'+x).classList.toggle('hide',x!==t));
+  if(t==='orders')loadOrders();if(t==='products'&&window.loadProducts)loadProducts();if(t==='store'&&window.loadStore)loadStore();if(t==='blog'&&window.loadBlog)loadBlog();if(t==='messages'&&window.loadMessages)loadMessages()}
 $('#refresh').onclick=loadAll;$('#range').onchange=loadStats;
 $('#csv').onclick=async()=>{const b=await api('export');const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='winkcasa-orders.csv';a.click()};
 
@@ -130,9 +132,9 @@ async function loadAll(){loadStats();loadOrders()}
 async function loadStats(){
   const s=await api('stats?days='+$('#range').value);
   const q=s.queue;
-  $('#queue').innerHTML=[['To order from supplier',q.toOrder,'new',q.toOrder>0],['Ordered, awaiting ship',q.toShip,'ordered',false],['In transit',q.inTransit,'shipped',false],['Delayed (2+ days unprocessed)',q.late,'new',q.late>0],['In transit 10+ days',q.stuck,'shipped',q.stuck>0]]
+  $('#queue').innerHTML=[['To order from supplier',q.toOrder,'new',q.toOrder>0],['Ordered, awaiting ship',q.toShip,'ordered',false],['In transit',q.inTransit,'shipped',false],['Delayed (2+ days unprocessed)',q.late,'new',q.late>0],['In transit 10+ days',q.stuck,'shipped',q.stuck>0],['New messages',q.messages,'messages',q.messages>0]]
     .map(([l,n,f,h])=>`<div class="card ${h?'hot':''}" data-f="${f}"><div class="muted">${l}</div><b>${n}</b></div>`).join('');
-  document.querySelectorAll('#queue .card').forEach(c=>c.onclick=()=>{$('#ff').value=c.dataset.f;$('#fp').value='paid';show('orders')});
+  document.querySelectorAll('#queue .card').forEach(c=>c.onclick=()=>{if(c.dataset.f==='messages')return show('messages');$('#ff').value=c.dataset.f;$('#fp').value='paid';show('orders')});
   const k=(l,v,sub='')=>`<div class="card kpi"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${sub}</div></div>`;
   $('#kpis').innerHTML=k('Revenue',inr(s.net),`gross ${inr(s.gross)}`)+k('Orders',s.orders,`${s.abandoned} unpaid checkouts`)+k('Avg order value',inr(s.aov))
     +k('Est. profit',s.costedOrders?inr(s.profit):'—',s.costedOrders?`on ${s.costedOrders} orders with supplier cost`:'add supplier cost on orders')
@@ -170,6 +172,7 @@ async function openOrder(ref){
   <div class="card" style="margin-top:10px"><h3>Items &amp; payment</h3><table style="margin-top:6px">${o.items.map(i=>`<tr><td>${esc(i.name)}</td><td>${i.qty} × ${inr(i.unitPaise)}</td><td style="text-align:right">${inr(i.qty*i.unitPaise)}</td></tr>`).join('')}
   <tr><td colspan=2 class="muted">Shipping</td><td style="text-align:right">${inr(o.shipping_paise)}</td></tr><tr><td colspan=2><b>Total</b></td><td style="text-align:right"><b>${inr(o.total_paise)}</b></td></tr></table>
   <div class="muted" style="margin-top:6px">Placed ${fdt(o.created_at)} · Paid ${fdt(o.paid_at)||'—'} · Razorpay ${esc(o.payment_id||'—')}</div>
+  ${o.delivery_min_at?`<div style="margin-top:6px">Promised delivery: <b>${fdt(o.delivery_min_at)} to ${fdt(o.delivery_max_at)}</b>${o.status==='paid'&&!['delivered','cancelled','returned'].includes(o.fulfilment_status)&&new Date()>utc(o.delivery_max_at)?' <span class="pill p-cancelled">Overdue</span>':''}</div>`:''}
   ${profit!==null?`<div style="margin-top:6px">Est. profit: <b>${inr(profit)}</b> <span class="muted">(after supplier cost and ~${inr(fee)} gateway fee)</span></div>`:''}</div>
   ${o.status==='paid'?`<div class="card" style="margin-top:10px"><h3>Fulfilment</h3>
     <label>Status</label><select id="f_st">${Object.keys(LBL).map(k=>`<option value="${k}" ${k===o.fulfilment_status?'selected':''}>${LBL[k]}</option>`).join('')}</select>

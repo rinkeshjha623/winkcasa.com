@@ -2,14 +2,13 @@ import seed from '../public/products.json';
 
 export const DEFAULTS = {
   announcement: { enabled: false, text: '', link: '' },
-  header: { links: [{ label: 'Shop', href: '#shop' }, { label: 'Promise', href: '#promise' }] },
   hero: {
     eyebrow: 'WinkCasa Retail · New Delhi',
     headline: 'Beauty and jewellery,',
     accent: 'chosen with care.',
     text: 'Skincare, beauty tools and everyday jewellery, picked for what India reorders most.',
     ctaLabel: 'Shop the collection', ctaLink: '#shop',
-    facts: ['**Free delivery** above ₹999', '**7-day** returns on damaged or wrong items'],
+    facts: ['**Delivered in 3–7 days** across India', '**Free delivery** above ₹999', '**7-day** returns on damaged or wrong items'],
   },
   collection: { label: 'The collection', title: 'Pieces we keep restocking' },
   promise: [
@@ -20,8 +19,8 @@ export const DEFAULTS = {
   footer: {
     copyright: '© WinkCasa Retail',
     links: [
-      { label: 'Returns', href: '/returns' }, { label: 'Shipping', href: '/shipping' }, { label: 'Privacy', href: '/privacy' },
-      { label: 'Terms', href: '/terms' }, { label: 'Contact', href: '/contact' },
+      { label: 'Track your order', href: '/track' }, { label: 'About us', href: '/about' }, { label: 'Blog', href: '/blog' }, { label: 'Contact us', href: '/contact' },
+      { label: 'Returns', href: '/returns' }, { label: 'Shipping', href: '/shipping' }, { label: 'Privacy', href: '/privacy' }, { label: 'Terms', href: '/terms' },
     ],
     note: 'Prices in Indian rupees, inclusive of GST.',
     showUnsplash: true,
@@ -35,18 +34,18 @@ export const DEFAULTS = {
   business: {
     name: 'WinkCasa Retail', legalName: 'Rinkesh Kumar Jha, trading as WinkCasa Retail', gstin: '07AURPJ3347A1ZQ',
     street: '155-156, Shyam Sarovar Apartment, Patparganj', city: 'Delhi', state: 'Delhi', postcode: '110091',
-    phone: '+91 9798776985', email: 'support@winkcasa.com', hours: '',
+    phone: '+91 9798776985', email: 'support@winkcasa.com', hours: '', grievanceOfficer: 'Rinkesh Jha',
   },
   social: { instagram: '', facebook: '', youtube: '', whatsapp: '' },
   about: {
     title: 'About WinkCasa',
-    text: 'WinkCasa is an online store based in New Delhi, India. We sell skincare, beauty tools and everyday jewellery, chosen for what shoppers reorder most. We deliver across India, show prices in Indian rupees including GST, and take payment securely online through Razorpay. If an item arrives damaged, defective or wrong, tell us within 7 days and we will replace it or refund you.',
+    text: 'WinkCasa is an online store based in New Delhi, India. We sell skincare, beauty tools and everyday jewellery, chosen for what shoppers reorder most. We deliver across India within 3 to 7 days, show prices in Indian rupees including GST, and take payment securely online by UPI, card or net banking through Razorpay. If an item arrives damaged, defective or wrong, tell us within 7 days and we will replace it or refund you.',
   },
   faq: [
     { q: 'Do you deliver across India?', a: 'Yes. We deliver to serviceable pincodes across India. Delivery is free on orders of ₹999 and above, and costs ₹79 below that.' },
-    { q: 'How long does delivery take?', a: 'Orders are usually dispatched within 2 to 4 working days and arrive 3 to 7 working days after that, depending on your location.' },
+    { q: 'How long does delivery take?', a: 'Your order is delivered within 3 to 7 days of placing it, depending on your location. Your expected delivery dates are shown at checkout and in your order confirmation.' },
     { q: 'What is the return policy?', a: 'If an item arrives damaged, defective or wrong, tell us within 7 days and we will replace it or refund you. Full details are on our Returns page.' },
-    { q: 'How can I pay?', a: 'Payment is taken securely online through Razorpay when you check out.' },
+    { q: 'How can I pay?', a: 'You can pay by UPI, credit or debit card, or net banking. Payment is taken securely online through Razorpay when you check out.' },
     { q: 'Are prices inclusive of GST?', a: 'Yes. All prices are in Indian rupees and include GST.' },
     { q: 'How do I contact WinkCasa?', a: 'Email support@winkcasa.com or visit our Contact page. We reply to every message.' },
   ],
@@ -140,3 +139,36 @@ export async function activeProducts(env) {
   const { results } = await env.DB.prepare('SELECT * FROM products WHERE active=1 ORDER BY sort, id').all();
   return results;
 }
+
+// Promise: delivered within 3 to 7 days of the order. Earliest = order + 3 days; latest = 9 PM IST on day 7.
+export function deliveryWindow(from = new Date()) {
+  const fmt = (d) => d.toISOString().slice(0, 19).replace('T', ' ');
+  const min = new Date(from.getTime() + 3 * 86400000);
+  const max = new Date(from.getTime() + 7 * 86400000);
+  max.setUTCHours(15, 30, 0, 0); // 21:00 IST
+  return { min: fmt(min), max: fmt(max) };
+}
+
+/* ---------- tiny, safe markdown for blog posts: ## headings, - lists, **bold**, [text](url) ---------- */
+const escHtml = (t) => String(t ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const inline = (t) => escHtml(t)
+  .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+  .replace(/\[([^\]]+)\]\(((?:https?:\/\/|\/)[^\s)]+)\)/g, '<a href="$2">$1</a>');
+export function markdown(src) {
+  const out = []; let list = [];
+  const flush = () => { if (list.length) { out.push('<ul>' + list.map((l) => `<li>${inline(l)}</li>`).join('') + '</ul>'); list = []; } };
+  for (const block of String(src || '').split(/\n{2,}/)) {
+    for (const line of block.split('\n')) {
+      const t = line.trim();
+      if (!t) continue;
+      if (/^- /.test(t)) { list.push(t.slice(2)); continue; }
+      flush();
+      if (/^## /.test(t)) out.push(`<h2>${inline(t.slice(3))}</h2>`);
+      else if (/^### /.test(t)) out.push(`<h3>${inline(t.slice(4))}</h3>`);
+      else out.push(`<p>${inline(t)}</p>`);
+    }
+    flush();
+  }
+  return out.join('\n');
+}
+export const wordsOf = (t) => String(t || '').split(/\s+/).filter(Boolean).length;

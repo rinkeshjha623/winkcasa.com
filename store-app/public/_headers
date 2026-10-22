@@ -4,3 +4,5 @@
   X-Frame-Options: DENY
 /api/*
   Cache-Control: no-store
+/legal/*
+  X-Robots-Tag: noindex
