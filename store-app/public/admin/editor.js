@@ -294,3 +294,25 @@ window.autoImportCJ = async function (log) {
   log(`Done. ${added} products are live.`);
   return added;
 };
+
+// Selfies customers chose to save on /try (opt-in, auto-deleted after 90 days).
+window.loadSelfies = async function () {
+  const el = document.getElementById('t-selfies');
+  el.innerHTML = '<div class="card"><h3>Saved selfies</h3><p class="hint">Only photos shoppers agreed to save are here. They are deleted automatically after 90 days. Treat them as sensitive personal data: never share or download them elsewhere, and delete when asked.</p><div id="sf_list">Loading…</div></div>';
+  try {
+    const d = await api('selfies');
+    const L = document.getElementById('sf_list');
+    if (!d.list.length) { L.innerHTML = '<p class="hint">No saved selfies yet.</p>'; return; }
+    L.innerHTML = '<p class="hint">' + d.total + ' saved. <button class="btn ghost sm" id="sf_all">Delete all</button></p><div id="sf_grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px"></div>';
+    const g = document.getElementById('sf_grid');
+    d.list.forEach((s) => {
+      const c = document.createElement('div'); c.style.cssText = 'border:1px solid var(--line,#2a423c);padding:8px;font-size:.78rem';
+      c.innerHTML = '<div style="aspect-ratio:4/5;background:#0b1916;display:grid;place-items:center;overflow:hidden"><button class="btn ghost sm">View</button></div><div style="margin-top:6px"><b>' + (s.face_shape || '?') + '</b> · ' + (s.created_at || '').slice(0, 16) + '</div><div>' + (s.email ? (s.name || '') + '<br>' + s.email : 'Guest') + '</div><button class="btn ghost sm" style="margin-top:6px">Delete</button>';
+      const [view, del] = c.querySelectorAll('button');
+      view.onclick = async () => { try { const r = await api('selfies?id=' + s.id); const im = new Image(); im.src = r.image; im.style.cssText = 'width:100%;height:100%;object-fit:cover'; view.parentNode.innerHTML = ''; c.firstChild.appendChild(im); } catch (e) { toast(e.message); } };
+      del.onclick = async () => { if (!confirm('Delete this selfie?')) return; await api('selfies', { method: 'POST', body: JSON.stringify({ action: 'delete', id: s.id }) }); loadSelfies(); };
+      g.appendChild(c);
+    });
+    document.getElementById('sf_all').onclick = async () => { if (!confirm('Delete ALL saved selfies?')) return; await api('selfies', { method: 'POST', body: JSON.stringify({ action: 'delete_all' }) }); loadSelfies(); };
+  } catch (e) { document.getElementById('sf_list').textContent = e.message; }
+};

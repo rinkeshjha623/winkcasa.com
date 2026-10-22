@@ -81,8 +81,17 @@
     var lay = [['earrings', 'Earrings'], ['necklace', 'Necklace'], ['hair', 'Hair'], ['beauty', 'Face massage']].map(function (a) { return '<button type="button" class="chip' + (layers[a[0]] ? ' on' : '') + '" data-layer="' + a[0] + '">' + a[1] + '</button>'; }).join('');
     res.innerHTML = '<div class="shapehead"><p class="label">Your face shape</p><h2>' + s.name + '</h2><p>' + s.note + '</p><p class="fine">This is a guide from your photo, not an exact measure. Not quite right? Choose another shape:</p><div class="chips">' + chips + '</div></div>' +
       '<div class="shapehead"><p class="label">Placement guide</p><div class="chips">' + lay + '</div></div>' +
+      '<div class="consent" id="consent"><label><input type="checkbox" id="cOk"> I agree that WinkCasa may save this photo for 90 days to improve style suggestions. I can ask for it to be deleted at any time.</label><button type="button" class="btn alt" id="cSave" disabled>Save my photo</button><p class="fine" id="cMsg">Optional. Nothing is saved unless you tick the box and press Save.</p></div>' +
       group('Earrings for you', 'Chosen for a ' + s.name.toLowerCase() + ' face.', pick('ear', s.ear, 3)) + group('Necklaces for you', 'Lines that flatter your neckline.', pick('neck', s.neck, 3)) +
       group('Hair accessories', 'Placed to frame your face.', pick('hair', s.hair, 3)) + group('Facial massage tools', 'Follow the arrows on the guide to roll upward and outward.', pickBeauty());
+    var ok = $('cOk'), sv = $('cSave');
+    ok.onchange = function () { sv.disabled = !ok.checked; };
+    sv.onclick = function () {
+      if (!ok.checked || !img) return; var t = document.createElement('canvas'), k = Math.min(1, 480 / Math.max(img.width, img.height)); t.width = Math.round(img.width * k); t.height = Math.round(img.height * k); t.getContext('2d').drawImage(img, 0, 0, t.width, t.height);
+      sv.disabled = true; fetch('/api/selfie', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ consent: true, shape: shape, image: t.toDataURL('image/jpeg', 0.7) }) })
+        .then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.error || 'Could not save.'); $('cMsg').textContent = 'Saved. Thank you. To have it deleted, email support@winkcasa.com' + (document.cookie.indexOf('wc_in=1') >= 0 ? ' or delete it from My account.' : '.'); ok.disabled = true; }); })
+        .catch(function (e) { $('cMsg').textContent = e.message; sv.disabled = false; });
+    };
     [].forEach.call(res.querySelectorAll('[data-shape]'), function (b) { b.onclick = function () { shape = b.getAttribute('data-shape'); draw(); results(); }; });
     [].forEach.call(res.querySelectorAll('[data-layer]'), function (b) { b.onclick = function () { var k = b.getAttribute('data-layer'); layers[k] = !layers[k]; draw(); results(); }; });
   }

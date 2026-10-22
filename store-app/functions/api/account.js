@@ -125,12 +125,13 @@ export async function onRequestPost({ request, env }) {
     else await env.DB.prepare('INSERT OR IGNORE INTO wishlist (customer_id,product_id) VALUES (?,?)').bind(me.id, pid).run();
     return json(await overview(env, me));
   }
+  if (act === 'selfies_delete') { await env.DB.prepare('DELETE FROM selfies WHERE customer_id=?').bind(me.id).run(); return json({ ok: true }); }
   if (act === 'delete_account') {
     const c = await env.DB.prepare('SELECT pass_hash, pass_salt FROM customers WHERE id=?').bind(me.id).first();
     if (!(await checkPassword(String(b.password || ''), c.pass_hash, c.pass_salt))) return json({ error: 'Password is not correct.' }, 400);
     await env.DB.batch([
       env.DB.prepare('DELETE FROM sessions WHERE customer_id=?').bind(me.id), env.DB.prepare('DELETE FROM addresses WHERE customer_id=?').bind(me.id),
-      env.DB.prepare('DELETE FROM wishlist WHERE customer_id=?').bind(me.id), env.DB.prepare('UPDATE orders SET customer_id=NULL WHERE customer_id=?').bind(me.id),
+      env.DB.prepare('DELETE FROM wishlist WHERE customer_id=?').bind(me.id), env.DB.prepare('DELETE FROM selfies WHERE customer_id=?').bind(me.id), env.DB.prepare('UPDATE orders SET customer_id=NULL WHERE customer_id=?').bind(me.id),
       env.DB.prepare('DELETE FROM customers WHERE id=?').bind(me.id)]);
     return jsonCookies({ ok: true }, 200, clearCookies());
   }

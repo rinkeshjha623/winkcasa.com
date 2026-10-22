@@ -82,6 +82,7 @@
       '<button class="btn" type="submit">Save details</button><p class="msg" id="pmsg" role="status"></p></form>' +
       '<form class="form" id="pwf" novalidate><h3>Change password</h3><label>Current password</label><input name="current" type="password" autocomplete="current-password" required><label>New password <span class="opt">(at least 8 characters)</span></label><input name="password" type="password" autocomplete="new-password" required>' +
       '<button class="btn" type="submit">Change password</button><p class="msg" id="pwmsg" role="status"></p></form></div>' +
+      '<div class="fine" style="margin-top:18px">Photos you chose to save on Find your look: <button class="lnk" id="selfdel" type="button">Delete my saved photos</button> <span id="selfmsg"></span></div>' +
       '<details class="danger"><summary>Delete my account</summary><p class="fine">This removes your login, saved addresses and wishlist. Past orders are kept for our records, as the law requires, but are no longer linked to you.</p><form class="form" id="delf" novalidate><label>Confirm with your password</label><input name="password" type="password" autocomplete="current-password" required><button class="btn ghost" type="submit">Delete account</button><p class="msg" id="dmsg"></p></form></details>';
   }
 
@@ -111,6 +112,7 @@
     if (pf) pf.onsubmit = function (e) { e.preventDefault(); api({ action: 'profile', name: pf.name.value, phone: pf.phone.value }).then(function (d) { D = d; H.textContent = 'Hello, ' + d.customer.name.split(' ')[0]; msg('pmsg', 'Saved.', true); }).catch(function (er) { msg('pmsg', er.message); }); };
     var pw = document.getElementById('pwf');
     if (pw) pw.onsubmit = function (e) { e.preventDefault(); api({ action: 'password', current: pw.current.value, password: pw.password.value }).then(function () { D = null; hint(false); mode = 'login'; authView(); msg('amsg', 'Password changed. Please log in again.', true); }).catch(function (er) { msg('pwmsg', er.message); }); };
+    var sd = document.getElementById('selfdel'); if (sd) sd.onclick = function () { api({ action: 'selfies_delete' }).then(function () { document.getElementById('selfmsg').textContent = 'Deleted.'; }); };
     var df = document.getElementById('delf');
     if (df) df.onsubmit = function (e) { e.preventDefault(); if (!confirm('Delete your account for good?')) return; api({ action: 'delete_account', password: df.password.value }).then(function () { D = null; hint(false); mode = 'signup'; authView(); }).catch(function (er) { msg('dmsg', er.message); }); };
   }

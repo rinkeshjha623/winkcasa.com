@@ -11,7 +11,7 @@ export async function onRequestGet({ env }) {
 <div class="tryempty" id="tryEmpty"><div class="tryicon">✦</div><p>Add a clear, front-facing photo with your hair tucked back so your ears show.</p></div><div class="tryload" id="tryLoad" hidden>Reading your face…</div></div>
 <video id="tryVideo" playsinline muted hidden></video>
 <div class="trybtns"><label class="btn">Take a selfie<input type="file" id="fSelfie" accept="image/*" capture="user" hidden></label><label class="btn alt">Upload a photo<input type="file" id="fUpload" accept="image/*" hidden></label><button class="btn alt" type="button" id="bCam">Use webcam</button><button class="btn alt" type="button" id="bSnap" hidden>Capture</button></div>
-<p class="fine privacy">🔒 Private by design: face detection runs inside your browser. Your photo is never uploaded or stored.</p></div>
+<p class="fine privacy">🔒 Private by design: face detection runs inside your browser. Your photo stays on your device unless you choose to save it after your results.</p></div>
 <div class="tryres" id="tryRes"><p class="empty">Your face shape, placement guide and picks will appear here.</p></div></div></main>`;
   const html = pageShell({
     head: headTags({ title: 'Find your look: face shape and jewellery suggestions | WinkCasa', description: 'Upload a selfie to find your face shape and see which earrings, necklaces and hair accessories suit you. Private: your photo never leaves your device.', canonical: SITE + '/try' }),
