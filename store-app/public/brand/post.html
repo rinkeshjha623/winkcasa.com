@@ -1,12 +1,12 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex"><meta name="viewport" content="width=device-width,initial-scale=1"><title>WinkCasa post</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Hanken+Grotesk:wght@500;600&display=swap"><link rel="stylesheet" href="brand.css">
-<style>.sq{position:relative;height:min(94vh,94vw);aspect-ratio:1;display:grid;grid-template-columns:1fr;align-content:center;justify-items:center;gap:2.6vh;padding:4vh}
-.sq .arch{height:60%;aspect-ratio:4/5}.sq{grid-template-rows:auto auto auto}
+<style>.sq{position:relative;height:94vh;width:94vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2.2vh;padding:8vh 4vh 4vh}
+.sq .arch{height:52vh;aspect-ratio:4/5;flex:none}
 .tag{font-size:1.9vh;letter-spacing:.34em;color:var(--gold);text-transform:uppercase}
-.nm{font-family:'Cormorant Garamond',serif;font-size:5.4vh;text-align:center;line-height:1.05;max-width:90%}
+.nm{font-family:'Cormorant Garamond',serif;font-size:5vh;text-align:center;line-height:1.05;max-width:92%}
 .pr{display:flex;gap:2vh;align-items:baseline;font-size:3.4vh;color:var(--gold)}.pr s{color:var(--muted);font-size:2.2vh}
-.ft{display:flex;gap:2.4vh;align-items:center;font-size:1.7vh;letter-spacing:.3em;color:var(--muted)}.ft b{color:var(--gold);font-weight:600}
-.top{position:absolute;top:3.4vh;left:0;right:0;text-align:center;font-family:'Cormorant Garamond',serif;font-size:3vh;letter-spacing:.36em;color:var(--gold)}</style></head>
+.ft{display:flex;gap:2vh;align-items:center;font-size:1.6vh;letter-spacing:.28em;color:var(--muted)}.ft b{color:var(--gold);font-weight:600}
+.top{position:absolute;top:3.2vh;left:0;right:0;text-align:center;font-family:'Cormorant Garamond',serif;font-size:3vh;letter-spacing:.36em;color:var(--gold)}</style></head>
 <body><div class="stage"><div class="glow"></div><div class="sq" id="sq"><div class="top">WINKCASA</div></div></div>
 <script>const id=new URLSearchParams(location.search).get('id');fetch('/api/catalog').then(r=>r.json()).then(d=>{const l=Array.isArray(d)?d:d.products;const p=l.find(x=>x.id==id)||l[0];const f=n=>'₹'+Number(n).toLocaleString('en-IN');
 document.getElementById('sq').insertAdjacentHTML('beforeend',`<div class="tag">${p.room}</div><div class="arch"><img src="${p.image}" alt=""></div><div class="nm">${p.name}</div><div class="pr">${p.mrp?`<s>${f(p.mrp)}</s>`:''}<b style="font-weight:500">${f(p.price)}</b></div><div class="ft"><span>FREE DELIVERY ABOVE ₹999</span><b>·</b><span>WWW.WINKCASA.COM</span></div>`)})</script></body></html>
