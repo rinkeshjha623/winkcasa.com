@@ -48,9 +48,10 @@ export const DEFAULTS = {
     seoDescription: '',
   },
   about: {
-    title: 'About WinkCasa',
-    text: 'WinkCasa is an online store based in New Delhi, India. We sell skincare, beauty tools and everyday jewellery, chosen for what shoppers reorder most. We deliver across India within 10 to 20 days, show prices in Indian rupees including GST, and take payment securely online by UPI, card or net banking through Razorpay. If an item arrives damaged, defective or wrong, tell us within 7 days and we will replace it or refund you.',
+    title: 'The House of WinkCasa',
+    text: 'WinkCasa began in New Delhi with a quiet conviction: the finishing touch is rarely small. A pair of earrings that catches the light as you turn, a clip that holds your hair just so, a ritual that turns an ordinary evening into a pause. These are the details people remember.\n\nWe curate with one test: would we wear it, gift it, and still love it a year from now? Pieces that pass are chosen for how they sit against the skin and how they finish a look, not only how they photograph.\n\nBecause every face is different, we created Find your look. It reads your face shape privately, on your own device, and shows the earrings, necklaces and hair pieces made to flatter you, placed on your own photograph, so you can choose with confidence.\n\nIf anything reaches you damaged, defective or not as described, write to us within 7 days and we will replace it or refund you.',
   },
+
   faq: [
     { q: 'Do you deliver across India?', a: 'Yes. We deliver to serviceable pincodes across India. Delivery is free on orders of ₹999 and above, and costs ₹79 below that.' },
     { q: 'How long does delivery take?', a: 'Your order is delivered within 10 to 20 days of placing it, depending on your location. Your expected delivery dates are shown at checkout and in your order confirmation.' },

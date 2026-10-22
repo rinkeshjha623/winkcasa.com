@@ -1,5 +1,5 @@
 import { getSettings, activeProducts, publicProduct, categoriesOf } from '../src/store.js';
-import { SITE, esc, rich, headTags, ld, organizationLd, websiteLd, faqLd, itemListLd, cardHtml, footerHtml, faqHtml, aboutHtml, headerHtml, etaHtml, payMethodsHtml } from '../src/seo.js';
+import { SITE, esc, rich, headTags, ld, organizationLd, websiteLd, faqLd, itemListLd, cardHtml, footerHtml, faqHtml, aboutHtml, tryTeaserHtml, headerHtml, etaHtml, payMethodsHtml } from '../src/seo.js';
 
 // Home page: the static page, with real content and structured data filled in on the server
 // so search engines and AI assistants see everything without running JavaScript.
@@ -42,7 +42,7 @@ export async function onRequestGet({ request, env }) {
     .on('#grid', { element(e) { e.setInnerContent(shown.map((p) => cardHtml(p, closed)).join(''), { html: true });
       e.after(`<nav class="catlinks wrap" aria-label="Collections">${cats.map((c) => `<a href="${esc(c.path)}">${esc(c.name)}</a>`).join('')}</nav>`, { html: true }); } })
     .on('#promiseWrap', set(S.promise.map((x) => `<div><h3>${esc(x.title)}</h3><p>${esc(x.text)}</p></div>`).join('')))
-    .on('#promise', { element(e) { e.after(aboutHtml(S) + faqHtml(S.faq), { html: true }); } })
+    .on('#promise', { element(e) { e.after(tryTeaserHtml() + aboutHtml(S) + faqHtml(S.faq), { html: true }); } })
     .on('#footerEl', { element(e) { e.replace(footerHtml(S, cats), { html: true }); } })
     .transform(res);
   const r = new Response(out.body, out);
