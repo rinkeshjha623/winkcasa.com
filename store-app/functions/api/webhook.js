@@ -13,10 +13,15 @@ export async function onRequestPost({ request, env }) {
   const evt = JSON.parse(raw);
   if (evt.event === 'payment.captured') {
     const p = evt.payload.payment.entity;
-    await env.DB.prepare(
+    const res = await env.DB.prepare(
       `UPDATE orders SET status='paid', payment_id=?, paid_at=datetime('now')
        WHERE razorpay_order_id=? AND status='created'`
     ).bind(p.id, p.order_id).run();
+    if (res.meta?.changes) {
+      await env.DB.prepare(
+        "INSERT INTO order_events (order_ref, text) SELECT order_ref, ? FROM orders WHERE razorpay_order_id=?"
+      ).bind('Payment received (' + p.id + ')', p.order_id).run();
+    }
   }
   return json({ ok: true });
 }

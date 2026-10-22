@@ -15,6 +15,9 @@ export async function onRequestPost({ request, env }) {
      WHERE razorpay_order_id=? AND status='created'`
   ).bind(pid, oid).run();
 
+  const row0 = await env.DB.prepare('SELECT order_ref FROM orders WHERE razorpay_order_id=?').bind(oid).first();
+  if (row0) await env.DB.prepare("INSERT INTO order_events (order_ref, text) SELECT ?, ? WHERE NOT EXISTS (SELECT 1 FROM order_events WHERE order_ref=? AND text LIKE 'Payment received%')")
+    .bind(row0.order_ref, 'Payment received (' + pid + ')', row0.order_ref).run();
   const row = await env.DB.prepare('SELECT order_ref FROM orders WHERE razorpay_order_id=?').bind(oid).first();
   return json({ ok: true, orderRef: row?.order_ref });
 }

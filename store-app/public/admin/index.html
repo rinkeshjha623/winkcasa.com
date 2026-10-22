@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>WinkCasa Admin</title>
+<style>
+:root{--bg:#0B1916;--card:#12231F;--card2:#0F1E1A;--line:#24403A;--fg:#EDE6D6;--mut:#9DB0A8;--acc:#C9A45C;--ok:#6FCF97;--warn:#F2C94C;--bad:#EB7B7B;--blue:#7FB3E6}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+h1,h2,h3{font-family:Georgia,'Cormorant Garamond',serif;font-weight:500;margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+.btn{background:var(--acc);color:#1a1405;border:0;border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:600}
+.btn.ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}.btn.sm{padding:5px 10px;font-size:12px}
+.btn:disabled{opacity:.5}
+input,select,textarea{background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%}
+label{display:block;font-size:12px;color:var(--mut);margin:10px 0 4px}
+header{display:flex;align-items:center;gap:16px;padding:14px 20px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:5;flex-wrap:wrap}
+header h1{font-size:22px;color:var(--acc)}nav{display:flex;gap:4px}nav button{background:none;border:0;padding:8px 12px;border-radius:8px;cursor:pointer;color:var(--mut)}nav button.on{background:var(--card);color:var(--fg)}
+.sp{flex:1}main{padding:20px;max-width:1280px;margin:0 auto}
+.grid{display:grid;gap:12px}.kpis{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.kpi .l{color:var(--mut);font-size:12px}.kpi .v{font-size:24px;font-family:Georgia,serif;margin-top:2px}.kpi .s{font-size:12px;color:var(--mut)}
+.two{grid-template-columns:2fr 1fr}.three{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+@media(max-width:860px){.two{grid-template-columns:1fr}}
+table{width:100%;border-collapse:collapse}th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--mut);font-weight:500;font-size:12px;white-space:nowrap}tr.row{cursor:pointer}tr.row:hover{background:var(--card2)}
+.tw{overflow-x:auto}.pill{display:inline-block;padding:2px 9px;border-radius:99px;font-size:11px;border:1px solid var(--line);white-space:nowrap}
+.p-paid,.p-delivered{color:var(--ok);border-color:#2f6b4c}.p-created,.p-new{color:var(--warn);border-color:#6b5a1f}.p-ordered{color:var(--blue);border-color:#30506f}
+.p-shipped{color:var(--acc);border-color:#6b5628}.p-cancelled,.p-returned,.p-refunded,.p-partial{color:var(--bad);border-color:#6f3333}
+.bar{height:8px;border-radius:4px;background:var(--acc);margin-top:4px}.muted{color:var(--mut)}
+.filters{display:flex;gap:8px;margin:0 0 12px;flex-wrap:wrap}.filters>*{width:auto;flex:1;min-width:140px}.filters .btn{flex:0}
+.queue{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}.queue .card{flex:1;min-width:150px;cursor:pointer}.queue b{font-size:22px;font-family:Georgia,serif}
+.queue .hot{border-color:var(--acc)}
+.drawer{position:fixed;inset:0 0 0 auto;width:min(620px,100%);background:var(--bg);border-left:1px solid var(--line);overflow:auto;padding:18px;z-index:20;box-shadow:-20px 0 40px #0008}
+.scrim{position:fixed;inset:0;background:#0006;z-index:15}.hide{display:none!important}
+.kv{display:grid;grid-template-columns:120px 1fr;gap:4px 10px}.kv div:nth-child(odd){color:var(--mut)}
+.tl{border-left:2px solid var(--line);margin:8px 0 0 6px;padding-left:12px}.tl div{margin-bottom:8px;font-size:13px}.tl small{color:var(--mut);display:block}
+.login{max-width:380px;margin:12vh auto;text-align:center}.login input{margin:14px 0}
+.chart{display:flex;align-items:flex-end;gap:2px;height:150px}.chart i{flex:1;background:var(--acc);border-radius:3px 3px 0 0;min-height:2px;opacity:.85}.chart i:hover{opacity:1}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--acc);color:#1a1405;padding:9px 16px;border-radius:8px;font-weight:600;z-index:50}
+@media print{body *{visibility:hidden}#slip,#slip *{visibility:visible}#slip{position:absolute;inset:0;background:#fff;color:#000;padding:24px}}
+#slip{display:none}
+</style></head><body>
+
+<div id="login" class="login card">
+  <h1>WinkCasa Admin</h1><p class="muted">Private area. Enter your admin token.</p>
+  <input id="tok" type="password" placeholder="Admin token" autocomplete="current-password">
+  <button class="btn" id="go" style="width:100%">Sign in</button><p id="lerr" style="color:var(--bad)"></p>
+</div>
+
+<div id="app" class="hide">
+<header><h1>WinkCasa</h1>
+  <nav><button data-t="overview" class="on">Overview</button><button data-t="orders">Orders</button></nav>
+  <span class="sp"></span>
+  <select id="range" style="width:auto"><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="90">Last 90 days</option><option value="365">Last 12 months</option></select>
+  <button class="btn ghost sm" id="refresh">Refresh</button><button class="btn ghost sm" id="csv">Export CSV</button><button class="btn ghost sm" id="out">Sign out</button>
+</header>
+<main>
+<section id="t-overview">
+  <div class="queue" id="queue"></div>
+  <div class="grid kpis" id="kpis"></div>
+  <div class="grid two" style="margin-top:12px">
+    <div class="card"><h3>Revenue by day</h3><div class="chart" id="chart" style="margin-top:12px"></div><div class="muted" id="chartnote" style="margin-top:6px"></div></div>
+    <div class="card"><h3>Order pipeline</h3><div id="funnel" style="margin-top:8px"></div></div>
+  </div>
+  <div class="grid three" style="margin-top:12px">
+    <div class="card"><h3>Top products</h3><div id="prods" style="margin-top:8px"></div></div>
+    <div class="card"><h3>Top states</h3><div id="states" style="margin-top:8px"></div></div>
+    <div class="card"><h3>Money &amp; customers</h3><div id="money" style="margin-top:8px"></div></div>
+  </div>
+</section>
+
+<section id="t-orders" class="hide">
+  <div class="filters">
+    <input id="q" placeholder="Search order, name, phone, email, tracking, pincode">
+    <select id="fp"><option value="paid">Paid</option><option value="">All payments</option><option value="created">Unpaid / abandoned</option></select>
+    <select id="ff"><option value="">All fulfilment</option><option value="new">New: to order</option><option value="ordered">Ordered from supplier</option><option value="shipped">Shipped</option><option value="delivered">Delivered</option><option value="cancelled">Cancelled</option><option value="returned">Returned</option></select>
+  </div>
+  <div class="card tw"><table><thead><tr><th>Order</th><th>Date</th><th>Customer</th><th>Items</th><th>Total</th><th>Payment</th><th>Fulfilment</th><th>Tracking</th></tr></thead><tbody id="rows"></tbody></table><p id="none" class="muted hide">No orders match.</p></div>
+</section>
+</main></div>
+
+<div class="scrim hide" id="scrim"></div>
+<aside class="drawer hide" id="drawer"></aside>
+<div id="slip"></div>
+
+<script>
+const $=s=>document.querySelector(s);
+let TOKEN=''; try{TOKEN=sessionStorage.getItem('wc_admin')||''}catch{}
+const inr=p=>'₹'+(p/100).toLocaleString('en-IN',{maximumFractionDigits:2});
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const utc=s=>s?new Date(s.replace(' ','T')+'Z'):null;
+const fdt=s=>s?utc(s).toLocaleString('en-IN',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'';
+const LBL={new:'To order',ordered:'Ordered',shipped:'Shipped',delivered:'Delivered',cancelled:'Cancelled',returned:'Returned'};
+const COURIERS={'Delhivery':'https://www.delhivery.com/track/package/','India Post':'https://www.indiapost.gov.in/_layouts/15/dop.portal.tracking/trackconsignment.aspx','DTDC':'https://www.dtdc.in/tracking.asp','Blue Dart':'https://www.bluedart.com/tracking','Xpressbees':'https://www.xpressbees.com/shipment/tracking','Ecom Express':'https://ecomexpress.in/tracking/','Shiprocket':'https://www.shiprocket.in/shipment-tracking/','Other':''};
+const trackUrl=o=>o.tracking_number&&COURIERS[o.courier]?COURIERS[o.courier]+(o.courier==='Delhivery'?encodeURIComponent(o.tracking_number):''):'';
+async function api(path,opt={}){
+  const r=await fetch('/api/admin/'+path,{...opt,headers:{Authorization:'Bearer '+TOKEN,'Content-Type':'application/json'}});
+  if(r.status===401){signout();throw new Error('Unauthorized')}
+  if(!r.ok)throw new Error((await r.json().catch(()=>({}))).error||'Request failed');
+  return path.startsWith('export')?r.blob():r.json();
+}
+function toast(m){const t=document.createElement('div');t.id='toast';t.textContent=m;document.body.append(t);setTimeout(()=>t.remove(),2200)}
+function signout(){try{sessionStorage.removeItem('wc_admin')}catch{};TOKEN='';$('#app').classList.add('hide');$('#login').classList.remove('hide')}
+async function login(){
+  TOKEN=$('#tok').value.trim()||TOKEN;$('#lerr').textContent='';
+  try{await api('stats?days=7');try{sessionStorage.setItem('wc_admin',TOKEN)}catch{}
+    $('#login').classList.add('hide');$('#app').classList.remove('hide');$('#tok').value='';loadAll()}
+  catch(e){$('#lerr').textContent='Wrong token.'}
+}
+$('#go').onclick=login;$('#tok').onkeydown=e=>e.key==='Enter'&&login();$('#out').onclick=signout;
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>show(b.dataset.t));
+function show(t){document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+  $('#t-overview').classList.toggle('hide',t!=='overview');$('#t-orders').classList.toggle('hide',t!=='orders');if(t==='orders')loadOrders()}
+$('#refresh').onclick=loadAll;$('#range').onchange=loadStats;
+$('#csv').onclick=async()=>{const b=await api('export');const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='winkcasa-orders.csv';a.click()};
+
+async function loadAll(){loadStats();loadOrders()}
+async function loadStats(){
+  const s=await api('stats?days='+$('#range').value);
+  const q=s.queue;
+  $('#queue').innerHTML=[['To order from supplier',q.toOrder,'new',q.toOrder>0],['Ordered, awaiting ship',q.toShip,'ordered',false],['In transit',q.inTransit,'shipped',false],['Delayed (2+ days unprocessed)',q.late,'new',q.late>0],['In transit 10+ days',q.stuck,'shipped',q.stuck>0]]
+    .map(([l,n,f,h])=>`<div class="card ${h?'hot':''}" data-f="${f}"><div class="muted">${l}</div><b>${n}</b></div>`).join('');
+  document.querySelectorAll('#queue .card').forEach(c=>c.onclick=()=>{$('#ff').value=c.dataset.f;$('#fp').value='paid';show('orders')});
+  const k=(l,v,sub='')=>`<div class="card kpi"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${sub}</div></div>`;
+  $('#kpis').innerHTML=k('Revenue',inr(s.net),`gross ${inr(s.gross)}`)+k('Orders',s.orders,`${s.abandoned} unpaid checkouts`)+k('Avg order value',inr(s.aov))
+    +k('Est. profit',s.costedOrders?inr(s.profit):'—',s.costedOrders?`on ${s.costedOrders} orders with supplier cost`:'add supplier cost on orders')
+    +k('Refunds',inr(s.refunds))+k('Avg delivery',s.avgDeliveryDays==null?'—':s.avgDeliveryDays+' days','payment → delivered');
+  const max=Math.max(1,...s.daily.map(d=>d.revenue));
+  $('#chart').innerHTML=s.daily.map(d=>`<i title="${d.day}: ${inr(d.revenue)} · ${d.orders} orders" style="height:${Math.max(2,d.revenue/max*100)}%"></i>`).join('');
+  $('#chartnote').textContent=s.daily[0].day+' → '+s.daily.at(-1).day+' (IST)';
+  const tot=Object.values(s.funnel).reduce((a,b)=>a+b,0)||1;
+  $('#funnel').innerHTML=['new','ordered','shipped','delivered','returned'].map(f=>`<div style="margin-bottom:8px"><span class="pill p-${f}">${LBL[f]}</span> <b>${s.funnel[f]||0}</b><div class="bar" style="width:${(s.funnel[f]||0)/tot*100}%"></div></div>`).join('');
+  const list=(a,nm,ex)=>a.length?a.map(x=>`<div style="display:flex;justify-content:space-between;gap:8px;padding:4px 0;border-bottom:1px solid var(--line)"><span>${esc(x[nm])}<span class="muted"> ${ex(x)}</span></span><b>${inr(x.revenue)}</b></div>`).join(''):'<span class="muted">No sales yet.</span>';
+  $('#prods').innerHTML=list(s.topProducts,'name',x=>'· '+x.units+' sold');
+  $('#states').innerHTML=list(s.topStates,'state',x=>'· '+x.orders+' orders');
+  $('#money').innerHTML=`<div class="kv"><div>Gateway fees (est.)</div><div>${inr(s.fees)}</div><div>Supplier cost</div><div>${s.costedOrders?inr(s.cogs):'—'}</div><div>Customers</div><div>${s.uniqueCustomers}</div><div>Repeat customers</div><div>${s.repeatCustomers}</div></div><p class="muted" style="font-size:12px">Profit = sales − supplier cost − gateway fee, for orders where you entered the supplier cost.</p>`;
+}
+let ORDERS=[];
+async function loadOrders(){
+  const p=new URLSearchParams({limit:500});if($('#fp').value)p.set('status',$('#fp').value);if($('#ff').value)p.set('fulfilment',$('#ff').value);if($('#q').value.trim())p.set('q',$('#q').value.trim());
+  ORDERS=await api('orders?'+p);
+  $('#none').classList.toggle('hide',ORDERS.length>0);
+  $('#rows').innerHTML=ORDERS.map(o=>`<tr class="row" data-r="${o.order_ref}"><td><b>${o.order_ref}</b></td><td>${fdt(o.paid_at||o.created_at)}</td><td>${esc(o.customer_name)}<div class="muted">${esc(o.city)} ${o.pincode}</div></td><td>${o.items.map(i=>esc(i.qty+'× '+i.name)).join('<br>')}</td><td>${inr(o.total_paise)}</td><td><span class="pill p-${o.status}">${o.status==='created'?'unpaid':o.status}</span>${o.refund_status!=='none'?` <span class="pill p-refunded">${o.refund_status}</span>`:''}</td><td>${o.status==='paid'?`<span class="pill p-${o.fulfilment_status}">${LBL[o.fulfilment_status]}</span>`:''}</td><td>${esc(o.tracking_number||'')}</td></tr>`).join('');
+  document.querySelectorAll('tr.row').forEach(r=>r.onclick=()=>openOrder(r.dataset.r));
+}
+let qt;['q'].forEach(i=>$('#'+i).oninput=()=>{clearTimeout(qt);qt=setTimeout(loadOrders,300)});$('#fp').onchange=$('#ff').onchange=loadOrders;
+
+function wa(o,msg){return 'https://wa.me/91'+o.phone.replace(/^\+?91/,'')+'?text='+encodeURIComponent(msg)}
+async function openOrder(ref){
+  const o=await api('orders?ref='+encodeURIComponent(ref));
+  const d=$('#drawer');d.classList.remove('hide');$('#scrim').classList.remove('hide');
+  const tu=trackUrl(o);
+  const shipMsg=`Hi ${o.customer_name}, your WinkCasa order ${o.order_ref} has shipped via ${o.courier||'courier'}. Tracking number: ${o.tracking_number||'-'}. ${tu?'Track: '+tu:''} Thank you!`;
+  const fee=Math.round(o.total_paise*0.0236),profit=o.supplier_cost_paise?o.total_paise-o.refunded_paise-o.supplier_cost_paise-fee:null;
+  d.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><h2>${o.order_ref}</h2><button class="btn ghost sm" id="x">Close</button></div>
+  <p><span class="pill p-${o.status}">${o.status==='created'?'unpaid':o.status}</span> ${o.status==='paid'?`<span class="pill p-${o.fulfilment_status}">${LBL[o.fulfilment_status]}</span>`:''} ${o.refund_status!=='none'?`<span class="pill p-refunded">refund: ${o.refund_status}</span>`:''}</p>
+  <div class="card"><h3>Customer</h3><div class="kv" style="margin-top:8px"><div>Name</div><div>${esc(o.customer_name)}</div><div>Phone</div><div>${esc(o.phone)} · <a style="color:var(--acc)" target="_blank" href="${wa(o,'Hi '+o.customer_name+', this is WinkCasa about your order '+o.order_ref+'.')}">WhatsApp</a></div><div>Email</div><div><a style="color:var(--acc)" href="mailto:${esc(o.email)}?subject=${encodeURIComponent('Your WinkCasa order '+o.order_ref)}">${esc(o.email)}</a></div><div>Address</div><div id="addr">${esc(o.address)}, ${esc(o.city)}, ${esc(o.state)} ${esc(o.pincode)}</div></div><div class="acts"><button class="btn ghost sm" id="cp">Copy address for supplier</button><button class="btn ghost sm" id="slipb">Print packing slip</button></div></div>
+  <div class="card" style="margin-top:10px"><h3>Items &amp; payment</h3><table style="margin-top:6px">${o.items.map(i=>`<tr><td>${esc(i.name)}</td><td>${i.qty} × ${inr(i.unitPaise)}</td><td style="text-align:right">${inr(i.qty*i.unitPaise)}</td></tr>`).join('')}
+  <tr><td colspan=2 class="muted">Shipping</td><td style="text-align:right">${inr(o.shipping_paise)}</td></tr><tr><td colspan=2><b>Total</b></td><td style="text-align:right"><b>${inr(o.total_paise)}</b></td></tr></table>
+  <div class="muted" style="margin-top:6px">Placed ${fdt(o.created_at)} · Paid ${fdt(o.paid_at)||'—'} · Razorpay ${esc(o.payment_id||'—')}</div>
+  ${profit!==null?`<div style="margin-top:6px">Est. profit: <b>${inr(profit)}</b> <span class="muted">(after supplier cost and ~${inr(fee)} gateway fee)</span></div>`:''}</div>
+  ${o.status==='paid'?`<div class="card" style="margin-top:10px"><h3>Fulfilment</h3>
+    <label>Status</label><select id="f_st">${Object.keys(LBL).map(k=>`<option value="${k}" ${k===o.fulfilment_status?'selected':''}>${LBL[k]}</option>`).join('')}</select>
+    <div class="row2"><div><label>Supplier</label><input id="f_sn" value="${esc(o.supplier_name)}"></div><div><label>Supplier order no.</label><input id="f_so" value="${esc(o.supplier_order_ref)}"></div></div>
+    <div class="row2"><div><label>Supplier cost (₹, incl. their shipping)</label><input id="f_sc" type="number" min="0" step="0.01" value="${o.supplier_cost_paise?o.supplier_cost_paise/100:''}"></div><div><label>Courier</label><select id="f_co"><option value="">—</option>${Object.keys(COURIERS).map(c=>`<option ${c===o.courier?'selected':''}>${c}</option>`).join('')}</select></div></div>
+    <label>Tracking number</label><input id="f_tn" value="${esc(o.tracking_number)}">
+    <label>Internal notes</label><textarea id="f_no" rows="2">${esc(o.notes)}</textarea>
+    <div class="acts"><button class="btn" id="save">Save changes</button>${o.tracking_number?`<a class="btn ghost" target="_blank" href="${wa(o,shipMsg)}">Send tracking on WhatsApp</a>`:''}${tu?`<a class="btn ghost" target="_blank" href="${tu}">Open tracking</a>`:''}</div></div>
+  <div class="card" style="margin-top:10px"><h3>Refund</h3><p class="muted" style="margin:6px 0">Issue the refund in Razorpay (Transactions → payment → Refund), then record it here so your reports stay correct.</p>
+    <div class="row2"><select id="r_st"><option value="none" ${o.refund_status==='none'?'selected':''}>No refund</option><option value="partial" ${o.refund_status==='partial'?'selected':''}>Partial refund</option><option value="refunded" ${o.refund_status==='refunded'?'selected':''}>Fully refunded</option></select><input id="r_am" type="number" min="0" step="0.01" placeholder="Partial amount ₹" value="${o.refund_status==='partial'?o.refunded_paise/100:''}"></div>
+    <div class="acts"><button class="btn ghost sm" id="rsave">Record refund</button><a class="btn ghost sm" target="_blank" href="https://dashboard.razorpay.com/app/payments/${esc(o.payment_id)}">Open in Razorpay</a></div></div>`:`<div class="card" style="margin-top:10px"><p class="muted">This checkout was never paid, so there is nothing to fulfil.</p></div>`}
+  <div class="card" style="margin-top:10px"><h3>Timeline</h3><div class="tl">${o.events.length?o.events.map(e=>`<div>${esc(e.text)}<small>${fdt(e.at)}</small></div>`).join(''):'<span class="muted">No activity yet.</span>'}</div></div>`;
+  $('#x').onclick=closeDrawer;$('#scrim').onclick=closeDrawer;
+  $('#cp').onclick=()=>{navigator.clipboard.writeText(`${o.customer_name}\n${o.phone}\n${o.address}\n${o.city}, ${o.state} - ${o.pincode}`);toast('Address copied')};
+  $('#slipb').onclick=()=>{$('#slip').innerHTML=`<h2>WinkCasa — Packing slip</h2><p><b>Order ${o.order_ref}</b> · ${fdt(o.paid_at||o.created_at)}</p><p><b>Ship to:</b><br>${esc(o.customer_name)}<br>${esc(o.address)}<br>${esc(o.city)}, ${esc(o.state)} - ${esc(o.pincode)}<br>Phone: ${esc(o.phone)}</p><table border=1 cellpadding=6 style="border-collapse:collapse;width:100%"><tr><th>Item</th><th>Qty</th><th>Amount</th></tr>${o.items.map(i=>`<tr><td>${esc(i.name)}</td><td>${i.qty}</td><td>${inr(i.qty*i.unitPaise)}</td></tr>`).join('')}<tr><td colspan=2>Shipping</td><td>${inr(o.shipping_paise)}</td></tr><tr><td colspan=2><b>Total (paid online)</b></td><td><b>${inr(o.total_paise)}</b></td></tr></table><p style="margin-top:20px">Sold by Rinkesh Kumar Jha, trading as WinkCasa Retail · GSTIN 07AURPJ3347A1ZQ · support@winkcasa.com</p>`;print()};
+  if($('#save'))$('#save').onclick=async()=>{try{await api('update',{method:'POST',body:JSON.stringify({ref,fulfilment_status:$('#f_st').value,supplier_name:$('#f_sn').value,supplier_order_ref:$('#f_so').value,supplier_cost:$('#f_sc').value,courier:$('#f_co').value,tracking_number:$('#f_tn').value,notes:$('#f_no').value})});toast('Saved');openOrder(ref);loadAll()}catch(e){toast(e.message)}};
+  if($('#rsave'))$('#rsave').onclick=async()=>{try{await api('update',{method:'POST',body:JSON.stringify({ref,refund_status:$('#r_st').value,refunded_amount:$('#r_am').value})});toast('Refund recorded');openOrder(ref);loadAll()}catch(e){toast(e.message)}};
+}
+function closeDrawer(){$('#drawer').classList.add('hide');$('#scrim').classList.add('hide')}
+if(TOKEN){login()}
+</script></body></html>
