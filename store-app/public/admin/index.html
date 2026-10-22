@@ -58,7 +58,7 @@ th{color:var(--mut);font-weight:500;font-size:12px;white-space:nowrap}tr.row{cur
 
 <div id="app" class="hide">
 <header><h1>WinkCasa</h1>
-  <nav><button data-t="overview" class="on">Overview</button><button data-t="orders">Orders</button><button data-t="products">Products</button><button data-t="sourcing">Sourcing (CJ)</button><button data-t="blog">Blog</button><button data-t="selfies">Selfies</button><button data-t="discounts">Discounts</button><button data-t="comments">Comments</button><button data-t="messages">Messages</button><button data-t="store">Store settings</button></nav>
+  <nav><button data-t="overview" class="on">Overview</button><button data-t="orders">Orders</button><button data-t="products">Products</button><button data-t="sourcing">Sourcing (CJ)</button><button data-t="blog">Blog</button><button data-t="selfies">Selfies</button><button data-t="discounts">Discounts</button><button data-t="social">Social</button><button data-t="comments">Comments</button><button data-t="messages">Messages</button><button data-t="store">Store settings</button></nav>
   <span class="sp"></span>
   <select id="range" style="width:auto"><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="90">Last 90 days</option><option value="365">Last 12 months</option></select>
   <button class="btn ghost sm" id="refresh">Refresh</button><button class="btn ghost sm" id="csv">Export CSV</button><button class="btn ghost sm" id="out">Sign out</button>
@@ -85,6 +85,7 @@ th{color:var(--mut);font-weight:500;font-size:12px;white-space:nowrap}tr.row{cur
 <section id="t-messages" class="hide"></section>
 <section id="t-comments" class="hide"></section>
 <section id="t-discounts" class="hide"></section>
+<section id="t-social" class="hide"></section>
 <section id="t-selfies" class="hide"></section>
 <section id="t-orders" class="hide">
   <div class="filters">
@@ -127,8 +128,8 @@ async function login(){
 $('#showtok').onchange=e=>{$('#tok').style.webkitTextSecurity=e.target.checked?'none':'disc'};$('#go').onclick=login;$('#tok').addEventListener('keydown',e=>{if(e.key==='Enter')login()});$('#out').onclick=signout;
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>show(b.dataset.t));
 function show(t){document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
-  ['overview','orders','products','sourcing','store','blog','messages','selfies','comments','discounts'].forEach(x=>$('#t-'+x).classList.toggle('hide',x!==t));
-  if(t==='orders'){loadOrders();api('cj',{method:'POST',body:JSON.stringify({action:'sync'})}).then(r=>{if(r.changed)loadOrders()}).catch(()=>{})}if(t==='products'&&window.loadProducts)loadProducts();if(t==='sourcing'&&window.loadSourcing)loadSourcing();if(t==='selfies'&&window.loadSelfies)loadSelfies();if(t==='store'&&window.loadStore)loadStore();if(t==='blog'&&window.loadBlog)loadBlog();if(t==='messages'&&window.loadMessages)loadMessages();if(t==='comments'&&window.loadComments)loadComments();if(t==='discounts'&&window.loadDiscounts)loadDiscounts()}
+  ['overview','orders','products','sourcing','store','blog','messages','selfies','comments','discounts','social'].forEach(x=>$('#t-'+x).classList.toggle('hide',x!==t));
+  if(t==='orders'){loadOrders();api('cj',{method:'POST',body:JSON.stringify({action:'sync'})}).then(r=>{if(r.changed)loadOrders()}).catch(()=>{})}if(t==='products'&&window.loadProducts)loadProducts();if(t==='sourcing'&&window.loadSourcing)loadSourcing();if(t==='selfies'&&window.loadSelfies)loadSelfies();if(t==='store'&&window.loadStore)loadStore();if(t==='blog'&&window.loadBlog)loadBlog();if(t==='messages'&&window.loadMessages)loadMessages();if(t==='comments'&&window.loadComments)loadComments();if(t==='discounts'&&window.loadDiscounts)loadDiscounts();if(t==='social'&&window.loadSocial)loadSocial()}
 $('#refresh').onclick=loadAll;$('#range').onchange=loadStats;
 $('#csv').onclick=async()=>{const b=await api('export');const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='winkcasa-orders.csv';a.click()};
 
@@ -201,4 +202,5 @@ if(TOKEN){login()}
 </script>
 <script src="editor.js"></script>
 <script src="blog.js"></script>
+<script src="social.js"></script>
 </body></html>

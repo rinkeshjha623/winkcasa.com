@@ -1,0 +1,11 @@
+name: Publish scheduled social posts
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ask the store to publish anything that is due
+        run: curl -fsS --retry 3 --max-time 60 https://www.winkcasa.com/api/social-cron

@@ -1,0 +1,3 @@
+CREATE TABLE IF NOT EXISTS social_posts (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL DEFAULT '', caption TEXT NOT NULL DEFAULT '', format TEXT NOT NULL DEFAULT 'post', platforms TEXT NOT NULL DEFAULT 'instagram,facebook', media_json TEXT NOT NULL DEFAULT '[]', scheduled_at TEXT, auto INTEGER NOT NULL DEFAULT 1, status TEXT NOT NULL DEFAULT 'draft', published_at TEXT, result_json TEXT NOT NULL DEFAULT '{}', note TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')));
+CREATE INDEX IF NOT EXISTS idx_social_due ON social_posts (status, scheduled_at);
+CREATE TABLE IF NOT EXISTS social_kv (k TEXT PRIMARY KEY, v TEXT NOT NULL);
