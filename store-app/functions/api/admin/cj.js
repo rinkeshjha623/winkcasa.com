@@ -13,7 +13,7 @@ export async function onRequestGet({ request, env }) {
     const cfg = await getCjConfig(env);
     if (action === 'status') return json({ connected: !!env.CJ_API_KEY, config: cfg });
     if (action === 'search') {
-      const data = await cj(env, 'GET', '/product/listV2', { query: { keyWord: u.searchParams.get('q') || '', page: u.searchParams.get('page') || 1, size: 20, countryCode: 'IN' } });
+      const data = await cj(env, 'GET', '/product/listV2', { query: { keyWord: u.searchParams.get('q') || '', page: u.searchParams.get('page') || 1, size: 20 } });
       const list = (data?.content || []).flatMap((c) => c.productList || []).map((p) => ({
         pid: p.id, name: p.nameEn, image: p.bigImage, usd: usdOf(p.nowPrice ?? p.sellPrice), sku: p.sku, stock: p.warehouseInventoryNum,
       }));
@@ -59,10 +59,15 @@ export async function onRequestPost({ request, env }) {
       if (exist) return json({ error: 'Already imported (product #' + exist.id + ').' }, 409);
       const max = (await env.DB.prepare('SELECT COALESCE(MAX(sort),0) m FROM products').first()).m;
       const r = await env.DB.prepare(`INSERT INTO products (name,category,price,mrp,description,images_json,active,sort,supplier,cost,details,cj_pid,cj_vid,cj_cost_usd,cj_ship_inr)
-        VALUES (?,?,?,?,?,?,0,?,?,?,?,?,?,?,?)`)
-        .bind(name, category, price, mrp, cleanText(d.description, 200), JSON.stringify(images), max + 1, 'CJ Dropshipping', costInr, desc || null,
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`)
+        .bind(name, category, price, mrp, cleanText(d.description, 200), JSON.stringify(images), b.live ? 1 : 0, max + 1, 'CJ Dropshipping', costInr, desc || null,
           d.pid, v.vid, usd, fr?.inr ?? null).run();
-      return json({ ok: true, id: r.meta.last_row_id, price, mrp, costInr, shipInr: fr?.inr ?? null, shipName: fr?.name || null, usd, hidden: true });
+      return json({ ok: true, id: r.meta.last_row_id, price, mrp, costInr, shipInr: fr?.inr ?? null, shipName: fr?.name || null, usd, hidden: !b.live });
+    }
+
+    if (b.action === 'hide_placeholders') {
+      const r = await env.DB.prepare("UPDATE products SET active=0 WHERE cj_vid IS NULL AND active=1").run();
+      return json({ ok: true, hidden: r.meta.changes });
     }
 
     if (b.action === 'reprice') {

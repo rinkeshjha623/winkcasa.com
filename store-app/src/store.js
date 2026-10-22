@@ -8,7 +8,7 @@ export const DEFAULTS = {
     accent: 'chosen with care.',
     text: 'Skincare, beauty tools and everyday jewellery, picked for what India reorders most.',
     ctaLabel: 'Shop the collection', ctaLink: '#shop',
-    facts: ['**Delivered in 3–7 days** across India', '**Free delivery** above ₹999', '**7-day** returns on damaged or wrong items'],
+    facts: ['**Delivered in 10–20 days** across India', '**Free delivery** above ₹999', '**7-day** returns on damaged or wrong items'],
   },
   collection: { label: 'The collection', title: 'Pieces we keep restocking' },
   promise: [
@@ -39,11 +39,11 @@ export const DEFAULTS = {
   social: { instagram: '', facebook: '', youtube: '', whatsapp: '' },
   about: {
     title: 'About WinkCasa',
-    text: 'WinkCasa is an online store based in New Delhi, India. We sell skincare, beauty tools and everyday jewellery, chosen for what shoppers reorder most. We deliver across India within 3 to 7 days, show prices in Indian rupees including GST, and take payment securely online by UPI, card or net banking through Razorpay. If an item arrives damaged, defective or wrong, tell us within 7 days and we will replace it or refund you.',
+    text: 'WinkCasa is an online store based in New Delhi, India. We sell skincare, beauty tools and everyday jewellery, chosen for what shoppers reorder most. We deliver across India within 10 to 20 days, show prices in Indian rupees including GST, and take payment securely online by UPI, card or net banking through Razorpay. If an item arrives damaged, defective or wrong, tell us within 7 days and we will replace it or refund you.',
   },
   faq: [
     { q: 'Do you deliver across India?', a: 'Yes. We deliver to serviceable pincodes across India. Delivery is free on orders of ₹999 and above, and costs ₹79 below that.' },
-    { q: 'How long does delivery take?', a: 'Your order is delivered within 3 to 7 days of placing it, depending on your location. Your expected delivery dates are shown at checkout and in your order confirmation.' },
+    { q: 'How long does delivery take?', a: 'Your order is delivered within 10 to 20 days of placing it, depending on your location. Your expected delivery dates are shown at checkout and in your order confirmation.' },
     { q: 'What is the return policy?', a: 'If an item arrives damaged, defective or wrong, tell us within 7 days and we will replace it or refund you. Full details are on our Returns page.' },
     { q: 'How can I pay?', a: 'You can pay by UPI, credit or debit card, or net banking. Payment is taken securely online through Razorpay when you check out.' },
     { q: 'Are prices inclusive of GST?', a: 'Yes. All prices are in Indian rupees and include GST.' },
@@ -140,11 +140,11 @@ export async function activeProducts(env) {
   return results;
 }
 
-// Promise: delivered within 3 to 7 days of the order. Earliest = order + 3 days; latest = 9 PM IST on day 7.
+// Promise: delivered within 10 to 20 days of the order. Earliest = order + 10 days; latest = 9 PM IST on day 20.
 export function deliveryWindow(from = new Date()) {
   const fmt = (d) => d.toISOString().slice(0, 19).replace('T', ' ');
-  const min = new Date(from.getTime() + 3 * 86400000);
-  const max = new Date(from.getTime() + 7 * 86400000);
+  const min = new Date(from.getTime() + 10 * 86400000);
+  const max = new Date(from.getTime() + 20 * 86400000);
   max.setUTCHours(15, 30, 0, 0); // 21:00 IST
   return { min: fmt(min), max: fmt(max) };
 }

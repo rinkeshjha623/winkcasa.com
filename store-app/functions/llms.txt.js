@@ -20,7 +20,7 @@ ${b.gstin ? `- GSTIN: ${b.gstin}\n` : ''}- Website: ${SITE}/
 
 ## Key facts
 - Delivery: across India to serviceable pincodes. Free above ${money(S.shipping.freeShippingAbove)}, otherwise ${money(S.shipping.charge)}.
-- Delivery: within 3 to 7 days of the order. The expected delivery dates are shown at checkout and in the order confirmation.
+- Delivery: within 10 to 20 days of the order. The expected delivery dates are shown at checkout and in the order confirmation.
 - Payment options: UPI, credit and debit cards, net banking (processed by Razorpay).
 - Returns: 7 days for items that arrive damaged, defective or wrong. See ${SITE}/returns
 - Payment: online through Razorpay at checkout.

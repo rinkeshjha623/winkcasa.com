@@ -13,9 +13,9 @@
   var TZ = 'Asia/Kolkata';
   function fmtD(d) { return d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', timeZone: TZ }); }
   function fmtDT(d) { return d.toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true, timeZone: TZ }) + ' IST'; }
-  // Earliest = order time + 3 days. Latest = 7 days after the order, by 9:00 PM IST.
+  // Earliest = order time + 10 days. Latest = 20 days after the order, by 9:00 PM IST.
   function window3to7(from) {
-    var min = new Date(from.getTime() + 3 * 864e5), max = new Date(from.getTime() + 7 * 864e5);
+    var min = new Date(from.getTime() + 10 * 864e5), max = new Date(from.getTime() + 20 * 864e5);
     max.setUTCHours(15, 30, 0, 0);
     return { min: min, max: max };
   }

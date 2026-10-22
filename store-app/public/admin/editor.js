@@ -237,6 +237,8 @@ window.loadSourcing = async function () {
     <div class="row2"><input class="mk" placeholder="New category"><input class="mv" type="number" placeholder="Margin %"></div>
     <div class="row2"><div><label>Margin % for any other category</label><input id="c_def" type="number" value="${C.defaultMarginPct}"></div><div></div></div>
     <div class="savebar"><button class="btn" id="c_save">Save rules</button><button class="btn ghost" id="c_reprice">Reprice all CJ products</button></div></div>
+  <div class="card sect"><h3>Quick start: add low-cost products live</h3><p class="hint">Imports cheap beauty tools and jewellery (CJ price up to $6 / $5) straight to your store, priced with the margins above. Skincare is not included because it needs licences first. You can edit or hide any product afterwards.</p>
+    <div class="savebar"><button class="btn" id="q_go">Add low-cost CJ products now</button><button class="btn ghost" id="q_hide">Hide my old sample products</button></div><pre id="q_log" class="muted" style="white-space:pre-wrap;font-size:12px;margin-top:8px"></pre></div>
   <div class="card sect"><h3>Find products on CJ</h3><p class="hint">Search CJ's catalogue, then import. Imported products stay hidden until you review and press Show in Products. Cosmetics and skincare sold in India need the right licences, so check that before making them live.</p>
     <div class="filters"><input id="s_q" placeholder="e.g. gua sha, vitamin C serum, earrings"><select id="s_cat"><option>Skincare</option><option>Beauty tools</option><option>Jewellery</option></select><button class="btn" id="s_go">Search CJ</button></div>
     <div id="s_out" class="muted">Search to see products with CJ's price.</div></div>`;
@@ -259,5 +261,30 @@ window.loadSourcing = async function () {
       }));
     } catch (e) { out.textContent = e.message; }
   };
+  $('#q_go').onclick = async () => { const L = $('#q_log'); $('#q_go').disabled = true; L.textContent = ''; try { await save(); await autoImportCJ((t) => { L.textContent += t + '\n'; }); } catch (e) { L.textContent += e.message; } $('#q_go').disabled = false; };
+  $('#q_hide').onclick = async () => { if (!confirm('Hide all products that are not from CJ (your sample products)?')) return; try { const r = await api('cj', { method: 'POST', body: JSON.stringify({ action: 'hide_placeholders' }) }); toast(r.hidden + ' sample products hidden'); } catch (e) { toast(e.message); } };
   $('#s_go').onclick = search; $('#s_q').onkeydown = (e) => { if (e.key === 'Enter') search(); };
+};
+
+/* Auto-import low-cost picks, live, using the saved margin rules. */
+window.autoImportCJ = async function (log) {
+  const PLAN = [
+    { category: 'Beauty tools', maxUsd: 6, per: 4, q: ['gua sha', 'jade face roller', 'facial massager', 'eyebrow razor set'] },
+    { category: 'Jewellery', maxUsd: 5, per: 4, q: ['stainless steel earrings', 'pendant necklace women', 'gold plated bracelet', 'minimalist ring set'] },
+  ];
+  let added = 0, seen = new Set();
+  for (const g of PLAN) {
+    for (const q of g.q) {
+      log(`Searching "${q}"…`);
+      let r; try { r = await api('cj?action=search&q=' + encodeURIComponent(q)); } catch (e) { log('Search failed: ' + e.message); continue; }
+      const picks = r.list.filter((p) => p.usd > 0 && p.usd <= g.maxUsd && p.image && !seen.has(p.pid)).slice(0, Math.ceil(g.per / 2));
+      for (const p of picks) {
+        seen.add(p.pid);
+        try { const x = await api('cj', { method: 'POST', body: JSON.stringify({ action: 'import', pid: p.pid, category: g.category, live: true }) }); added++; log(`✓ ${p.name.slice(0, 50)} → ₹${x.price} (CJ $${x.usd.toFixed(2)}, cost ₹${x.costInr})`); }
+        catch (e) { log('Skipped: ' + e.message); }
+      }
+    }
+  }
+  log(`Done. ${added} products are live.`);
+  return added;
 };

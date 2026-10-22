@@ -96,7 +96,7 @@ export function headerHtml(S, cats = []) {
 }
 
 export const payMethodsHtml = () => `<div class="paym" aria-label="Payment options"><span class="pm">UPI</span><span class="pm">Credit &amp; debit cards</span><span class="pm">Net banking</span><span class="pms">Secure payment by Razorpay</span></div>`;
-export const etaHtml = () => `<p class="eta" data-eta>Delivered within <b>3–7 days</b> of your order.</p>`;
+export const etaHtml = () => `<p class="eta" data-eta>Delivered within <b>10–20 days</b> of your order.</p>`;
 
 export function footerHtml(S, cats) {
   const b = S.business, f = S.footer;

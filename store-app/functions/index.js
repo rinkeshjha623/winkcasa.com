@@ -22,7 +22,7 @@ export async function onRequestGet({ request, env }) {
     .on('#closedbar', { element(e) { if (closed) { e.removeAttribute('hidden'); e.setInnerContent(S.store.closedMessage); } } })
     .on('header.bar', { element(e) { e.replace(headerHtml(S, cats), { html: true }); } })
     .on('#heroPay', set(etaHtml()))
-    .on('#payBand', set(`<div class="wrap"><h2>Pay your way</h2><p>Pay securely online by UPI, credit or debit card, or net banking. Payments are processed by Razorpay.</p>${payMethodsHtml()}<p>Delivered within 3 to 7 days of your order, with your expected delivery date shown at checkout.</p></div>`))
+    .on('#payBand', set(`<div class="wrap"><h2>Pay your way</h2><p>Pay securely online by UPI, credit or debit card, or net banking. Payments are processed by Razorpay.</p>${payMethodsHtml()}<p>Delivered within 10 to 20 days of your order, with your expected delivery date shown at checkout.</p></div>`))
     .on('#heroEyebrow', { element(e) { e.setInnerContent(h.eyebrow); } })
     .on('#heroH1', set(esc(h.headline) + (h.accent ? ' <em>' + esc(h.accent) + '</em>' : '')))
     .on('#heroText', { element(e) { e.setInnerContent(h.text); } })
