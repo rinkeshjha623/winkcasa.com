@@ -29,7 +29,6 @@ export async function onRequestGet({ request, env }) {
     .on('#announce', { element(e) { if (S.announcement.enabled && S.announcement.text) { e.removeAttribute('hidden'); e.setInnerContent(S.announcement.text); } } })
     .on('#closedbar', { element(e) { if (closed) { e.removeAttribute('hidden'); e.setInnerContent(S.store.closedMessage); } } })
     .on('header.bar', { element(e) { e.replace(headerHtml(S, cats), { html: true }); } })
-    .on('#heroPay', set(etaHtml()))
     .on('#heroArt', { element(e) { if (collage) { e.setInnerContent(collage, { html: true }); e.setAttribute('class', 'arch wide'); e.removeAttribute('aria-hidden'); } } })
     .on('#catsec', set(catsec))
     .on('#payBand', set(`<div class="wrap"><h2>Pay your way</h2><p>Pay securely online by UPI, credit or debit card, or net banking. Payments are processed by Razorpay.</p>${payMethodsHtml()}<p>Delivered within 10 to 20 days of your order, with your expected delivery date shown at checkout.</p></div>`))

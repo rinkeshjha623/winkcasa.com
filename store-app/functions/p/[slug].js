@@ -35,7 +35,7 @@ export async function onRequestGet({ params, env }) {
 <p class="avail">${inStock ? 'In stock' : 'Sold out'} · Inclusive of GST</p>
 ${p.description ? `<p>${esc(p.description)}</p>` : ''}
 ${inStock && S.store.open ? `<div class="buybtns"><button class="btn" data-add="${p.id}">Add to cart</button><button class="btn alt" data-buy="${p.id}">Buy now</button></div>` : `<span class="btn off">${inStock ? 'Unavailable' : 'Sold out'}</span>`}
-${etaHtml()}${payMethodsHtml()}
+${payMethodsHtml()}
 ${p.highlights.length ? `<ul>${p.highlights.map((h) => `<li>${esc(h)}</li>`).join('')}</ul>` : ''}
 <ul class="facts2"><li>Delivery across India: free above ${money(S.shipping.freeShippingAbove)}, otherwise ${money(S.shipping.charge)}</li><li>Delivered within 10–20 days of your order</li><li><a href="/returns">7-day returns</a> on damaged, defective or wrong items</li>${p.brand ? `<li>Brand: ${esc(p.brand)}</li>` : ''}<li>SKU: ${esc(p.sku || p.id)}</li></ul></div></div>
 ${paras.length ? `<section class="sec"><h2>About this product</h2>${paras.map((t) => `<p>${esc(t)}</p>`).join('')}</section>` : ''}

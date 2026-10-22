@@ -34,7 +34,6 @@
       '<div class="srow"><span>Delivery</span><span>' + (t.ship ? rupee(t.ship) : 'Free') + '</span></div>' +
       (t.ship ? '<div class="srow" style="font-size:.8rem">Add ' + rupee(CFG.freeShippingAbove - t.sub) + ' more for free delivery</div>' : '') +
       '<div class="srow t"><span>Total</span><span>' + rupee(t.total) + '</span></div>' +
-      '<p class="eta" data-eta></p>' +
       '<div class="paym" aria-label="Payment options"><span class="pm">UPI</span><span class="pm">Credit &amp; debit cards</span><span class="pm">Net banking</span></div>' +
       '<form class="form" id="co" novalidate><h2 style="margin-top:14px">Delivery details</h2>' +
       '<label for="f_name">Full name</label><input id="f_name" name="name" autocomplete="name" required>' +
