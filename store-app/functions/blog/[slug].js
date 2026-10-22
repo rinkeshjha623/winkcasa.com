@@ -22,7 +22,7 @@ export async function onRequestGet({ params, env }) {
   const canonical = post.canonical || url;
   const more = posts.filter((p) => p.id !== post.id && (!post.category || p.category === post.category || true)).sort((a, b) => (b.category === post.category) - (a.category === post.category)).slice(0, 3);
 
-  const faq = J(post.faq_json), faqAll = faq.length ? faq : faqFrom(post.body);
+  const bodyFaq = faqFrom(post.body), faq = bodyFaq.length ? [] : J(post.faq_json), faqAll = bodyFaq.length ? bodyFaq : faq;
   const steps = J(post.steps_json), takeaways = J(post.takeaways_json), sources = J(post.sources_json);
   const heads = headingsOf(post.body).filter((h) => h.level === 2 && !/^frequently asked questions$/i.test(h.text));
   const published = post.published_at || post.created_at;
