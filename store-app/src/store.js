@@ -3,14 +3,14 @@ import seed from '../public/products.json';
 export const DEFAULTS = {
   announcement: { enabled: false, text: '', link: '' },
   hero: {
-    eyebrow: 'WinkCasa Retail · New Delhi',
-    headline: 'Beauty and jewellery,',
-    accent: 'chosen with care.',
-    text: 'Skincare, beauty tools and everyday jewellery, picked for what India reorders most.',
-    ctaLabel: 'Shop the collection', ctaLink: '#shop',
+    eyebrow: 'WinkCasa · Fine everyday adornments · New Delhi',
+    headline: 'Refined pieces,',
+    accent: 'made for every day.',
+    text: 'Earrings, necklaces, hair accessories and beauty rituals, curated for those who finish every look with intention.',
+    ctaLabel: 'Explore the collection', ctaLink: '#shop',
     facts: ['**Curated** everyday pieces, chosen with care', '**Complimentary delivery** on orders above ₹999', '**Secure payments** by UPI, card and net banking', '**Effortless returns** if it arrives damaged or wrong'],
   },
-  collection: { label: 'The collection', title: 'Pieces we keep restocking' },
+  collection: { label: 'The collection', title: 'The Edit' },
   promise: [
     { title: 'Chosen by demand', text: 'We stock skincare and jewellery, two of the categories Indian shoppers buy online most often.' },
     { title: 'Packed to arrive', text: 'Glass bottles and delicate jewellery ship in padded, double-wall boxes.' },
