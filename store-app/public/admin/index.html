@@ -58,7 +58,7 @@ th{color:var(--mut);font-weight:500;font-size:12px;white-space:nowrap}tr.row{cur
 
 <div id="app" class="hide">
 <header><h1>WinkCasa</h1>
-  <nav><button data-t="overview" class="on">Overview</button><button data-t="orders">Orders</button><button data-t="products">Products</button><button data-t="blog">Blog</button><button data-t="messages">Messages</button><button data-t="store">Store settings</button></nav>
+  <nav><button data-t="overview" class="on">Overview</button><button data-t="orders">Orders</button><button data-t="products">Products</button><button data-t="sourcing">Sourcing (CJ)</button><button data-t="blog">Blog</button><button data-t="messages">Messages</button><button data-t="store">Store settings</button></nav>
   <span class="sp"></span>
   <select id="range" style="width:auto"><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="90">Last 90 days</option><option value="365">Last 12 months</option></select>
   <button class="btn ghost sm" id="refresh">Refresh</button><button class="btn ghost sm" id="csv">Export CSV</button><button class="btn ghost sm" id="out">Sign out</button>
@@ -79,6 +79,7 @@ th{color:var(--mut);font-weight:500;font-size:12px;white-space:nowrap}tr.row{cur
 </section>
 
 <section id="t-products" class="hide"></section>
+<section id="t-sourcing" class="hide"></section>
 <section id="t-store" class="hide"></section>
 <section id="t-blog" class="hide"></section>
 <section id="t-messages" class="hide"></section>
@@ -123,8 +124,8 @@ async function login(){
 $('#showtok').onchange=e=>{$('#tok').style.webkitTextSecurity=e.target.checked?'none':'disc'};$('#go').onclick=login;$('#tok').addEventListener('keydown',e=>{if(e.key==='Enter')login()});$('#out').onclick=signout;
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>show(b.dataset.t));
 function show(t){document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
-  ['overview','orders','products','store','blog','messages'].forEach(x=>$('#t-'+x).classList.toggle('hide',x!==t));
-  if(t==='orders')loadOrders();if(t==='products'&&window.loadProducts)loadProducts();if(t==='store'&&window.loadStore)loadStore();if(t==='blog'&&window.loadBlog)loadBlog();if(t==='messages'&&window.loadMessages)loadMessages()}
+  ['overview','orders','products','sourcing','store','blog','messages'].forEach(x=>$('#t-'+x).classList.toggle('hide',x!==t));
+  if(t==='orders'){loadOrders();api('cj',{method:'POST',body:JSON.stringify({action:'sync'})}).then(r=>{if(r.changed)loadOrders()}).catch(()=>{})}if(t==='products'&&window.loadProducts)loadProducts();if(t==='sourcing'&&window.loadSourcing)loadSourcing();if(t==='store'&&window.loadStore)loadStore();if(t==='blog'&&window.loadBlog)loadBlog();if(t==='messages'&&window.loadMessages)loadMessages()}
 $('#refresh').onclick=loadAll;$('#range').onchange=loadStats;
 $('#csv').onclick=async()=>{const b=await api('export');const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='winkcasa-orders.csv';a.click()};
 
@@ -180,7 +181,7 @@ async function openOrder(ref){
     <div class="row2"><div><label>Supplier cost (₹, incl. their shipping)</label><input id="f_sc" type="number" min="0" step="0.01" value="${o.supplier_cost_paise?o.supplier_cost_paise/100:''}"></div><div><label>Courier</label><select id="f_co"><option value="">—</option>${Object.keys(COURIERS).map(c=>`<option ${c===o.courier?'selected':''}>${c}</option>`).join('')}</select></div></div>
     <label>Tracking number</label><input id="f_tn" value="${esc(o.tracking_number)}">
     <label>Internal notes</label><textarea id="f_no" rows="2">${esc(o.notes)}</textarea>
-    <div class="acts"><button class="btn" id="save">Save changes</button>${o.tracking_number?`<a class="btn ghost" target="_blank" href="${wa(o,shipMsg)}">Send tracking on WhatsApp</a>`:''}${tu?`<a class="btn ghost" target="_blank" href="${tu}">Open tracking</a>`:''}</div></div>
+    <div class="acts"><button class="btn" id="save">Save changes</button>${o.cj_order_id?`<span class="pill p-paid">CJ order ${esc(o.cj_order_id)}</span>`:`<button class="btn ghost" id="tocj">Send to CJ</button>`}${o.tracking_number?`<a class="btn ghost" target="_blank" href="${wa(o,shipMsg)}">Send tracking on WhatsApp</a>`:''}${tu?`<a class="btn ghost" target="_blank" href="${tu}">Open tracking</a>`:''}</div></div>
   <div class="card" style="margin-top:10px"><h3>Refund</h3><p class="muted" style="margin:6px 0">Issue the refund in Razorpay (Transactions → payment → Refund), then record it here so your reports stay correct.</p>
     <div class="row2"><select id="r_st"><option value="none" ${o.refund_status==='none'?'selected':''}>No refund</option><option value="partial" ${o.refund_status==='partial'?'selected':''}>Partial refund</option><option value="refunded" ${o.refund_status==='refunded'?'selected':''}>Fully refunded</option></select><input id="r_am" type="number" min="0" step="0.01" placeholder="Partial amount ₹" value="${o.refund_status==='partial'?o.refunded_paise/100:''}"></div>
     <div class="acts"><button class="btn ghost sm" id="rsave">Record refund</button><a class="btn ghost sm" target="_blank" href="https://dashboard.razorpay.com/app/payments/${esc(o.payment_id)}">Open in Razorpay</a></div></div>`:`<div class="card" style="margin-top:10px"><p class="muted">This checkout was never paid, so there is nothing to fulfil.</p></div>`}
@@ -189,6 +190,7 @@ async function openOrder(ref){
   $('#cp').onclick=()=>{navigator.clipboard.writeText(`${o.customer_name}\n${o.phone}\n${o.address}\n${o.city}, ${o.state} - ${o.pincode}`);toast('Address copied')};
   $('#slipb').onclick=()=>{$('#slip').innerHTML=`<h2>WinkCasa — Packing slip</h2><p><b>Order ${o.order_ref}</b> · ${fdt(o.paid_at||o.created_at)}</p><p><b>Ship to:</b><br>${esc(o.customer_name)}<br>${esc(o.address)}<br>${esc(o.city)}, ${esc(o.state)} - ${esc(o.pincode)}<br>Phone: ${esc(o.phone)}</p><table border=1 cellpadding=6 style="border-collapse:collapse;width:100%"><tr><th>Item</th><th>Qty</th><th>Amount</th></tr>${o.items.map(i=>`<tr><td>${esc(i.name)}</td><td>${i.qty}</td><td>${inr(i.qty*i.unitPaise)}</td></tr>`).join('')}<tr><td colspan=2>Shipping</td><td>${inr(o.shipping_paise)}</td></tr><tr><td colspan=2><b>Total (paid online)</b></td><td><b>${inr(o.total_paise)}</b></td></tr></table><p style="margin-top:20px">Sold by Rinkesh Kumar Jha, trading as WinkCasa Retail · GSTIN 07AURPJ3347A1ZQ · support@winkcasa.com</p>`;print()};
   if($('#save'))$('#save').onclick=async()=>{try{await api('update',{method:'POST',body:JSON.stringify({ref,fulfilment_status:$('#f_st').value,supplier_name:$('#f_sn').value,supplier_order_ref:$('#f_so').value,supplier_cost:$('#f_sc').value,courier:$('#f_co').value,tracking_number:$('#f_tn').value,notes:$('#f_no').value})});toast('Saved');openOrder(ref);loadAll()}catch(e){toast(e.message)}};
+  if($('#tocj'))$('#tocj').onclick=async()=>{if(!confirm('Create this order at CJ? It is created unpaid, so you then pay it inside CJ.'))return;try{const r=await api('cj',{method:'POST',body:JSON.stringify({action:'push',ref})});toast('Sent to CJ: '+r.cjOrderId);openOrder(ref);loadAll()}catch(e){toast(e.message)}};
   if($('#rsave'))$('#rsave').onclick=async()=>{try{await api('update',{method:'POST',body:JSON.stringify({ref,refund_status:$('#r_st').value,refunded_amount:$('#r_am').value})});toast('Refund recorded');openOrder(ref);loadAll()}catch(e){toast(e.message)}};
 }
 function closeDrawer(){$('#drawer').classList.add('hide');$('#scrim').classList.add('hide')}

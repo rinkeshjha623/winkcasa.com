@@ -220,3 +220,44 @@ window.loadMessages = async function () {
   };
   draw();
 };
+
+/* ---------------- Sourcing (CJ Dropshipping) ---------------- */
+window.loadSourcing = async function () {
+  const el = $('#t-sourcing');
+  let st; try { st = await api('cj?action=status'); } catch (e) { el.innerHTML = `<div class="card">${esc(e.message)}</div>`; return; }
+  const C = st.config;
+  const marginRows = Object.entries(C.margins);
+  el.innerHTML = `${st.connected ? '' : '<div class="card" style="border-color:var(--bad)"><b>CJ is not connected.</b> Add the CJ_API_KEY secret in Cloudflare and redeploy.</div>'}
+  <div class="card sect"><h3>Pricing rules</h3><p class="hint">Selling price = (CJ price × exchange rate × buffer + CJ shipping + packing) ÷ (1 − payment fee − margin), rounded up to end in 9. Click “Reprice all CJ products” after changing anything.</p>
+    <div class="row2"><div><label>USD → INR rate</label><input id="c_fx" type="number" step="0.1" value="${C.fx}"></div><div><label>Rate safety buffer %</label><input id="c_buf" type="number" step="0.5" value="${C.fxBufferPct}"></div></div>
+    <div class="row2"><div><label>Fallback CJ shipping per item (₹)</label><input id="c_ship" type="number" value="${C.shipInr}"></div><div><label>Packing / misc per item (₹)</label><input id="c_pack" type="number" value="${C.packingInr}"></div></div>
+    <div class="row2"><div><label>Payment fee % (Razorpay incl. GST)</label><input id="c_fee" type="number" step="0.01" value="${C.payFeePct}"></div><div><label>MRP shown above price %</label><input id="c_mrp" type="number" value="${C.mrpUpliftPct}"></div></div>
+    <label>Margin % by category</label>
+    ${marginRows.map(([k, v]) => `<div class="row2"><input class="mk" value="${esc(k)}"><input class="mv" type="number" value="${v}"></div>`).join('')}
+    <div class="row2"><input class="mk" placeholder="New category"><input class="mv" type="number" placeholder="Margin %"></div>
+    <div class="row2"><div><label>Margin % for any other category</label><input id="c_def" type="number" value="${C.defaultMarginPct}"></div><div></div></div>
+    <div class="savebar"><button class="btn" id="c_save">Save rules</button><button class="btn ghost" id="c_reprice">Reprice all CJ products</button></div></div>
+  <div class="card sect"><h3>Find products on CJ</h3><p class="hint">Search CJ's catalogue, then import. Imported products stay hidden until you review and press Show in Products. Cosmetics and skincare sold in India need the right licences, so check that before making them live.</p>
+    <div class="filters"><input id="s_q" placeholder="e.g. gua sha, vitamin C serum, earrings"><select id="s_cat"><option>Skincare</option><option>Beauty tools</option><option>Jewellery</option></select><button class="btn" id="s_go">Search CJ</button></div>
+    <div id="s_out" class="muted">Search to see products with CJ's price.</div></div>`;
+  const save = async () => {
+    const margins = {}; el.querySelectorAll('.mk').forEach((k, i) => { const v = el.querySelectorAll('.mv')[i].value; if (k.value.trim() && v) margins[k.value.trim()] = Number(v); });
+    const config = { fx: +$('#c_fx').value, fxBufferPct: +$('#c_buf').value, shipInr: +$('#c_ship').value, packingInr: +$('#c_pack').value, payFeePct: +$('#c_fee').value, mrpUpliftPct: +$('#c_mrp').value, defaultMarginPct: +$('#c_def').value, margins };
+    await api('cj', { method: 'POST', body: JSON.stringify({ action: 'config', config }) });
+  };
+  $('#c_save').onclick = async () => { try { await save(); toast('Pricing rules saved'); loadSourcing(); } catch (e) { toast(e.message); } };
+  $('#c_reprice').onclick = async () => { try { await save(); const r = await api('cj', { method: 'POST', body: JSON.stringify({ action: 'reprice' }) }); toast(r.updated + ' products repriced'); } catch (e) { toast(e.message); } };
+  const search = async () => {
+    const out = $('#s_out'); out.textContent = 'Searching…';
+    try {
+      const r = await api('cj?action=search&q=' + encodeURIComponent($('#s_q').value));
+      out.innerHTML = r.list.length ? `<div class="grid three">${r.list.map((p) => `<div class="card"><img src="${esc(p.image)}" alt="" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px"><div style="margin:6px 0"><b>${esc(p.name)}</b></div><div class="muted">CJ price $${p.usd.toFixed(2)} · stock ${p.stock ?? '—'}</div><button class="btn sm" data-imp="${esc(p.pid)}" style="margin-top:6px">Import (hidden)</button></div>`).join('')}</div>` : 'Nothing found.';
+      out.querySelectorAll('[data-imp]').forEach((b) => (b.onclick = async () => {
+        b.disabled = true; b.textContent = 'Importing…';
+        try { const r = await api('cj', { method: 'POST', body: JSON.stringify({ action: 'import', pid: b.dataset.imp, category: $('#s_cat').value }) }); b.textContent = `Imported at ₹${r.price}`; toast(`Imported: price ₹${r.price} (cost ₹${r.costInr}). Review it in Products.`); }
+        catch (e) { b.disabled = false; b.textContent = 'Import (hidden)'; toast(e.message); }
+      }));
+    } catch (e) { out.textContent = e.message; }
+  };
+  $('#s_go').onclick = search; $('#s_q').onkeydown = (e) => { if (e.key === 'Enter') search(); };
+};
