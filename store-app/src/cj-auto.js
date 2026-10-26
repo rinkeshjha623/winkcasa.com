@@ -6,16 +6,24 @@ import { cj, getCjConfig, landedInr, priceFor, freightToIndia, usdOf, cleanText 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 export const AUTO_DEFAULT = { enabled: true, start: '2026-10-26', days: 30, perDay: 10, maxInr: 500, minStock: 50, hourIst: 10 };
 const GROUPS = [
-  { category: 'Jewellery', per: 4, kws: ['earrings', 'necklace', 'bracelet', 'pendant', 'ring set', 'choker', 'anklet', 'pearl earrings', 'hoop earrings', 'bangle'] },
-  { category: 'Hair & accessories', per: 3, kws: ['hair clip', 'claw clip', 'headband', 'scrunchie', 'hair pin', 'barrette', 'hair bow'] },
-  { category: 'Beauty tools', per: 3, kws: ['makeup brush', 'face roller', 'eyelash curler', 'nail art stickers', 'makeup sponge', 'gua sha', 'facial massager'] },
+  { category: 'Jewellery', per: 2, kws: ['earrings', 'necklace', 'bracelet', 'pendant', 'ring set', 'choker', 'anklet', 'pearl earrings', 'hoop earrings', 'bangle'] },
+  { category: 'Hair & accessories', per: 2, kws: ['hair clip', 'claw clip', 'headband', 'scrunchie', 'hair pin', 'barrette', 'hair bow'] },
+  { category: 'Beauty tools', per: 2, kws: ['makeup brush', 'face roller', 'eyelash curler', 'nail art stickers', 'makeup sponge', 'gua sha', 'facial massager'] },
+  { category: 'Dresses & Ethnic Wear', per: 1, kws: ['kurti', 'dupatta', 'women dress', 'ethnic dress', 'scarf shawl', 'palazzo'] },
+  { category: 'Bags & Potlis', per: 1, kws: ['potli bag', 'clutch bag', 'women handbag', 'sling bag women', 'evening bag'] },
+  { category: 'Festive Decor', per: 2, kws: ['string lights', 'led candle', 'lantern', 'artificial flower garland', 'rangoli', 'diya', 'wall hanging decor'] },
 ];
 // interleave the categories (jewellery, hair, beauty, jewellery, ...) so each discovery pass covers all three
 const ALL_KW = []; for (let i = 0; GROUPS.some((g) => i < g.kws.length); i++) for (const g of GROUPS) if (g.kws[i]) ALL_KW.push({ kw: g.kws[i], category: g.category });
 // never auto-publish anything that is not plain fashion or beauty accessories
 const BLOCK = /\b(knife|knives|gun|weapon|sex|sexy|adult|vibrat\w*|lingerie|cigarette|lighter|battery|batteries|pistol|dagger|sword|drug|medical|syringe|blade|razor)\b/i;
-const BLOCK2 = /\b(bluetooth|headphone\w*|earphone\w*|earbud\w*|wireless|usb|pet|dog|cat|puppy|car|phone|charger|toy|kids?|baby|doll|led|lamp|speaker|watch|beads?|waist|sweat\w*|sports?|body|diy|craft|bases|sealing|top|shirt|dress|pants|socks?|bag|case|cover|tool kit)\b/i;
+const BLOCK2 = /\b(bluetooth|headphone\w*|earphone\w*|earbud\w*|wireless|usb|pet|dog|cat|puppy|car|phone|charger|toy|kids?|baby|doll|led|lamp|speaker|watch|beads?|diy|craft|bases|sealing|sweat\w*|sports?|body|waist|tool kit)\b/i;
+const APPAREL_BLOCK = /\b(top|shirt|t-?shirt|pants|jeans|socks?|case|cover|hoodie|jacket|shorts|bikini|swimsuit|underwear|bra|sports?|yoga|gym)\b/i;
+const bad = (name, cat) => BLOCK.test(name) || BLOCK2.test(name) || (!/Dress|Bag/.test(cat) && APPAREL_BLOCK.test(name)) || (/Dress/.test(cat) && /\b(sexy|bikini|mini|club|party dress|bodycon|swim|lingerie|pet|kids?|baby)\b/i.test(name)) || !MUST[cat].test(name);
 const MUST = {
+  'Dresses & Ethnic Wear': /(kurti|kurta|saree|sari|lehenga|dupatta|anarkali|ethnic|dress|gown|salwar|palazzo|sharara|stole|shawl|scarf)/i,
+  'Bags & Potlis': /(potli|clutch|handbag|sling|crossbody|tote|purse|wallet|pouch|evening bag|shoulder bag)/i,
+  'Festive Decor': /(diya|lantern|string light|fairy light|torana|toran|rangoli|candle|garland|wall hanging|decor|lamp|tea ?light|flower|curtain light|bunting|banner)/i,
   'Jewellery': /(earring|necklace|bracelet|pendant|ring|choker|anklet|bangle|stud|hoop|jhumka|chain|brooch|jewel)/i,
   'Hair & accessories': /(hair|clip|claw|headband|scrunchie|barrette|bow|hairpin|hairband|bun|ponytail)/i,
   'Beauty tools': /(brush|roller|curler|sponge|gua sha|massager|makeup|nail|eyelash|puff|mirror|tweezer)/i,
@@ -52,7 +60,7 @@ async function discover(env, auto, cfg, n) {
     }
     for (const p of list) {
       const name = cleanName(p.nameEn); const usd = usdOf(p.nowPrice ?? p.sellPrice);
-      if (!p.id || !name || !p.bigImage || !(usd > 0) || usd > maxUsd || BLOCK.test(name) || BLOCK2.test(name) || !MUST[category].test(name)) continue;
+      if (!p.id || !name || !p.bigImage || !(usd > 0) || usd > maxUsd || bad(name, category)) continue;
       if (Number(p.warehouseInventoryNum) < auto.minStock) continue;
       const have = await env.DB.prepare('SELECT 1 x FROM products WHERE cj_pid=?').bind(p.id).first(); if (have) continue;
       const r = await env.DB.prepare('INSERT OR IGNORE INTO cj_queue (pid,name,image,usd,category,stock,created_ms) VALUES (?,?,?,?,?,?,?)')
@@ -73,7 +81,7 @@ async function publishOne(env, auto, cfg, row) {
     if (!v) { await mark('skip', 'no purchasable variant'); return null; }
     const usd = usdOf(v.variantSellPrice);
     if (usd > auto.maxInr / cfg.fx) { await mark('skip', 'variant price over the limit'); return null; }
-    if (BLOCK.test(String(d.productNameEn || '')) || BLOCK2.test(String(d.productNameEn || '')) || !MUST[row.category].test(String(d.productNameEn || ''))) { await mark('skip', 'blocked product type'); return null; }
+    if (bad(String(d.productNameEn || ''), row.category)) { await mark('skip', 'blocked product type'); return null; }
     await sleep(1100);
     const fr = await freightToIndia(env, cfg, [{ vid: v.vid, quantity: 1 }]);
     if (!fr) { await mark('skip', 'no CJ shipping line to India'); return null; }
@@ -110,7 +118,7 @@ export async function cjTick(env, { force = false } = {}) {
     if (!got.meta || got.meta.changes < 1) return { ok: true, note: 'busy' };
     try {
       await ensureQueue(env);
-      for (const r of (await env.DB.prepare("SELECT pid,name,category FROM cj_queue WHERE status='found'").all()).results) if (BLOCK2.test(r.name) || BLOCK.test(r.name) || !MUST[r.category].test(r.name)) await env.DB.prepare("UPDATE cj_queue SET status='skip', note='irrelevant' WHERE pid=?").bind(r.pid).run();
+      for (const r of (await env.DB.prepare("SELECT pid,name,category FROM cj_queue WHERE status='found'").all()).results) if (!MUST[r.category] || bad(r.name, r.category)) await env.DB.prepare("UPDATE cj_queue SET status='skip', note='irrelevant' WHERE pid=?").bind(r.pid).run();
       const cfg = await getCjConfig(env);
       const out = { ok: true, published: [], skipped: 0 };
       const cnt = (await env.DB.prepare("SELECT COUNT(*) c FROM cj_queue WHERE status='found'").first()).c;

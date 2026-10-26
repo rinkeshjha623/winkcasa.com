@@ -48,7 +48,7 @@ export function organizationLd(S) {
     slogan: 'Refined pieces, made for every day.',
     founder: S.seo.founder ? { '@type': 'Person', name: S.seo.founder } : undefined,
     foundingLocation: { '@type': 'Place', address: { '@type': 'PostalAddress', addressLocality: b.city, addressCountry: 'IN' } },
-    knowsAbout: ['Jewellery', 'Earrings', 'Necklaces', 'Hair accessories', 'Beauty tools'],
+    knowsAbout: ['Jewellery', 'Earrings', 'Necklaces', 'Hair accessories', 'Beauty tools', 'Ethnic wear', 'Potli bags', 'Diwali decor'],
   };
 }
 

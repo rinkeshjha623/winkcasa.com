@@ -64,6 +64,9 @@ export const DEFAULTS = {
   categories: [
     { name: 'Skincare', description: 'Serums, sunscreen, face mists and face oils for everyday skincare routines, delivered across India.' },
     { name: 'Beauty tools', description: 'Facial massagers and simple beauty tools that make your daily routine easier.' },
+    { name: 'Dresses & Ethnic Wear', description: 'Festive dresses, kurtis, dupattas and ethnic wear for women, chosen for Diwali, weddings and everyday wear, delivered across India.' },
+    { name: 'Bags & Potlis', description: 'Potli bags, clutches, sling bags and handbags that complete a festive or everyday look, delivered across India.' },
+    { name: 'Festive Decor', description: 'Diwali and festive home décor: string lights, LED candles, lanterns, garlands and rangoli accessories, delivered across India.' },
     { name: 'Jewellery', description: 'Lightweight everyday jewellery: earrings, necklaces, bracelets and rings you can wear daily.' },
   ],
   store: { open: true, closedMessage: 'We are restocking and will be back soon. Please check again shortly.' },

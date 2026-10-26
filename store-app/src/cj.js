@@ -9,7 +9,7 @@ export const CJ_DEFAULTS = {
   payFeePct: 2.36,     // Razorpay fee incl. GST
   mrpUpliftPct: 40,    // MRP shown struck-through = price + this %
   defaultMarginPct: 35,
-  margins: { Skincare: 30, 'Beauty tools': 35, Jewellery: 40 },
+  margins: { Skincare: 30, 'Beauty tools': 35, Jewellery: 40, 'Dresses & Ethnic Wear': 35, 'Bags & Potlis': 40, 'Festive Decor': 40 },
 };
 
 export async function getCjConfig(env) {
