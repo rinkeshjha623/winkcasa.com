@@ -17,7 +17,7 @@ const GROUPS = [
 const ALL_KW = []; for (let i = 0; GROUPS.some((g) => i < g.kws.length); i++) for (const g of GROUPS) if (g.kws[i]) ALL_KW.push({ kw: g.kws[i], category: g.category });
 // never auto-publish anything that is not plain fashion or beauty accessories
 const BLOCK = /\b(knife|knives|gun|weapon|sex|sexy|adult|vibrat\w*|lingerie|cigarette|lighter|battery|batteries|pistol|dagger|sword|drug|medical|syringe|blade|razor)\b/i;
-const BLOCK2 = /\b(bluetooth|headphone\w*|earphone\w*|earbud\w*|wireless|usb|pet|dog|cat|puppy|car|phone|charger|toy|kids?|baby|doll|led|lamp|speaker|watch|beads?|diy|craft|bases|sealing|sweat\w*|sports?|body|waist|tool kit|trimmer|electric|rechargeable|nose|men|mens|shaver|comb|massage comb)\b/i;
+const BLOCK2 = /\b(bluetooth|headphone\w*|earphone\w*|earbud\w*|wireless|usb|pet|dog|cat|puppy|car|phone|charger|toy|kids?|baby|doll|lamp|speaker|watch|beads?|diy|craft|bases|sealing|sweat\w*|sports?|body|waist|tool kit|trimmer|electric|rechargeable|nose|men|mens|shaver|comb|massage comb)\b/i;
 const APPAREL_BLOCK = /\b(top|shirt|t-?shirt|pants|jeans|socks?|case|cover|hoodie|jacket|shorts|bikini|swimsuit|underwear|bra|sports?|yoga|gym)\b/i;
 const bad = (name, cat) => BLOCK.test(name) || BLOCK2.test(name) || (!/Dress|Bag/.test(cat) && APPAREL_BLOCK.test(name)) || (/Dress/.test(cat) && /\b(sexy|bikini|mini|club|party dress|bodycon|swim|lingerie|pet|kids?|baby)\b/i.test(name)) || !MUST[cat].test(name);
 const MUST = {
@@ -52,14 +52,14 @@ async function discover(env, auto, cfg, n, only) {
   for (let k = 0; k < n; k++) {
     const { kw, category } = KW[(st.i + k) % KW.length];
     const base = { keyWord: kw, page: 1, size: 50, orderBy: 3, sort: 'desc', startSellPrice: 0.2, endSellPrice: maxUsd, startWarehouseInventory: only && only.length ? 10 : auto.minStock };
-    let list = [];
+    let list = []; const rec0 = {};
     for (const extra of [{ productFlag: 1 }, { timeStart: Date.now() - 150 * 86400000 }]) {
       await sleep(1100); calls++;
-      let data; try { data = await cj(env, 'GET', '/product/listV2', { query: { ...base, ...extra } }); } catch { continue; }
+      let data; try { data = await cj(env, 'GET', '/product/listV2', { query: { ...base, ...extra } }); } catch (e) { rec0.err = String(e.message || e).slice(0, 80); await sleep(2500); try { data = await cj(env, 'GET', '/product/listV2', { query: { ...base, ...extra } }); } catch (e2) { rec0.err = String(e2.message || e2).slice(0, 80); continue; } }
       list = (data?.content || []).flatMap((c) => c.productList || []);
       if (list.length) break;
     }
-    const rec = { kw, raw: list.length, bad: 0, ok: 0 }; dbg.push(rec);
+    const rec = { kw, raw: list.length, bad: 0, ok: 0, err: rec0.err }; dbg.push(rec);
     for (const p of list) {
       const name = cleanName(p.nameEn); const usd = usdOf(p.nowPrice ?? p.sellPrice);
       if (!p.id || !name || !p.bigImage || !(usd > 0) || usd > maxUsd || bad(name, category)) { rec.bad++; continue; }
