@@ -114,7 +114,8 @@ export async function cjTick(env, { force = false } = {}) {
       const cfg = await getCjConfig(env);
       const out = { ok: true, published: [], skipped: 0 };
       const cnt = (await env.DB.prepare("SELECT COUNT(*) c FROM cj_queue WHERE status='found'").first()).c;
-      if (cnt < 40) out.discover = await discover(env, auto, cfg, 1);
+      const low = (await env.DB.prepare("SELECT COUNT(DISTINCT category) c FROM cj_queue WHERE status='found'").first()).c < GROUPS.length;
+      if (cnt < 40 || low) out.discover = await discover(env, auto, cfg, low ? 2 : 1);
       for (let i = 0; i < 3 && day.done < auto.perDay; i++) {
         const quota = Object.fromEntries(GROUPS.map((g) => [g.category, g.per]));
         const open = GROUPS.map((g) => g.category).filter((c) => (day.cat[c] || 0) < quota[c]);
