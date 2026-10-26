@@ -106,7 +106,27 @@ export async function publishPost(env, id) {
 // Called by the schedule runner: publish everything that is due.
 export async function runDue(env) {
   const conn = await kvGet(env, 'meta', null); if (!conn || !conn.token) return { ran: 0, note: 'not connected' };
+  // one runner at a time (the GitHub schedule and site visits can both trigger a run): take a 2 minute lock
+  const now = Date.now();
+  const got = await env.DB.prepare("INSERT INTO social_kv (k,v) VALUES ('lock',?) ON CONFLICT(k) DO UPDATE SET v=excluded.v WHERE CAST(social_kv.v AS INTEGER) < ?").bind(String(now), now - 120000).run();
+  if (!got.meta || got.meta.changes < 1) return { ran: 0, note: 'busy' };
+  try { return await runDueLocked(env); } finally { await env.DB.prepare("UPDATE social_kv SET v='0' WHERE k='lock'").run().catch(() => {}); }
+}
+
+async function runDueLocked(env) {
   const { results } = await env.DB.prepare("SELECT id FROM social_posts WHERE auto=1 AND (status='publishing' OR (status='scheduled' AND scheduled_at IS NOT NULL AND scheduled_at<=?)) ORDER BY COALESCE(scheduled_at, created_at) LIMIT 5").bind(nowSql()).all();
   const out = []; for (const r of results) { try { out.push({ id: r.id, ...(await publishPost(env, r.id)) }); } catch (e) { out.push({ id: r.id, error: String(e.message) }); } }
   return { ran: out.length, out };
+}
+
+// Cheap check used by site visits: at most once every 3 minutes, run anything that is due.
+export async function maybeRunDue(env) {
+  try {
+    const due = await env.DB.prepare("SELECT 1 AS x FROM social_posts WHERE auto=1 AND (status='publishing' OR (status='scheduled' AND scheduled_at IS NOT NULL AND scheduled_at<=?)) LIMIT 1").bind(nowSql()).first();
+    if (!due) return;
+    const last = await kvGet(env, 'tick', 0);
+    if (Date.now() - Number(last) < 180000) return;
+    await kvSet(env, 'tick', Date.now());
+    await runDue(env);
+  } catch {}
 }
