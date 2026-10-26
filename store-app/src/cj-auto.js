@@ -47,7 +47,7 @@ export async function ensureQueue(env) {
 
 async function discover(env, auto, cfg, n) {
   const maxUsd = Math.round((auto.maxInr / cfg.fx) * 100) / 100;
-  const st = await getJ(env, 'cj_auto_kw', { i: 0 }); let found = 0, calls = 0;
+  const st = await getJ(env, 'cj_auto_kw', { i: 0 }); let found = 0, calls = 0; const dbg = [];
   for (let k = 0; k < n; k++) {
     const { kw, category } = ALL_KW[(st.i + k) % ALL_KW.length];
     const base = { keyWord: kw, page: 1, size: 50, orderBy: 3, sort: 'desc', startSellPrice: 0.2, endSellPrice: maxUsd, startWarehouseInventory: auto.minStock };
@@ -58,18 +58,19 @@ async function discover(env, auto, cfg, n) {
       list = (data?.content || []).flatMap((c) => c.productList || []);
       if (list.length) break;
     }
+    const rec = { kw, raw: list.length, bad: 0, ok: 0 }; dbg.push(rec);
     for (const p of list) {
       const name = cleanName(p.nameEn); const usd = usdOf(p.nowPrice ?? p.sellPrice);
-      if (!p.id || !name || !p.bigImage || !(usd > 0) || usd > maxUsd || bad(name, category)) continue;
+      if (!p.id || !name || !p.bigImage || !(usd > 0) || usd > maxUsd || bad(name, category)) { rec.bad++; continue; }
       if (Number(p.warehouseInventoryNum) < auto.minStock) continue;
       const have = await env.DB.prepare('SELECT 1 x FROM products WHERE cj_pid=?').bind(p.id).first(); if (have) continue;
       const r = await env.DB.prepare('INSERT OR IGNORE INTO cj_queue (pid,name,image,usd,category,stock,created_ms) VALUES (?,?,?,?,?,?,?)')
         .bind(p.id, name, p.bigImage, usd, category, Number(p.warehouseInventoryNum) || null, Number(p.createAt) || null).run();
-      found += r.meta?.changes || 0;
+      found += r.meta?.changes || 0; rec.ok++;
     }
   }
   await setJ(env, 'cj_auto_kw', { i: (st.i + n) % ALL_KW.length });
-  return { found, calls };
+  return { found, calls, dbg };
 }
 
 async function publishOne(env, auto, cfg, row) {
