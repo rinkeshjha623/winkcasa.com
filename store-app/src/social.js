@@ -1,5 +1,6 @@
 // Social publishing: Instagram + Facebook Page through the Meta Graph API.
 // Connection details live in D1 (social_kv 'meta') and are never sent back to the browser in full.
+import { PLAN } from './social-plan.js';
 export const SITE_ORIGIN = 'https://www.winkcasa.com';
 const G = 'https://graph.facebook.com/v21.0';
 export const FORMATS = ['post', 'carousel', 'reel', 'story'];
@@ -129,4 +130,15 @@ export async function maybeRunDue(env) {
     await kvSet(env, 'tick', Date.now());
     await runDue(env);
   } catch {}
+}
+
+// One-time: add the 30-day content calendar (src/social-plan.js) to the Social tab as scheduled posts.
+export async function ensurePlan(env) {
+  const done = await env.DB.prepare("SELECT v FROM social_kv WHERE k='plan_v1'").first(); if (done) return 0;
+  await env.DB.batch([
+    ...PLAN.map((p) => env.DB.prepare("INSERT INTO social_posts (title,caption,format,platforms,media_json,scheduled_at,auto,status) VALUES (?,?,?,?,?,?,1,'scheduled')")
+      .bind(p.t, p.c, p.f, 'instagram,facebook', JSON.stringify(p.m), p.at)),
+    env.DB.prepare("INSERT INTO social_kv (k,v) VALUES ('plan_v1','1') ON CONFLICT(k) DO UPDATE SET v='1'"),
+  ]);
+  return PLAN.length;
 }
