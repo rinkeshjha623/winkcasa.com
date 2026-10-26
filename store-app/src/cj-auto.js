@@ -17,7 +17,7 @@ const GROUPS = [
 const ALL_KW = []; for (let i = 0; GROUPS.some((g) => i < g.kws.length); i++) for (const g of GROUPS) if (g.kws[i]) ALL_KW.push({ kw: g.kws[i], category: g.category });
 // never auto-publish anything that is not plain fashion or beauty accessories
 const BLOCK = /\b(knife|knives|gun|weapon|sex|sexy|adult|vibrat\w*|lingerie|cigarette|lighter|battery|batteries|pistol|dagger|sword|drug|medical|syringe|blade|razor)\b/i;
-const BLOCK2 = /\b(bluetooth|headphone\w*|earphone\w*|earbud\w*|wireless|usb|pet|dog|cat|puppy|car|phone|charger|toy|kids?|baby|doll|led|lamp|speaker|watch|beads?|diy|craft|bases|sealing|sweat\w*|sports?|body|waist|tool kit)\b/i;
+const BLOCK2 = /\b(bluetooth|headphone\w*|earphone\w*|earbud\w*|wireless|usb|pet|dog|cat|puppy|car|phone|charger|toy|kids?|baby|doll|led|lamp|speaker|watch|beads?|diy|craft|bases|sealing|sweat\w*|sports?|body|waist|tool kit|trimmer|electric|rechargeable|nose|men|mens|shaver|comb|massage comb)\b/i;
 const APPAREL_BLOCK = /\b(top|shirt|t-?shirt|pants|jeans|socks?|case|cover|hoodie|jacket|shorts|bikini|swimsuit|underwear|bra|sports?|yoga|gym)\b/i;
 const bad = (name, cat) => BLOCK.test(name) || BLOCK2.test(name) || (!/Dress|Bag/.test(cat) && APPAREL_BLOCK.test(name)) || (/Dress/.test(cat) && /\b(sexy|bikini|mini|club|party dress|bodycon|swim|lingerie|pet|kids?|baby)\b/i.test(name)) || !MUST[cat].test(name);
 const MUST = {
