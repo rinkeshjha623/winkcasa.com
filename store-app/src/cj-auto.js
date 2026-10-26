@@ -45,12 +45,13 @@ export async function ensureQueue(env) {
   await env.DB.prepare('CREATE TABLE IF NOT EXISTS cj_queue (pid TEXT PRIMARY KEY, name TEXT, image TEXT, usd REAL, category TEXT, stock INTEGER, created_ms INTEGER, status TEXT NOT NULL DEFAULT \'found\', note TEXT, found_at TEXT NOT NULL DEFAULT (datetime(\'now\')), done_at TEXT)').run();
 }
 
-async function discover(env, auto, cfg, n) {
+async function discover(env, auto, cfg, n, only) {
   const maxUsd = Math.round((auto.maxInr / cfg.fx) * 100) / 100;
-  const st = await getJ(env, 'cj_auto_kw', { i: 0 }); let found = 0, calls = 0; const dbg = [];
+  const KW = only && only.length ? ALL_KW.filter((x) => only.includes(x.category)) : ALL_KW;
+  const sk = only && only.length ? 'cj_auto_kw_low' : 'cj_auto_kw'; const st = await getJ(env, sk, { i: 0 }); let found = 0, calls = 0; const dbg = [];
   for (let k = 0; k < n; k++) {
-    const { kw, category } = ALL_KW[(st.i + k) % ALL_KW.length];
-    const base = { keyWord: kw, page: 1, size: 50, orderBy: 3, sort: 'desc', startSellPrice: 0.2, endSellPrice: maxUsd, startWarehouseInventory: auto.minStock };
+    const { kw, category } = KW[(st.i + k) % KW.length];
+    const base = { keyWord: kw, page: 1, size: 50, orderBy: 3, sort: 'desc', startSellPrice: 0.2, endSellPrice: maxUsd, startWarehouseInventory: only && only.length ? 10 : auto.minStock };
     let list = [];
     for (const extra of [{ productFlag: 1 }, { timeStart: Date.now() - 150 * 86400000 }]) {
       await sleep(1100); calls++;
@@ -62,14 +63,14 @@ async function discover(env, auto, cfg, n) {
     for (const p of list) {
       const name = cleanName(p.nameEn); const usd = usdOf(p.nowPrice ?? p.sellPrice);
       if (!p.id || !name || !p.bigImage || !(usd > 0) || usd > maxUsd || bad(name, category)) { rec.bad++; continue; }
-      if (Number(p.warehouseInventoryNum) < auto.minStock) continue;
+      if (Number(p.warehouseInventoryNum) < (only && only.length ? 10 : auto.minStock)) continue;
       const have = await env.DB.prepare('SELECT 1 x FROM products WHERE cj_pid=?').bind(p.id).first(); if (have) continue;
       const r = await env.DB.prepare('INSERT OR IGNORE INTO cj_queue (pid,name,image,usd,category,stock,created_ms) VALUES (?,?,?,?,?,?,?)')
         .bind(p.id, name, p.bigImage, usd, category, Number(p.warehouseInventoryNum) || null, Number(p.createAt) || null).run();
       found += r.meta?.changes || 0; rec.ok++;
     }
   }
-  await setJ(env, 'cj_auto_kw', { i: (st.i + n) % ALL_KW.length });
+  await setJ(env, sk, { i: (st.i + n) % KW.length });
   return { found, calls, dbg };
 }
 
@@ -123,8 +124,10 @@ export async function cjTick(env, { force = false } = {}) {
       const cfg = await getCjConfig(env);
       const out = { ok: true, published: [], skipped: 0 };
       const cnt = (await env.DB.prepare("SELECT COUNT(*) c FROM cj_queue WHERE status='found'").first()).c;
-      const low = (await env.DB.prepare("SELECT COUNT(DISTINCT category) c FROM cj_queue WHERE status='found'").first()).c < GROUPS.length;
-      if (cnt < 40 || low) out.discover = await discover(env, auto, cfg, low ? 2 : 1);
+      const have = new Set((await env.DB.prepare("SELECT DISTINCT category c FROM cj_queue WHERE status='found'").all()).results.map((r) => r.c));
+      const missing = GROUPS.map((g) => g.category).filter((c) => !have.has(c));
+      if (missing.length) out.discover = await discover(env, auto, cfg, 3, missing);
+      else if (cnt < 40) out.discover = await discover(env, auto, cfg, 1);
       for (let i = 0; i < 3 && day.done < auto.perDay; i++) {
         const quota = Object.fromEntries(GROUPS.map((g) => [g.category, g.per]));
         const open = GROUPS.map((g) => g.category).filter((c) => (day.cat[c] || 0) < quota[c]);
