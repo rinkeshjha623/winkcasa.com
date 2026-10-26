@@ -5,7 +5,11 @@ import { BATCH2 } from './articles2.js';
 import { BATCH3 } from './articles3.js';
 import { EXTRA } from './articles-extra.js';
 
-export const ARTICLES = [...BATCH1, ...BATCH2, ...BATCH3].map((a) => ({ ...a, body: EXTRA[a.slug] ? a.body.replace('## Frequently asked questions', EXTRA[a.slug] + '\n\n## Frequently asked questions') : a.body }));
+const ORDER = [...BATCH1, ...BATCH2, ...BATCH3];
+// Bhai Dooj is on 11 November, so its gift guide goes out a week before (day 9, 4 November).
+const bd = ORDER.findIndex((a) => a.slug === 'bhai-dooj-gift-ideas-for-sister');
+ORDER.splice(8, 0, ORDER.splice(bd, 1)[0]);
+export const ARTICLES = ORDER.map((a) => ({ ...a, body: EXTRA[a.slug] ? a.body.replace('## Frequently asked questions', EXTRA[a.slug] + '\n\n## Frequently asked questions') : a.body }));
 const FIRST_DAY = Date.UTC(2026, 9, 27, 4, 30, 0); // 10:00 IST
 const BIO = 'WinkCasa is a New Delhi based retailer of everyday jewellery, hair accessories and beauty tools. Guides are written by the WinkCasa team and reviewed before publishing.';
 const sql = (ms) => new Date(ms).toISOString().slice(0, 19).replace('T', ' ');
