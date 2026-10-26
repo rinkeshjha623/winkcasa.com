@@ -302,8 +302,12 @@ window.loadSourcing = async function () {
   const el = $('#t-sourcing');
   let st; try { st = await api('cj?action=status'); } catch (e) { el.innerHTML = `<div class="card">${esc(e.message)}</div>`; return; }
   const C = st.config;
+  let au = null; try { au = await api('cj?action=auto'); } catch {}
   const marginRows = Object.entries(C.margins);
   el.innerHTML = `${st.connected ? '' : '<div class="card" style="border-color:var(--bad)"><b>CJ is not connected.</b> Add the CJ_API_KEY secret in Cloudflare and redeploy.</div>'}
+  ${au ? `<div class="card sect"><h3>Daily auto-publish</h3><p class="hint">Every day from 10:00 IST the store finds new CJ products in jewellery, hair accessories and beauty tools (CJ price up to ₹${au.auto.maxInr}, in stock, shipping to India available) and publishes ${au.auto.perDay} of them, priced with the rules below. Runs for ${au.auto.days} days from ${esc(au.auto.start)} to ${esc(au.last)}. Review new products in Products and hide any you do not like.</p>
+    <p><b>${au.auto.enabled ? 'Running' : 'Paused'}</b> · published today: ${au.today}/${au.auto.perDay} · published so far: ${au.published} · waiting in the queue: ${au.queue.found || 0}${au.queue.skip ? ' · skipped: ' + au.queue.skip : ''}</p>
+    <div class="savebar"><button class="btn ${au.auto.enabled ? 'ghost' : ''}" id="au_toggle">${au.auto.enabled ? 'Pause' : 'Resume'}</button><button class="btn ghost" id="au_run">Publish a few now</button></div></div>` : ''}
   <div class="card sect"><h3>Pricing rules</h3><p class="hint">Selling price = (CJ price × exchange rate × buffer + CJ shipping + packing) ÷ (1 − payment fee − margin), rounded up to end in 9. Click “Reprice all CJ products” after changing anything.</p>
     <div class="row2"><div><label>USD → INR rate</label><input id="c_fx" type="number" step="0.1" value="${C.fx}"></div><div><label>Rate safety buffer %</label><input id="c_buf" type="number" step="0.5" value="${C.fxBufferPct}"></div></div>
     <div class="row2"><div><label>Fallback CJ shipping per item (₹)</label><input id="c_ship" type="number" value="${C.shipInr}"></div><div><label>Packing / misc per item (₹)</label><input id="c_pack" type="number" value="${C.packingInr}"></div></div>
@@ -318,6 +322,8 @@ window.loadSourcing = async function () {
   <div class="card sect"><h3>Find products on CJ</h3><p class="hint">Search CJ's catalogue, then import. Imported products stay hidden until you review and press Show in Products. Cosmetics and skincare sold in India need the right licences, so check that before making them live.</p>
     <div class="filters"><input id="s_q" placeholder="e.g. gua sha, vitamin C serum, earrings"><select id="s_cat"><option>Skincare</option><option>Beauty tools</option><option>Jewellery</option></select><button class="btn" id="s_go">Search CJ</button></div>
     <div id="s_out" class="muted">Search to see products with CJ's price.</div></div>`;
+  if ($('#au_toggle')) $('#au_toggle').onclick = async () => { try { await api('cj', { method: 'POST', body: JSON.stringify({ action: 'auto', enabled: !au.auto.enabled }) }); loadSourcing(); } catch (e) { toast(e.message); } };
+  if ($('#au_run')) $('#au_run').onclick = async () => { $('#au_run').disabled = true; try { const r = await api('cj', { method: 'POST', body: JSON.stringify({ action: 'auto_run' }) }); toast((r.published ? r.published.length : 0) + ' products published' + (r.note ? ' (' + r.note + ')' : '')); loadSourcing(); } catch (e) { toast(e.message); $('#au_run').disabled = false; } };
   const save = async () => {
     const margins = {}; el.querySelectorAll('.mk').forEach((k, i) => { const v = el.querySelectorAll('.mv')[i].value; if (k.value.trim() && v) margins[k.value.trim()] = Number(v); });
     const config = { fx: +$('#c_fx').value, fxBufferPct: +$('#c_buf').value, shipInr: +$('#c_ship').value, packingInr: +$('#c_pack').value, payFeePct: +$('#c_fee').value, mrpUpliftPct: +$('#c_mrp').value, defaultMarginPct: +$('#c_def').value, margins };

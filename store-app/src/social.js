@@ -1,6 +1,7 @@
 // Social publishing: Instagram + Facebook Page through the Meta Graph API.
 // Connection details live in D1 (social_kv 'meta') and are never sent back to the browser in full.
 import { PLAN } from './social-plan.js';
+import { cjTick } from './cj-auto.js';
 export const SITE_ORIGIN = 'https://www.winkcasa.com';
 const G = 'https://graph.facebook.com/v21.0';
 export const FORMATS = ['post', 'carousel', 'reel', 'story'];
@@ -120,15 +121,15 @@ async function runDueLocked(env) {
   return { ran: out.length, out };
 }
 
-// Cheap check used by site visits: at most once every 3 minutes, run anything that is due.
+// Cheap check used by site visits: at most once every 3 minutes, run anything that is due (social posts, daily CJ products).
 export async function maybeRunDue(env) {
   try {
-    const due = await env.DB.prepare("SELECT 1 AS x FROM social_posts WHERE auto=1 AND (status='publishing' OR (status='scheduled' AND scheduled_at IS NOT NULL AND scheduled_at<=?)) LIMIT 1").bind(nowSql()).first();
-    if (!due) return;
     const last = await kvGet(env, 'tick', 0);
     if (Date.now() - Number(last) < 180000) return;
     await kvSet(env, 'tick', Date.now());
-    await runDue(env);
+    const due = await env.DB.prepare("SELECT 1 AS x FROM social_posts WHERE auto=1 AND (status='publishing' OR (status='scheduled' AND scheduled_at IS NOT NULL AND scheduled_at<=?)) LIMIT 1").bind(nowSql()).first();
+    if (due) await runDue(env);
+    await cjTick(env);
   } catch {}
 }
 

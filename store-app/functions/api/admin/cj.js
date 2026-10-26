@@ -1,5 +1,6 @@
 import { json } from '../../../src/lib.js';
 import { requireAdmin } from '../../../src/admin.js';
+import { autoStatus, setAutoEnabled, cjTick } from '../../../src/cj-auto.js';
 import { cj, getCjConfig, landedInr, priceFor, marginFor, freightToIndia, usdOf, cleanText } from '../../../src/cj.js';
 
 const fail = (e) => json({ error: e.message || 'CJ request failed.' }, e.code === 'nokey' ? 503 : 502);
@@ -12,6 +13,7 @@ export async function onRequestGet({ request, env }) {
   try {
     const cfg = await getCjConfig(env);
     if (action === 'status') return json({ connected: !!env.CJ_API_KEY, config: cfg });
+    if (action === 'auto') return json(await autoStatus(env));
     if (action === 'search') {
       const data = await cj(env, 'GET', '/product/listV2', { query: { keyWord: u.searchParams.get('q') || '', page: u.searchParams.get('page') || 1, size: 20 } });
       const list = (data?.content || []).flatMap((c) => c.productList || []).map((p) => ({
@@ -32,6 +34,9 @@ export async function onRequestPost({ request, env }) {
   let b; try { b = await request.json(); } catch { return json({ error: 'Invalid request.' }, 400); }
   try {
     const cfg = await getCjConfig(env);
+
+    if (b.action === 'auto') { await setAutoEnabled(env, !!b.enabled); return json({ ok: true, ...(await autoStatus(env)) }); }
+    if (b.action === 'auto_run') { const r = await cjTick(env, { force: true }); return json({ ...r, ...(await autoStatus(env)) }); }
 
     if (b.action === 'config') {
       const c = b.config || {};

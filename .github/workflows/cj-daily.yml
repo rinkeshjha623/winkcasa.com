@@ -1,0 +1,16 @@
+name: Publish daily CJ products
+on:
+  schedule:
+    - cron: '35 4 * * *'   # 10:05 AM IST
+  workflow_dispatch:
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish today's products (a few passes, each does a handful)
+        run: |
+          for i in 1 2 3 4 5; do
+            curl -fsS --retry 3 --max-time 120 https://www.winkcasa.com/api/cj-daily || true
+            echo
+            sleep 20
+          done
