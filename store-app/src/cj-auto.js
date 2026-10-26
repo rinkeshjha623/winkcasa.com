@@ -36,6 +36,8 @@ export function cleanName(n) {
   return t.replace(/[\s,.\-]+(for|and|with|of|in|to|a|the|on|&)$/i, '').replace(/^[\s,.\-]+|[\s,.\-]+$/g, '');
 }
 
+const CAP_INR = { 'Dresses & Ethnic Wear': 800, 'Bags & Potlis': 800, 'Festive Decor': 800 };
+const capInr = (auto, cat) => Math.max(auto.maxInr, CAP_INR[cat] || 0);
 const ist = () => { const d = new Date(Date.now() + 19800000); return { date: d.toISOString().slice(0, 10), hour: d.getUTCHours() }; };
 const addDays = (date, n) => new Date(Date.parse(date + 'T00:00:00Z') + n * 86400000).toISOString().slice(0, 10);
 const getJ = async (env, k, d) => { const r = await env.DB.prepare('SELECT value FROM settings WHERE key=?').bind(k).first(); try { return r ? { ...d, ...JSON.parse(r.value) } : d; } catch { return d; } };
@@ -46,11 +48,11 @@ export async function ensureQueue(env) {
 }
 
 async function discover(env, auto, cfg, n, only) {
-  const maxUsd = Math.round((auto.maxInr / cfg.fx) * 100) / 100;
   const KW = only && only.length ? ALL_KW.filter((x) => only.includes(x.category)) : ALL_KW;
   const sk = only && only.length ? 'cj_auto_kw_low' : 'cj_auto_kw'; const st = await getJ(env, sk, { i: 0 }); let found = 0, calls = 0; const dbg = [];
   for (let k = 0; k < n; k++) {
     const { kw, category } = KW[(st.i + k) % KW.length];
+    const maxUsd = Math.round((capInr(auto, category) / cfg.fx) * 100) / 100;
     const base = { keyWord: kw, page: 1, size: 50, orderBy: 3, sort: 'desc', startSellPrice: 0.2, endSellPrice: maxUsd, startWarehouseInventory: only && only.length ? 10 : auto.minStock };
     let list = []; const rec0 = {};
     for (const extra of [{ productFlag: 1 }, { timeStart: Date.now() - 150 * 86400000 }]) {
@@ -83,7 +85,7 @@ async function publishOne(env, auto, cfg, row) {
     const v = (d.variants || []).filter((x) => usdOf(x.variantSellPrice) > 0).sort((a, b) => usdOf(a.variantSellPrice) - usdOf(b.variantSellPrice))[0];
     if (!v) { await mark('skip', 'no purchasable variant'); return null; }
     const usd = usdOf(v.variantSellPrice);
-    if (usd > auto.maxInr / cfg.fx) { await mark('skip', 'variant price over the limit'); return null; }
+    if (usd > capInr(auto, row.category) / cfg.fx) { await mark('skip', 'variant price over the limit'); return null; }
     if (bad(String(d.productNameEn || ''), row.category)) { await mark('skip', 'blocked product type'); return null; }
     await sleep(1100);
     const fr = await freightToIndia(env, cfg, [{ vid: v.vid, quantity: 1 }]);
