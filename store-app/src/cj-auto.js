@@ -71,6 +71,7 @@ async function discover(env, auto, cfg, n, only) {
     }
   }
   await setJ(env, sk, { i: (st.i + n) % KW.length });
+  await setJ(env, 'cj_auto_dbg', { at: new Date().toISOString(), only: only || null, dbg }).catch(() => {});
   return { found, calls, dbg };
 }
 
