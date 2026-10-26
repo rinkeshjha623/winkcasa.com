@@ -28,7 +28,7 @@ const MUST = {
   'Hair & accessories': /(hair|clip|claw|headband|scrunchie|barrette|bow|hairpin|hairband|bun|ponytail)/i,
   'Beauty tools': /(brush|roller|curler|sponge|gua sha|massager|makeup|nail|eyelash|puff|mirror|tweezer)/i,
 };
-const NOISE = /\b(cross[- ]?border|amazon|explosive|hot[- ]?selling|best[- ]?selling|KP-?\d+|foreign trade|new arrival|ins style|wholesale|factory direct)\b/gi;
+const NOISE = /\b(cross[- ]?border|overseas|amazon|explosive|hot[- ]?selling|best[- ]?selling|KP-?\d+|foreign trade|new arrival|ins style|wholesale|factory direct)\b/gi;
 // CJ titles are long keyword lists: keep the part before the first comma/dash run, cut at a word boundary, drop dangling words.
 export function cleanName(n) {
   let t = String(n || '').replace(NOISE, ' ').replace(/\s+/g, ' ').trim();
