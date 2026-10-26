@@ -22,6 +22,9 @@ export async function onRequestGet({ params, env }) {
   const [rows, S, posts] = await Promise.all([activeProducts(env), getSettings(env), publishedPosts(env)]);
   const post = posts.find((p) => p.slug === params.slug);
   if (!post) return new Response('Post not found', { status: 404, headers: { 'Content-Type': 'text/plain' } });
+  // scheduled articles link to each other; until a linked article goes live, show its name as plain text instead of a dead link
+  const live = new Set(posts.map((p) => p.slug));
+  post.body = String(post.body || '').replace(/\[([^\]]+)\]\(\/blog\/([a-z0-9-]+)\)/g, (m, t, sl) => (live.has(sl) ? m : t));
   const cats = categoriesOf(rows, S);
   const url = SITE + '/blog/' + post.slug;
   const canonical = post.canonical || url;
