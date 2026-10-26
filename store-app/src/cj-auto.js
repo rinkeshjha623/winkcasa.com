@@ -14,7 +14,7 @@ const GROUPS = [
 const ALL_KW = []; for (let i = 0; GROUPS.some((g) => i < g.kws.length); i++) for (const g of GROUPS) if (g.kws[i]) ALL_KW.push({ kw: g.kws[i], category: g.category });
 // never auto-publish anything that is not plain fashion or beauty accessories
 const BLOCK = /\b(knife|knives|gun|weapon|sex|sexy|adult|vibrat\w*|lingerie|cigarette|lighter|battery|batteries|pistol|dagger|sword|drug|medical|syringe|blade|razor)\b/i;
-const BLOCK2 = /\b(bluetooth|headphone\w*|earphone\w*|earbud\w*|wireless|usb|pet|dog|cat|puppy|car|phone|charger|toy|kids?|baby|doll|led|lamp|speaker|watch)\b/i;
+const BLOCK2 = /\b(bluetooth|headphone\w*|earphone\w*|earbud\w*|wireless|usb|pet|dog|cat|puppy|car|phone|charger|toy|kids?|baby|doll|led|lamp|speaker|watch|beads?|waist|sweat\w*|sports?|body|diy|craft|bases|sealing|top|shirt|dress|pants|socks?|bag|case|cover|tool kit)\b/i;
 const MUST = {
   'Jewellery': /(earring|necklace|bracelet|pendant|ring|choker|anklet|bangle|stud|hoop|jhumka|chain|brooch|jewel)/i,
   'Hair & accessories': /(hair|clip|claw|headband|scrunchie|barrette|bow|hairpin|hairband|bun|ponytail)/i,
@@ -110,6 +110,7 @@ export async function cjTick(env, { force = false } = {}) {
     if (!got.meta || got.meta.changes < 1) return { ok: true, note: 'busy' };
     try {
       await ensureQueue(env);
+      for (const r of (await env.DB.prepare("SELECT pid,name,category FROM cj_queue WHERE status='found'").all()).results) if (BLOCK2.test(r.name) || BLOCK.test(r.name) || !MUST[r.category].test(r.name)) await env.DB.prepare("UPDATE cj_queue SET status='skip', note='irrelevant' WHERE pid=?").bind(r.pid).run();
       const cfg = await getCjConfig(env);
       const out = { ok: true, published: [], skipped: 0 };
       const cnt = (await env.DB.prepare("SELECT COUNT(*) c FROM cj_queue WHERE status='found'").first()).c;
