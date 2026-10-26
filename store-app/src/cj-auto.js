@@ -15,7 +15,12 @@ const ALL_KW = []; for (let i = 0; GROUPS.some((g) => i < g.kws.length); i++) fo
 // never auto-publish anything that is not plain fashion or beauty accessories
 const BLOCK = /\b(knife|knives|gun|weapon|sex|sexy|adult|vibrat\w*|lingerie|cigarette|lighter|battery|batteries|pistol|dagger|sword|drug|medical|syringe|blade|razor)\b/i;
 const NOISE = /\b(cross[- ]?border|amazon|explosive|hot[- ]?selling|foreign trade|new arrival|ins style|wholesale|factory direct)\b/gi;
-export const cleanName = (n) => String(n || '').replace(NOISE, ' ').replace(/\s+/g, ' ').replace(/^[\s,.\-]+|[\s,.\-]+$/g, '').slice(0, 100);
+// CJ titles are long keyword lists: keep the part before the first comma/dash run, cut at a word boundary, drop dangling words.
+export function cleanName(n) {
+  let t = String(n || '').replace(NOISE, ' ').replace(/\s+/g, ' ').trim();
+  if (t.length > 70) { const c = t.slice(0, 70); const i = Math.max(c.lastIndexOf(', '), c.lastIndexOf(' ')); t = c.slice(0, i > 30 ? i : 70); }
+  return t.replace(/[\s,.\-]+(for|and|with|of|in|to|a|the|on|&)$/i, '').replace(/^[\s,.\-]+|[\s,.\-]+$/g, '');
+}
 
 const ist = () => { const d = new Date(Date.now() + 19800000); return { date: d.toISOString().slice(0, 10), hour: d.getUTCHours() }; };
 const addDays = (date, n) => new Date(Date.parse(date + 'T00:00:00Z') + n * 86400000).toISOString().slice(0, 10);
@@ -93,25 +98,26 @@ export async function cjTick(env, { force = false } = {}) {
     if (day.date !== now.date) day = { date: now.date, done: 0, cat: {} };
     if (day.done >= auto.perDay) return { ok: true, note: 'today is done', done: day.done };
     if (!force && now.hour < auto.hourIst) return { ok: true, note: `waiting for ${auto.hourIst}:00 IST` };
-    // one runner at a time (60 second lease)
+    // one runner at a time (90 second lease)
     const t = Date.now();
-    const got = await env.DB.prepare("INSERT INTO settings (key,value) VALUES ('cj_lock',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value WHERE CAST(settings.value AS INTEGER) < ?").bind(String(t), t - 60000).run();
+    const got = await env.DB.prepare("INSERT INTO settings (key,value) VALUES ('cj_lock',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value WHERE CAST(settings.value AS INTEGER) < ?").bind(String(t), t - 90000).run();
     if (!got.meta || got.meta.changes < 1) return { ok: true, note: 'busy' };
     try {
       await ensureQueue(env);
       const cfg = await getCjConfig(env);
       const out = { ok: true, published: [], skipped: 0 };
       const cnt = (await env.DB.prepare("SELECT COUNT(*) c FROM cj_queue WHERE status='found'").first()).c;
-      if (cnt < 40) out.discover = await discover(env, auto, cfg, 3);
-      for (let i = 0; i < 4 && day.done < auto.perDay; i++) {
+      if (cnt < 40) out.discover = await discover(env, auto, cfg, 1);
+      for (let i = 0; i < 3 && day.done < auto.perDay; i++) {
         const quota = Object.fromEntries(GROUPS.map((g) => [g.category, g.per]));
         const open = GROUPS.map((g) => g.category).filter((c) => (day.cat[c] || 0) < quota[c]);
         let row = null;
-        for (const c of open) { row = await env.DB.prepare("SELECT * FROM cj_queue WHERE status='found' AND category=? ORDER BY COALESCE(created_ms,0) DESC LIMIT 1").bind(c).first(); if (row) break; }
-        if (!row) row = await env.DB.prepare("SELECT * FROM cj_queue WHERE status='found' ORDER BY COALESCE(created_ms,0) DESC LIMIT 1").first();
+        for (const c of open) { row = await env.DB.prepare("SELECT * FROM cj_queue WHERE status='found' AND category=? ORDER BY COALESCE(created_ms,0) DESC, rowid ASC LIMIT 1").bind(c).first(); if (row) break; }
+        if (!row) row = await env.DB.prepare("SELECT * FROM cj_queue WHERE status='found' ORDER BY COALESCE(created_ms,0) DESC, rowid ASC LIMIT 1").first();
         if (!row) { out.note = 'queue empty'; break; }
         const res = await publishOne(env, auto, cfg, row);
         if (res) { day.done++; day.cat[row.category] = (day.cat[row.category] || 0) + 1; out.published.push(res); } else out.skipped++;
+        await setJ(env, 'cj_auto_day', day);
       }
       await setJ(env, 'cj_auto_day', day);
       out.done = day.done; return out;
