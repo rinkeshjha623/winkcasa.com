@@ -3,7 +3,7 @@ import { SITE, esc, trim, headTags, pageShell, breadcrumbLd } from '../src/seo.j
 import { publishedPosts } from '../src/blog.js';
 
 // /links : one public directory of every WinkCasa page with one-tap share and bookmark links for the major social platforms.
-export const shareLinks = (url, title) => {
+const shareLinks = (url, title) => {
   const u = encodeURIComponent(url), t = encodeURIComponent(title);
   return [['Pinterest', `https://pinterest.com/pin/create/button/?url=${u}&description=${t}`], ['Tumblr', `https://www.tumblr.com/widgets/share/tool?canonicalUrl=${u}&title=${t}`],
     ['Flipboard', `https://share.flipboard.com/bookmarklet/popout?v=2&url=${u}&title=${t}`], ['Reddit', `https://www.reddit.com/submit?url=${u}&title=${t}`],
