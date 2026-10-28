@@ -31,20 +31,21 @@
     t.innerHTML = '<span>' + msg + '</span>' + (link ? '<a href="/cart">View cart</a>' : '');
     document.body.appendChild(t); setTimeout(function () { if (t.parentNode) t.remove(); }, 3500);
   }
+  function qtyVal() { var i = document.getElementById('pqty'), n = i ? parseInt(i.value, 10) : 1; return n > 0 && n <= 10 ? n : 1; }
   function add(id, q) { var c = load(); c[id] = Math.min(10, (c[id] || 0) + (q || 1)); save(); }
 
   document.addEventListener('click', function (e) {
     var b = e.target.closest && e.target.closest('[data-add],[data-buy]'); if (!b) return;
     if (b.disabled) return;
     try { gtag('event', 'add_to_cart', { currency: 'INR', items: [{ item_id: b.getAttribute('data-add') || b.getAttribute('data-buy') }] }); } catch (x) {}
-    if (b.hasAttribute('data-buy')) { e.preventDefault(); add(b.getAttribute('data-buy')); location.href = '/cart'; return; }
-    add(b.getAttribute('data-add')); toast('Added to your cart.', true);
+    if (b.hasAttribute('data-buy')) { e.preventDefault(); add(b.getAttribute('data-buy'), qtyVal()); location.href = '/cart'; return; }
+    add(b.getAttribute('data-add'), qtyVal()); toast('Added to your cart.', true);
   });
 
 
   // Wishlist hearts: logged-out shoppers are sent to log in; logged-in ones toggle a saved item.
   var wished = {}, loggedIn = /(?:^|;\s*)wc_in=1/.test(document.cookie);
-  function paintWish() { [].forEach.call(document.querySelectorAll('[data-wish]'), function (b) { var on = !!wished[b.getAttribute('data-wish')]; b.classList.toggle('on', on); b.textContent = on ? '♥' : '♡'; b.setAttribute('aria-pressed', on); }); }
+  function paintWish() { [].forEach.call(document.querySelectorAll('[data-wish]'), function (b) { var on = !!wished[b.getAttribute('data-wish')]; b.classList.toggle('on', on); b.textContent = (on ? '♥' : '♡') + (b.classList.contains('wl') ? ' ' + (on ? 'Saved to wishlist' : 'Save to wishlist') : ''); b.setAttribute('aria-pressed', on); }); }
   if (loggedIn) fetch('/api/account', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (d) { (d.wishIds || []).forEach(function (i) { wished[i] = 1; }); paintWish(); }).catch(function () {});
   document.addEventListener('click', function (e) {
     var b = e.target.closest && e.target.closest('[data-wish]'); if (!b) return;
@@ -116,4 +117,17 @@
   function scan(root) { if (root.matches && root.matches(SEL)) reg(root); [].forEach.call(root.querySelectorAll ? root.querySelectorAll(SEL) : [], reg); }
   scan(document);
   new MutationObserver(function (ms) { ms.forEach(function (m) { [].forEach.call(m.addedNodes, function (nd) { if (nd.nodeType === 1) scan(nd); }); }); }).observe(document.body, { childList: true, subtree: true });
+
+  // Product page: photo rail, hover zoom, quantity stepper.
+  (function () {
+    var z = document.getElementById('zoom'), img = document.getElementById('zimg');
+    if (z && img) {
+      [].forEach.call(document.querySelectorAll('.rt'), function (b) { b.addEventListener('click', function () { img.src = b.getAttribute('data-src'); [].forEach.call(document.querySelectorAll('.rt'), function (x) { x.classList.toggle('on', x === b); }); }); });
+      if (window.matchMedia('(hover:hover)').matches) {
+        z.addEventListener('mousemove', function (e) { var r = z.getBoundingClientRect(); img.style.transformOrigin = ((e.clientX - r.left) / r.width * 100) + '% ' + ((e.clientY - r.top) / r.height * 100) + '%'; img.style.transform = 'scale(2)'; });
+        z.addEventListener('mouseleave', function () { img.style.transform = ''; });
+      }
+    }
+    [].forEach.call(document.querySelectorAll('.qty [data-q]'), function (b) { b.addEventListener('click', function () { var i = document.getElementById('pqty'); var n = (parseInt(i.value, 10) || 1) + parseInt(b.getAttribute('data-q'), 10); i.value = Math.max(1, Math.min(10, n)); }); });
+  })();
 })();
