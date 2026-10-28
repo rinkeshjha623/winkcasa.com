@@ -49,7 +49,7 @@
         return '<div class="cline">' + img + '<div><h3><a href="' + esc(p.url) + '">' + esc(p.name) + '</a></h3><div class="dim" style="color:var(--muted);font-size:.85rem">' + esc(p.dim) + '</div>' +
           '<div class="qtyc"><button data-dec="' + p.id + '" aria-label="Fewer">−</button><span>' + l.q + '</span><button data-inc="' + p.id + '" aria-label="More">+</button><button class="rm" data-rm="' + p.id + '">Remove</button></div></div>' +
           '<div class="price" style="color:var(--accent)">' + rupee(p.price * l.q) + '</div></div>';
-      }).join('') + '<p style="margin-top:18px"><a href="/#shop" style="color:var(--muted)">← Continue shopping</a></p></div>' +
+      }).join('') + '<p class="contshop"><a href="/#shop">← Continue shopping</a></p><ul class="assure"><li><b>Secure payment</b><span>UPI, cards and net banking via Razorpay</span></li><li><b>Delivery in 10 to 20 days</b><span>Tracked, across India</span></li><li><b>Easy returns</b><span>If it arrives damaged or wrong</span></li><li><b>Support</b><span>support@winkcasa.com</span></li></ul></div>' +
       '<aside class="summary"><h2>Order summary</h2>' +
       '<div class="srow"><span>Subtotal</span><span>' + rupee(t.sub) + '</span></div>' +
       (t.disc ? '<div class="srow disc"><span>Discount' + (COUP.code ? ' (' + esc(COUP.code) + ')' : '') + '</span><span>−' + rupee(t.disc) + '</span></div>' : '') +

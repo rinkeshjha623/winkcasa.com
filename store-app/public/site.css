@@ -362,3 +362,20 @@ header.bar .themebtn{margin:0;flex:none;width:36px;height:36px}
 .grid .card .cardbtns .buy:hover{filter:brightness(1.08)}
 .grid .card>button.add[disabled]{width:100%;height:42px;margin-top:auto;border:1px solid var(--line);color:var(--muted)}
 @media(max-width:420px){.grid .card .cardbtns{grid-template-columns:1fr}}
+
+/* ---- cart page polish ---- */
+.cartgrid{gap:32px;align-items:start}
+.cline{grid-template-columns:96px 1fr auto;gap:18px;padding:16px;border:1px solid var(--line);background:var(--surface);border-radius:6px;margin-bottom:12px;align-items:start}
+.cline img,.cline .ph{width:96px;height:120px;border-radius:4px}
+.cline h3{font-size:1.15rem;line-height:1.3;margin:0 0 6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cline .price{font-weight:600;font-size:1.05rem;white-space:nowrap}
+.cline .qtyc{margin-top:10px;gap:8px}
+.cline .qtyc button{width:32px;height:32px;border-radius:4px;line-height:1;padding:0}
+.cline .qtyc span{min-width:24px;text-align:center}
+.cline .qtyc .rm{width:auto;height:auto;border:0;background:none;padding:0 0 0 10px;color:var(--muted);font-size:.8rem;text-decoration:underline;text-underline-offset:3px}
+.cline .qtyc .rm:hover{color:var(--accent)}
+.contshop{margin:14px 0 22px}.contshop a{color:var(--muted);text-underline-offset:4px}.contshop a:hover{color:var(--accent)}
+.assure{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.assure li{border:1px solid var(--line);border-radius:6px;padding:14px 16px;display:flex;flex-direction:column;gap:2px}
+.assure b{font-weight:600;font-size:.9rem}.assure span{color:var(--muted);font-size:.82rem}
+@media(max-width:560px){.cline{grid-template-columns:72px 1fr}.cline img,.cline .ph{width:72px;height:92px}.cline .price{grid-column:2}.assure{grid-template-columns:1fr}}
