@@ -42,12 +42,12 @@ export async function onRequestGet({ params, env }) {
 <div class="gal2">${imgs.length > 1 ? `<div class="rail" role="list">${imgs.map((u, i) => `<button type="button" class="rt${i === 0 ? ' on' : ''}" data-src="${esc(u)}" aria-label="Show photo ${i + 1}"><img src="${esc(u)}" alt="" width="64" height="80" loading="${i < 4 ? 'eager' : 'lazy'}"></button>`).join('')}</div>` : ''}
 <div class="zoom" id="zoom">${imgs[0] ? `<img id="zimg" src="${esc(imgs[0])}" alt="${esc(p.img_alt || p.name)}" width="800" height="1000" fetchpriority="high">` : ''}${off ? `<span class="ribbon">${off}% off</span>` : ''}<span class="zhint">Hover to zoom</span></div></div>
 <div class="info"><p class="label"><a href="${esc(cat.path)}" style="text-decoration:none">${esc(p.category)}</a></p><h1>${esc(p.name)}</h1>
-<p class="skul">SKU <b>${esc(p.sku || p.id)}</b>${p.brand ? ` · Brand <b>${esc(p.brand)}</b>` : ''}</p>${p.ai_answer ? `<p class="qa">${esc(p.ai_answer)}</p>` : ''}
-<div class="prow">${off ? `<span class="pct">−${off}%</span>` : ''}<span class="pbig">${money(p.price)}</span></div>
+<p class="skul">SKU <b>${esc(p.sku || p.id)}</b>${p.brand ? ` · Brand <b>${esc(p.brand)}</b>` : ''}</p><div class="prow">${off ? `<span class="pct">−${off}%</span>` : ''}<span class="pbig">${money(p.price)}</span></div>
 ${p.mrp > p.price ? `<p class="mrp">M.R.P.: <s>${money(p.mrp)}</s></p>` : ''}
 <p class="tax">Inclusive of all taxes · ${S.shipping.freeShippingAbove ? `Free delivery above ${free}, otherwise ${fee}` : 'Delivery across India'}</p>
 <div class="trust">${trust.map(([a, b, i]) => `<div>${i}<b>${a}</b><span>${b}</span></div>`).join('')}</div>
 <div class="spec"><p class="stock ${inStock ? 'in' : 'out'}">${inStock ? 'In stock' : 'Sold out'}</p><dl>${specs.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl></div>
+${p.ai_answer ? `<p class="qa">${esc(p.ai_answer)}</p>` : ''}
 ${p.description ? `<p class="lead">${esc(p.description)}</p>` : ''}
 ${p.highlights.length ? `<h2 class="mini">About this item</h2><ul class="hl">${p.highlights.map((h) => `<li>${esc(h)}</li>`).join('')}</ul>` : ''}
 ${shareHtml({ url, title: p.name, image: imgs[0], text: p.name + ' on WinkCasa' })}${askHtml(S, p.name)}</div>
