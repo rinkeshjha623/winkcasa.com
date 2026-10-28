@@ -414,3 +414,25 @@ header.bar .themebtn{margin:0;flex:none;width:36px;height:36px}
 .strip .facts span{position:relative;padding:24px 20px}
 .strip .facts b{display:block;font-size:.74rem;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin-bottom:4px;font-weight:600}
 @media(max-width:900px){.arch.wide{max-width:none;justify-self:stretch;order:2}.hero .eyebrow::before{width:22px}}
+
+/* ---- header search ---- */
+header.bar{position:relative}
+.srchbtn{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--fg);padding:0;cursor:pointer;flex:none}
+.srchbtn:hover{border-color:var(--accent);color:var(--accent)}
+.srchbar{position:absolute;left:0;right:0;top:100%;z-index:60;background:var(--bg);border:1px solid var(--line);padding:14px;box-shadow:0 24px 50px -24px rgba(0,0,0,.6)}
+.srchbar[hidden]{display:none}
+.srchbar form,.srchpage{display:flex;gap:8px}
+.srchbar input,.srchpage input{flex:1;min-width:0;height:46px;padding:0 14px;background:var(--surface);border:1px solid var(--line);color:var(--fg);font:inherit;font-size:1rem;border-radius:2px}
+.srchbar input:focus,.srchpage input:focus{outline:0;border-color:var(--accent)}
+.srchbar form>button[type=submit],.srchpage button{height:46px;padding:0 22px;background:var(--accent);color:var(--accent-fg);border:0;font-weight:600;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;cursor:pointer;border-radius:2px}
+.srchx{width:46px;height:46px;border:1px solid var(--line);background:transparent;color:var(--fg);font-size:1.5rem;line-height:1;cursor:pointer;border-radius:2px}
+.srchres{margin-top:8px}
+.srchres a{display:flex;align-items:center;gap:12px;padding:8px;text-decoration:none;border-radius:4px}
+.srchres a:hover,.srchres a.on{background:var(--surface)}
+.srchres img{width:44px;height:55px;object-fit:cover;border-radius:3px;border:1px solid var(--line);flex:none}
+.srchres .sn{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.srchres .sp{color:var(--accent);font-weight:600;white-space:nowrap}
+.srchres .sm{display:block;padding:10px 8px;color:var(--muted);font-size:.86rem}
+.srchpage{margin:14px 0 6px;max-width:560px}
+.nores{padding:20px 0 60px;color:var(--muted)}.nrcats{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.nrcats a{border:1px solid var(--line);padding:9px 16px;text-decoration:none;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--fg)}.nrcats a:hover{border-color:var(--accent);color:var(--accent)}

@@ -139,4 +139,30 @@
     document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('[data-theme-toggle]'); if (!b) return; var n = eff() === 'light' ? 'dark' : 'light'; root.setAttribute('data-theme', n); try { localStorage.setItem('wc_theme', n); } catch (x) {} paint(); });
     paint();
   })();
+
+  // Header search: opens a bar with instant suggestions; Enter goes to /search.
+  (function () {
+    var bar = document.getElementById('srchbar'); if (!bar) return;
+    var inp = document.getElementById('srchin'), res = document.getElementById('srchres'), tm, last = '';
+    function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+    function open() { bar.hidden = false; setTimeout(function () { inp.focus(); }, 30); }
+    function close() { bar.hidden = true; }
+    document.addEventListener('click', function (e) {
+      var t = e.target; if (!t.closest) return;
+      if (t.closest('[data-search-open]')) { bar.hidden ? open() : close(); return; }
+      if (t.closest('[data-search-close]')) { close(); return; }
+      if (!bar.hidden && !t.closest('#srchbar')) close();
+    });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !bar.hidden) close(); if (e.key === '/' && bar.hidden && !/input|textarea|select/i.test((e.target.tagName || ''))) { e.preventDefault(); open(); } });
+    inp.addEventListener('input', function () {
+      clearTimeout(tm); var q = inp.value.trim();
+      if (q.length < 2) { res.innerHTML = ''; return; }
+      tm = setTimeout(function () {
+        fetch('/api/search?q=' + encodeURIComponent(q)).then(function (r) { return r.json(); }).then(function (d) {
+          if (inp.value.trim() !== q) return; last = q;
+          res.innerHTML = d.results.length ? d.results.map(function (p) { return '<a href="' + esc(p.url) + '">' + (p.image ? '<img src="' + esc(p.image) + '" alt="" loading="lazy">' : '') + '<span class="sn">' + esc(p.name) + '</span><span class="sp">&#8377;' + p.price + '</span></a>'; }).join('') + '<a class="sm" href="/search?q=' + encodeURIComponent(q) + '">See all results</a>' : '<span class="sm">No matches yet. Press Enter to search everything.</span>';
+        }).catch(function () {});
+      }, 180);
+    });
+  })();
 })();

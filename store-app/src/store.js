@@ -210,3 +210,16 @@ export function markdown(src) {
   return out.join('\n');
 }
 export const wordsOf = (t) => String(t || '').split(/\s+/).filter(Boolean).length;
+
+export function searchProducts(rows, q, limit = 60) {
+  const w = String(q || '').toLowerCase().replace(/[^a-z0-9₹ ]+/g, ' ').split(/\s+/).filter(Boolean).slice(0, 6);
+  if (!w.length) return [];
+  const scored = [];
+  for (const r of rows) {
+    const name = String(r.name || '').toLowerCase(), hay = (name + ' ' + String(r.category || '').toLowerCase() + ' ' + String(r.tag || '').toLowerCase()).trim(), desc = String(r.description || '').toLowerCase();
+    let sc = 0, ok = true;
+    for (const t of w) { if (name.includes(t)) sc += 3; else if (hay.includes(t)) sc += 2; else if (desc.includes(t)) sc += 1; else { ok = false; break; } }
+    if (ok) scored.push([sc, r]);
+  }
+  return scored.sort((a, b) => b[0] - a[0]).slice(0, limit).map((x) => x[1]);
+}
