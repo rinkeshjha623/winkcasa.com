@@ -379,3 +379,11 @@ header.bar .themebtn{margin:0;flex:none;width:36px;height:36px}
 .assure li{border:1px solid var(--line);border-radius:6px;padding:14px 16px;display:flex;flex-direction:column;gap:2px}
 .assure b{font-weight:600;font-size:.9rem}.assure span{color:var(--muted);font-size:.82rem}
 @media(max-width:560px){.cline{grid-template-columns:72px 1fr}.cline img,.cline .ph{width:72px;height:92px}.cline .price{grid-column:2}.assure{grid-template-columns:1fr}}
+
+/* ---- blog index: uniform 3:2 covers, never stretched or cropped ---- */
+.posts .post{display:flex;flex-direction:column}
+.posts .post>a{display:flex;flex-direction:column;height:100%}
+.posts .post img{width:100%;height:auto;aspect-ratio:3/2;object-fit:cover;border-radius:4px}
+.posts .post .pph{width:100%;aspect-ratio:3/2;display:flex;align-items:center;justify-content:center;background:var(--surface);border:1px solid var(--line);border-radius:4px;margin-bottom:12px;font-family:var(--display);font-size:1.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--accent)}
+.posts .post h2{font-size:1.35rem;line-height:1.25;margin:4px 0 8px}
+.posts .post p{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;font-size:.95rem;line-height:1.6}
