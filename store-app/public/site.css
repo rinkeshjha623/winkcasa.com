@@ -344,3 +344,19 @@ header.bar .rt{justify-self:end;display:flex;align-items:center}
 .themebtn{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--fg);padding:0;margin-right:6px;cursor:pointer}
 .themebtn:hover{border-color:var(--accent);color:var(--accent)}
 .rt{display:flex;align-items:center;gap:8px}
+
+/* ---- product cards: tidy, equal-height, price under a 2-line title, full-width buttons ---- */
+.grid .card{height:100%;gap:10px}
+.grid .card .meta{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.grid .card .meta h3{font-size:1.15rem;line-height:1.28;font-weight:500;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.56em;margin:0}
+.grid .card .price{display:flex;align-items:baseline;gap:8px;font-size:1.05rem;font-weight:600;white-space:nowrap}
+.grid .card .price .was{order:2;margin:0;font-size:.82rem;font-weight:400}
+.grid .card .dim{margin:0}
+.grid .card .cardbtns{margin-top:auto;padding-top:6px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid .card .cardbtns button{width:100%;height:42px;padding:0 8px;font-size:.7rem;letter-spacing:.14em;text-transform:uppercase;font-weight:600;border:1px solid var(--accent);cursor:pointer;border-radius:2px;align-self:auto}
+.grid .card .cardbtns .add{background:transparent;color:var(--fg);border-color:var(--line)}
+.grid .card .cardbtns .add:hover{border-color:var(--accent);color:var(--accent)}
+.grid .card .cardbtns .buy{background:var(--accent);color:var(--accent-fg)}
+.grid .card .cardbtns .buy:hover{filter:brightness(1.08)}
+.grid .card>button.add[disabled]{width:100%;height:42px;margin-top:auto;border:1px solid var(--line);color:var(--muted)}
+@media(max-width:420px){.grid .card .cardbtns{grid-template-columns:1fr}}
