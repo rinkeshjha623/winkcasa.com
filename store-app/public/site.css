@@ -343,7 +343,9 @@ header.bar .rt{justify-self:end;display:flex;align-items:center}
 @media(prefers-color-scheme:light){:root:not([data-theme="dark"]) .wish{background:rgba(251,247,239,.88)}:root:not([data-theme="dark"]) .stock.in{color:#1F7A4D}:root:not([data-theme="dark"]) .pct,:root:not([data-theme="dark"]) .stock.out{color:#B4304F}}
 .themebtn{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--fg);padding:0;margin-right:6px;cursor:pointer}
 .themebtn:hover{border-color:var(--accent);color:var(--accent)}
-.rt{display:flex;align-items:center;gap:8px}
+header.bar .rt{display:flex;align-items:center;gap:10px;width:auto;flex:none;padding:0;border:0;border-radius:0;background:none;box-shadow:none;cursor:auto;justify-self:end}
+header.bar .rt .acctlink{white-space:nowrap}
+header.bar .themebtn{margin:0;flex:none;width:36px;height:36px}
 
 /* ---- product cards: tidy, equal-height, price under a 2-line title, full-width buttons ---- */
 .grid .card{height:100%;gap:10px}
