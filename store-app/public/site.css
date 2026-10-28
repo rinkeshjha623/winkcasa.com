@@ -332,3 +332,15 @@ header.bar .rt{justify-self:end;display:flex;align-items:center}
 @media(max-width:820px){.pp{grid-template-columns:1fr;gap:20px}.gal2{position:static;flex-direction:column-reverse}.rail{flex-direction:row;max-height:none;overflow-x:auto;width:100%}.pdesc{grid-template-columns:1fr}.why{margin-top:0}.trust{grid-template-columns:repeat(2,1fr)}.zhint{display:none}
 .stickybuy{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:50;justify-content:space-between;align-items:center;gap:12px;padding:10px 16px calc(10px + env(safe-area-inset-bottom));background:var(--surface);border-top:1px solid var(--line)}.stickybuy b{font-size:1.2rem}.stickybuy s{color:var(--muted);margin-left:8px;font-size:.85rem}.stickybuy .btn{flex:1;max-width:220px;text-align:center;border-radius:999px;padding:12px 10px}}
 .dlv .eta{border:0!important;padding:0!important;background:none!important;margin:0}.pp .qa{font-size:.88rem}
+
+/* ---- light theme (follows the visitor's system unless they pick one with the toggle) ---- */
+:root[data-theme="light"]{--bg:#FBF7EF;--surface:#F2EBDD;--fg:#17251F;--muted:#59645C;--line:#DCD2BD;--accent:#8A6A1F;--accent-fg:#FFFFFF;--deep:#17251F;--deep-fg:#FBF7EF;--tile1:#E4EBDF;--tile2:#F0E6CC;--tile3:#DDE8EC;--tile4:#F2DFE0;color-scheme:light}
+@media(prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#FBF7EF;--surface:#F2EBDD;--fg:#17251F;--muted:#59645C;--line:#DCD2BD;--accent:#8A6A1F;--accent-fg:#FFFFFF;--deep:#17251F;--deep-fg:#FBF7EF;--tile1:#E4EBDF;--tile2:#F0E6CC;--tile3:#DDE8EC;--tile4:#F2DFE0;color-scheme:light}}
+:root[data-theme="light"] .wish{background:rgba(251,247,239,.88)}
+:root[data-theme="light"] .stock.in,:root[data-theme="light"] .avail{color:#1F7A4D}
+:root[data-theme="light"] .pct,:root[data-theme="light"] .stock.out{color:#B4304F}
+:root[data-theme="light"] .card:hover .tile{box-shadow:0 22px 44px -22px rgba(23,37,31,.35)}
+@media(prefers-color-scheme:light){:root:not([data-theme="dark"]) .wish{background:rgba(251,247,239,.88)}:root:not([data-theme="dark"]) .stock.in{color:#1F7A4D}:root:not([data-theme="dark"]) .pct,:root:not([data-theme="dark"]) .stock.out{color:#B4304F}}
+.themebtn{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--fg);padding:0;margin-right:6px;cursor:pointer}
+.themebtn:hover{border-color:var(--accent);color:var(--accent)}
+.rt{display:flex;align-items:center;gap:8px}

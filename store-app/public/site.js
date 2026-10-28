@@ -130,4 +130,13 @@
     }
     [].forEach.call(document.querySelectorAll('.qty [data-q]'), function (b) { b.addEventListener('click', function () { var i = document.getElementById('pqty'); var n = (parseInt(i.value, 10) || 1) + parseInt(b.getAttribute('data-q'), 10); i.value = Math.max(1, Math.min(10, n)); }); });
   })();
+
+  // Theme toggle: dark or light, remembered on this device; follows the system until a choice is made.
+  (function () {
+    var root = document.documentElement, meta = document.querySelector('meta[name="theme-color"]');
+    function eff() { var t = root.getAttribute('data-theme'); return t || (window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'); }
+    function paint() { var l = eff() === 'light'; if (meta) meta.setAttribute('content', l ? '#FBF7EF' : '#0B1916'); [].forEach.call(document.querySelectorAll('[data-theme-toggle]'), function (b) { b.setAttribute('aria-label', l ? 'Switch to dark theme' : 'Switch to light theme'); }); }
+    document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('[data-theme-toggle]'); if (!b) return; var n = eff() === 'light' ? 'dark' : 'light'; root.setAttribute('data-theme', n); try { localStorage.setItem('wc_theme', n); } catch (x) {} paint(); });
+    paint();
+  })();
 })();

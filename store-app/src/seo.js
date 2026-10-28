@@ -18,6 +18,8 @@ export function headTags({ title, description, canonical, image, type = 'website
 <link rel="canonical" href="${esc(canonical)}">
 <meta name="robots" content="${esc(robots || (noindex ? 'noindex,follow' : 'index,follow,max-image-preview:large,max-snippet:-1'))}">
 <meta name="theme-color" content="#0B1916">
+<meta name="color-scheme" content="dark light">
+<script>try{var t=localStorage.getItem('wc_theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 <meta property="og:site_name" content="WinkCasa">
 <meta property="og:locale" content="en_IN">
 <meta property="og:type" content="${type}">
@@ -105,7 +107,7 @@ export function headerHtml(S, cats = []) {
 <div class="dd"><a href="/#shop" aria-haspopup="true">Categories ▾</a><div class="ddl"><a href="/#shop">All products</a>${shop}</div></div>
 <a href="/try">Find your look</a><a href="/blog">Blog</a><a href="/about">About us</a><a href="/contact">Contact us</a></nav>
 <details class="mmenu"><summary>Menu</summary><div class="mlist"><a href="/">Home</a>${shop}<a href="/#shop">All products</a><a href="/try">Find your look</a><a href="/blog">Blog</a><a href="/about">About us</a><a href="/contact">Contact us</a><a href="/track">Track your order</a><a class="macct" href="/account">My account</a></div></details></div>
-${logoHtml(S)}<div class="rt"><a class="acctlink" href="/account" data-acct>Account</a><a class="cartbtn" href="/cart" aria-label="View cart">Cart <b data-cartcount>0</b></a></div></header>`;
+${logoHtml(S)}<div class="rt"><button class="themebtn" type="button" data-theme-toggle aria-label="Switch colour theme" title="Switch between dark and light"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 0 0 16z" fill="currentColor"/></svg></button><a class="acctlink" href="/account" data-acct>Account</a><a class="cartbtn" href="/cart" aria-label="View cart">Cart <b data-cartcount>0</b></a></div></header>`;
 }
 
 export const payMethodsHtml = () => `<div class="paym" aria-label="Payment options"><span class="pm">UPI</span><span class="pm">Credit &amp; debit cards</span><span class="pm">Net banking</span><span class="pms">Secure payment by Razorpay</span></div>`;
