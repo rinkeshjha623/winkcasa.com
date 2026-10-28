@@ -20,7 +20,7 @@ export async function onRequestGet({ env }) {
 <section><h2>Collections</h2><ul>${cats.map((c) => item(c.path, c.name, c.description)).join('')}</ul></section>
 <section><h2>Products</h2><ul>${rows.map((r) => item(productPath(r), r.name, `₹${r.price} · ${r.category}`)).join('')}</ul></section>
 <section><h2>Guides and articles</h2><ul>${posts.map((p) => item('/blog/' + p.slug, p.title, '')).join('')}</ul></section>
-<section><h2>Company and help</h2><ul>${[['/about', 'About WinkCasa'], ['/contact', 'Contact'], ['/shipping', 'Shipping'], ['/returns', 'Returns'], ['/blog', 'Blog']].map(([p, t]) => item(p, t, '')).join('')}</ul></section></main>`;
+<section><h2>Company and help</h2><ul>${[['/about', 'About WinkCasa'], ['/contact', 'Contact'], ['/shipping', 'Shipping'], ['/returns', 'Returns'], ['/blog', 'Blog'], ['/press', 'Press and media kit']].map(([p, t]) => item(p, t, '')).join('')}</ul></section></main>`;
   const url = SITE + '/links';
   const html = pageShell({ head: headTags({ title: 'All WinkCasa pages: collections, products and guides', description: trim('Browse and share every WinkCasa collection, product and guide: jewellery, hair accessories, beauty tools, dresses and festive decor.', 160), canonical: url, image: S.seo.ogImage }),
     S, cats, main, jsonld: [breadcrumbLd([{ name: 'Home', url: SITE + '/' }, { name: 'All pages', url }])] });

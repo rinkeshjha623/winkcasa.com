@@ -12,6 +12,7 @@ export async function onRequestGet({ env }) {
     ...categoriesOf(rows, S).map((c) => u(c.path, latest, '0.8', 'daily')),
     ...rows.filter((r) => !r.noindex).map((r) => u(productPath(r), r.updated_at, '0.9', 'weekly')),
     u('/links', latest, '0.5', 'daily'),
+    u('/press', '', '0.4', 'monthly'),
     u('/try', null, '0.7', 'monthly'),
     u('/blog', posts[0]?.updated_at, '0.7', 'weekly'),
     ...posts.filter((p) => !p.noindex).map((p) => u('/blog/' + p.slug, p.updated_at, '0.6', 'monthly')),
