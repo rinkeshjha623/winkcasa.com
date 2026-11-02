@@ -19,12 +19,7 @@ export function headTags({ title, description, canonical, image, type = 'website
 <meta name="robots" content="${esc(robots || (noindex ? 'noindex,follow' : 'index,follow,max-image-preview:large,max-snippet:-1'))}">
 <meta name="theme-color" content="#0B1916">
 <meta name="color-scheme" content="dark light">
-<script async src="https://www.googletagmanager.com/gtm.js?id=GTM-PZ5RWZQ9"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-</script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-PZ5RWZQ9');</script>
 <script>try{var t=localStorage.getItem('wc_theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 <meta property="og:site_name" content="WinkCasa">
 <meta property="og:locale" content="en_IN">
@@ -168,8 +163,6 @@ export function pageShell({ head, S, cats, main, jsonld = [], scripts = '' }) {
   return `<!doctype html><html lang="en-IN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 ${head}
 <link rel="icon" href="/icon.svg" type="image/svg+xml">
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-C8DKK7TQWM"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date());gtag("config","G-C8DKK7TQWM");</script>
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
 <meta name="mobile-web-app-capable" content="yes">
