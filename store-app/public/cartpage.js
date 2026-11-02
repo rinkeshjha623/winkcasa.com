@@ -106,10 +106,12 @@
   }
   function parseUtc(s) { return new Date(String(s).replace(' ', 'T') + 'Z'); }
 
+  function gitems() { return lines().map(function (l) { return { item_id: String(l.p.id), item_name: l.p.name, price: l.p.price, quantity: l.q }; }); }
+
   async function pay() {
     if (busy || CLOSED) return;
     var f = $('co'); if (!f.reportValidity()) return;
-    try { gtag('event', 'begin_checkout', { currency: 'INR' }); } catch (x) {}
+    try { gtag('event', 'begin_checkout', { currency: 'INR', value: totals(lines()).total, items: gitems() }); } catch (x) {}
     var customer = {}; ['name', 'phone', 'email', 'address', 'city', 'pincode', 'state'].forEach(function (k) { customer[k] = f.elements[k].value; });
     var items = lines().map(function (l) { return { id: l.p.id, qty: l.q }; });
     setBusy(true); say('Creating your order…');
@@ -131,7 +133,10 @@
 
   function done(ref, d, c) {
     var placed = parseUtc(d.placedAt), mn = parseUtc(d.deliveryMinAt), mx = parseUtc(d.deliveryMaxAt);
-    try { gtag('event', 'purchase', { transaction_id: ref, value: d.amount / 100, currency: 'INR' }); } catch (x) {}
+    try {
+      var sent = false; try { sent = sessionStorage.getItem('wc_pur_' + ref) === '1'; } catch (e) {}
+      if (!sent) { gtag('event', 'purchase', { transaction_id: ref, value: d.amount / 100, currency: 'INR', items: gitems() }); try { sessionStorage.setItem('wc_pur_' + ref, '1'); } catch (e) {} }
+    } catch (x) {}
     WC.clear();
     document.title = 'Order confirmed | WinkCasa';
     root.innerHTML = '<div class="done"><h1>Thank you, your order is confirmed</h1><p style="color:var(--muted)">We have received your payment. Keep your order number to track delivery.</p>' +

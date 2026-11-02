@@ -31,13 +31,20 @@
     t.innerHTML = '<span>' + msg + '</span>' + (link ? '<a href="/cart">View cart</a>' : '');
     document.body.appendChild(t); setTimeout(function () { if (t.parentNode) t.remove(); }, 3500);
   }
+  // Product lookup for analytics events (prefetched so events carry name, price and value).
+  var CATM = {};
+  function gitem(p, q) { return { item_id: String(p.id), item_name: p.name, price: p.price, quantity: q || 1 }; }
+  window.wcGitem = gitem;
+  try { fetch('/api/catalog').then(function (r) { return r.json(); }).then(function (c) { (c.products || []).forEach(function (p) { CATM[p.id] = p; });
+    var mp0 = location.pathname.match(/^\/p\/(\d+)-/); if (mp0 && CATM[mp0[1]]) gtag('event', 'view_item', { currency: 'INR', value: CATM[mp0[1]].price, items: [gitem(CATM[mp0[1]], 1)] }); }).catch(function () {}); } catch (x) {}
   function qtyVal() { var i = document.getElementById('pqty'), n = i ? parseInt(i.value, 10) : 1; return n > 0 && n <= 10 ? n : 1; }
   function add(id, q) { var c = load(); c[id] = Math.min(10, (c[id] || 0) + (q || 1)); save(); }
 
   document.addEventListener('click', function (e) {
     var b = e.target.closest && e.target.closest('[data-add],[data-buy]'); if (!b) return;
     if (b.disabled) return;
-    try { gtag('event', 'add_to_cart', { currency: 'INR', items: [{ item_id: b.getAttribute('data-add') || b.getAttribute('data-buy') }] }); } catch (x) {}
+    try { var gid = b.getAttribute('data-add') || b.getAttribute('data-buy'), gq = qtyVal(), gp = CATM[gid];
+      gtag('event', 'add_to_cart', gp ? { currency: 'INR', value: gp.price * gq, items: [gitem(gp, gq)] } : { currency: 'INR', items: [{ item_id: String(gid), quantity: gq }] }); } catch (x) {}
     if (b.hasAttribute('data-buy')) { e.preventDefault(); add(b.getAttribute('data-buy'), qtyVal()); location.href = '/cart'; return; }
     add(b.getAttribute('data-add'), qtyVal()); toast('Added to your cart.', true);
   });
@@ -78,7 +85,6 @@
   window.WC = { cart: load, save: save, count: count, paint: paint, fmtD: fmtD, fmtDT: fmtDT, window3to7: window3to7, etaHtml: etaHtml, toast: toast,
     set: function (id, q) { var c = load(); if (q <= 0) delete c[id]; else c[id] = Math.min(10, q); save(); },
     clear: function () { mem = {}; save(); } };
-  try { var mp = location.pathname.match(/^\/p\/(\d+)-/); if (mp) gtag('event', 'view_item', { items: [{ item_id: mp[1] }] }); } catch (x) {}
   paint(); paintEta();
   window.addEventListener('pageshow', paint);
 })();
