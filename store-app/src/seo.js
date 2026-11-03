@@ -20,6 +20,14 @@ export function headTags({ title, description, canonical, image, type = 'website
 <meta name="theme-color" content="#0B1916">
 <meta name="color-scheme" content="dark light">
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-PZ5RWZQ9');</script>
+<!-- Google tag (gtag.js) - Google Ads -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-18551578709"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'AW-18551578709');
+</script>
 <script>try{var t=localStorage.getItem('wc_theme');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t)}catch(e){}</script>
 <meta property="og:site_name" content="WinkCasa">
 <meta property="og:locale" content="en_IN">
