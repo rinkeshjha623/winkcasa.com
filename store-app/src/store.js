@@ -40,6 +40,7 @@ export const DEFAULTS = {
     phone: '+91 9798776985', email: 'support@winkcasa.com', hours: '', grievanceOfficer: 'Rinkesh Jha',
   },
   social: { instagram: '', facebook: '', youtube: '', whatsapp: '' },
+  verify: { pinterest: '' },
   logo: { style: 'classic', image: '' },
   contact: {
     label: 'We are here to help',

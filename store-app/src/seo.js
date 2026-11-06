@@ -170,6 +170,7 @@ ${p.soldOut || closed ? `<button class="add" disabled>${p.soldOut ? 'Sold out' :
 export function pageShell({ head, S, cats, main, jsonld = [], scripts = '' }) {
   return `<!doctype html><html lang="en-IN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 ${head}
+${/^[a-f0-9]{16,64}$/i.test(S?.verify?.pinterest || '') ? `<meta name="p:domain_verify" content="${S.verify.pinterest}">` : ''}
 <link rel="icon" href="/icon.svg" type="image/svg+xml">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
