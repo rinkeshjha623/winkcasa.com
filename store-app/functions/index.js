@@ -1,5 +1,5 @@
 import { getSettings, activeProducts, publicProduct, categoriesOf } from '../src/store.js';
-import { SITE, esc, rich, headTags, ld, organizationLd, websiteLd, faqLd, homePageLd, cardHtml, footerHtml, faqHtml, aboutHtml, tryTeaserHtml, headerHtml, etaHtml, payMethodsHtml } from '../src/seo.js';
+import { SITE, esc, rich, headTags, verifyMeta, ld, organizationLd, websiteLd, faqLd, homePageLd, cardHtml, footerHtml, faqHtml, aboutHtml, tryTeaserHtml, headerHtml, etaHtml, payMethodsHtml } from '../src/seo.js';
 
 // Home page: the static page, with real content and structured data filled in on the server
 // so search engines and AI assistants see everything without running JavaScript.
@@ -25,7 +25,7 @@ export async function onRequestGet({ request, env }) {
   const set = (html) => ({ element(e) { e.setInnerContent(html, { html: true }); } });
   const out = new HTMLRewriter()
     .on('title', { element(e) { e.setInnerContent(S.seo.title); } })
-    .on('head', { element(e) { e.append(head + '\n' + jsonld, { html: true }); } })
+    .on('head', { element(e) { e.append(head + '\n' + verifyMeta(S) + '\n' + jsonld, { html: true }); } })
     .on('#announce', { element(e) { if (S.announcement.enabled && S.announcement.text) { e.removeAttribute('hidden'); e.setInnerContent(S.announcement.text); } } })
     .on('#closedbar', { element(e) { if (closed) { e.removeAttribute('hidden'); e.setInnerContent(S.store.closedMessage); } } })
     .on('header.bar', { element(e) { e.replace(headerHtml(S, cats), { html: true }); } })

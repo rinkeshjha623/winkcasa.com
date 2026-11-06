@@ -167,10 +167,12 @@ export function cardHtml(p, closed) {
 ${p.soldOut || closed ? `<button class="add" disabled>${p.soldOut ? 'Sold out' : 'Unavailable'}</button>` : `<div class="cardbtns"><button class="add" data-add="${p.id}">Add to cart</button><button class="buy" data-buy="${p.id}">Buy now</button></div>`}</article>`;
 }
 
+export const verifyMeta = (S) => (/^[a-f0-9]{16,64}$/i.test(S?.verify?.pinterest || '') ? `<meta name="p:domain_verify" content="${S.verify.pinterest}">` : '');
+
 export function pageShell({ head, S, cats, main, jsonld = [], scripts = '' }) {
   return `<!doctype html><html lang="en-IN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 ${head}
-${/^[a-f0-9]{16,64}$/i.test(S?.verify?.pinterest || '') ? `<meta name="p:domain_verify" content="${S.verify.pinterest}">` : ''}
+${verifyMeta(S)}
 <link rel="icon" href="/icon.svg" type="image/svg+xml">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
