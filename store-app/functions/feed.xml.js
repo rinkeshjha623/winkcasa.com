@@ -4,9 +4,10 @@ import { JTYPES, jtypeOf } from '../src/jtypes.js';
 
 // /feed.xml : Google Merchant Center product feed (Shopping, Performance Max).
 const GCAT = { Jewellery: 'Apparel & Accessories > Jewelry', 'Hair & Accessories': 'Apparel & Accessories > Clothing Accessories > Hair Accessories', 'Beauty Tools': 'Health & Beauty > Personal Care', 'Dresses & Ethnic Wear': 'Apparel & Accessories > Clothing > Dresses', 'Bags & Potlis': 'Apparel & Accessories > Handbags, Wallets & Cases', 'Festive Decor': 'Home & Garden > Decor' };
-const jt = (p) => (p.room === 'Jewellery' ? JTYPES[jtypeOf(p.name)] : null);
+const jt = (p) => JTYPES[jtypeOf(p.name, p.room)] || null;
 const ptype = (p) => (jt(p) ? `${p.room} > ${jt(p).short}` : p.room);
-const gcat = (p) => (jt(p) ? jt(p).gcat : GCAT[p.room]);
+const GL = Object.fromEntries(Object.entries(GCAT).map(([k, v]) => [k.toLowerCase(), v]));
+const gcat = (p) => (/\bpants\b/i.test(p.name) ? 'Apparel & Accessories > Clothing > Pants' : /\bskirt\b/i.test(p.name) ? 'Apparel & Accessories > Clothing > Skirts' : /cardigan/i.test(p.name) ? 'Apparel & Accessories > Clothing > Outerwear' : /jumpsuit/i.test(p.name) ? 'Apparel & Accessories > Clothing > One-Pieces' : jt(p) ? jt(p).gcat : (p.room === 'Lanterns & Lights' ? 'Home & Garden > Lighting' : GL[String(p.room).toLowerCase()]));
 const clean = (s) => String(s || '').replace(/\s+/g, ' ').trim();
 
 export async function onRequestGet({ env }) {

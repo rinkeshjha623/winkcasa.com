@@ -14,10 +14,10 @@ export async function onRequestGet({ params, env }) {
   const url = SITE + cat.path;
   const info = catInfo(cat.name);
   const title = trim(`${info?.title || cat.name + ' online in India'} | WinkCasa`, 70);
-  const desc = trim(`${cat.description} ${list.length} product${list.length === 1 ? '' : 's'}, free delivery above ₹${S.shipping.freeShippingAbove}.`, 160);
+  const desc = trim(`${info?.description || cat.description} ${list.length} product${list.length === 1 ? '' : 's'}, free delivery above ₹${S.shipping.freeShippingAbove}.`, 160);
   const main = `<main class="wrap"><nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a> › <span>${esc(cat.name)}</span></nav>
-<div class="cathead"><p class="label">Collection</p><h1>${esc(cat.name)}</h1><p>${esc(cat.description)}</p></div>
-${cat.name === 'Jewellery' ? `<p class="dim" style="margin:0 0 18px">Shop by type: ${JTYPE_ORDER.filter((k) => list.filter((r) => JTYPES[k].match(r.name)).length >= 3).map((k) => `<a href="/${k}">${esc(JTYPES[k].h1)}</a>`).join(' · ')}</p>` : ''}
+<div class="cathead"><p class="label">Collection</p><h1>${esc(cat.name)}</h1><p>${esc(info?.description || cat.description)}</p></div>
+${JTYPE_ORDER.some((k) => (JTYPES[k].cat || 'Jewellery') === cat.name && list.filter((r) => JTYPES[k].match(r.name)).length >= 3) ? `<p class="dim" style="margin:0 0 18px">Shop by type: ${JTYPE_ORDER.filter((k) => (JTYPES[k].cat || 'Jewellery') === cat.name && list.filter((r) => JTYPES[k].match(r.name)).length >= 3).map((k) => `<a href="/${k}">${esc(JTYPES[k].h1)}</a>`).join(' · ')}</p>` : ''}
 <div class="grid">${prods.map((p) => cardHtml(p, !S.store.open)).join('') || '<p class="dim">No products in this collection yet.</p>'}</div>
 ${info ? `<section class="catinfo" style="max-width:70ch;margin:40px 0"><h2>About ${esc(cat.name)} at WinkCasa</h2>${info.intro.map((t) => `<p>${esc(t)}</p>`).join('')}<h2>Frequently asked questions</h2>${info.faqs.map(([q, a]) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('')}</section>` : ''}</main>`;
   const html = pageShell({
