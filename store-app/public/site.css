@@ -436,3 +436,5 @@ header.bar{position:relative}
 .srchpage{margin:14px 0 6px;max-width:560px}
 .nores{padding:20px 0 60px;color:var(--muted)}.nrcats{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
 .nrcats a{border:1px solid var(--line);padding:9px 16px;text-decoration:none;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--fg)}.nrcats a:hover{border-color:var(--accent);color:var(--accent)}
+
+.payopts{border:0;margin:14px 0 0;padding:0}.payopts legend{font-size:.74rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:0 0 8px}.po{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);padding:11px 12px;margin:0 0 8px;background:var(--surface);cursor:pointer}.po.on{border-color:var(--fg)}.po.off{opacity:.62;cursor:not-allowed}.po input{margin-top:3px}.po b{display:block;font-weight:500;font-size:.9rem}.po small{display:block;color:var(--muted);font-size:.76rem;line-height:1.5;margin-top:2px}.po em{font-style:normal;font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--line);padding:1px 6px;margin-left:6px;vertical-align:1px}

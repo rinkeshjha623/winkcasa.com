@@ -58,6 +58,7 @@
       couponBox() +
       '<div class="srow t"><span>Total</span><span>' + rupee(t.total) + '</span></div>' +
       '<div class="paym" aria-label="Payment options"><span class="pm">UPI</span><span class="pm">Credit &amp; debit cards</span><span class="pm">Net banking</span></div>' +
+      '<fieldset class="payopts"><legend>Payment method</legend><label class="po on"><input type="radio" name="paymode" value="online" checked> <span><b>Pay online now</b><small>UPI, cards or net banking. Secure, via Razorpay.</small></span></label><label class="po off" aria-disabled="true"><input type="radio" name="paymode" value="cod" disabled> <span><b>Cash on Delivery <em>Coming soon</em></b><small>Not available yet. Pay online for now, and damaged or wrong items can be returned within 7 days.</small></span></label></fieldset>' +
       '<form class="form" id="co" novalidate><h2 style="margin-top:14px">Delivery details</h2>' +
       '<label for="f_name">Full name</label><input id="f_name" name="name" autocomplete="name" required>' +
       '<div class="two"><div><label for="f_phone">Mobile number</label><input id="f_phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel" required></div>' +
