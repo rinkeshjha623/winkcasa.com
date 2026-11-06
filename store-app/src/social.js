@@ -1,12 +1,13 @@
 // Social publishing: Instagram + Facebook Page through the Meta Graph API.
 // Connection details live in D1 (social_kv 'meta') and are never sent back to the browser in full.
 import { PLAN } from './social-plan.js';
+import { pinPublish, pinInfo } from './pinterest.js';
 import { cjTick } from './cj-auto.js';
 import { indexNowTick } from './indexnow.js';
 export const SITE_ORIGIN = 'https://www.winkcasa.com';
 const G = 'https://graph.facebook.com/v21.0';
 export const FORMATS = ['post', 'carousel', 'reel', 'story'];
-export const PLATFORMS = ['instagram', 'facebook'];
+export const PLATFORMS = ['instagram', 'facebook', 'pinterest'];
 const nowSql = () => new Date().toISOString().slice(0, 19).replace('T', ' ');
 
 export async function kvGet(env, k, d) { const r = await env.DB.prepare('SELECT v FROM social_kv WHERE k=?').bind(k).first(); try { return r ? JSON.parse(r.v) : d; } catch { return d; } }
@@ -26,7 +27,9 @@ export const mediaOf = (p) => { try { return JSON.parse(p.media_json).filter((m)
 
 export async function connectionInfo(env) {
   const c = await kvGet(env, 'meta', null);
-  return c && c.token ? { connected: true, page_id: c.page_id || '', ig_id: c.ig_id || '', page_name: c.page_name || '', ig_username: c.ig_username || '', token_tail: c.token.slice(-4) } : { connected: false };
+  const pc = await kvGet(env, 'pinterest', null);
+  const base = c && c.token ? { connected: true, page_id: c.page_id || '', ig_id: c.ig_id || '', page_name: c.page_name || '', ig_username: c.ig_username || '', token_tail: c.token.slice(-4) } : { connected: false };
+  return { ...base, pin: pinInfo(pc) };
 }
 
 // Paste any Facebook user/page token: find the Page, its own long-lived Page token and the linked Instagram account.
@@ -89,14 +92,16 @@ async function igStep(conn, p, media, state) {
 // Try each chosen platform once; remember what already worked so a retry never double-posts.
 export async function publishPost(env, id) {
   const p = await env.DB.prepare('SELECT * FROM social_posts WHERE id=?').bind(id).first(); if (!p) throw new Error('Post not found.');
-  const conn = await kvGet(env, 'meta', null); if (!conn || !conn.token) throw new Error('Connect your Facebook Page first (Social > Connections).');
+  const conn = await kvGet(env, 'meta', null), pconn = await kvGet(env, 'pinterest', null);
   const media = mediaOf(p), plats = p.platforms.split(',').filter((x) => PLATFORMS.includes(x));
   let res = {}; try { res = JSON.parse(p.result_json) || {}; } catch {}
   await env.DB.prepare("UPDATE social_posts SET status='publishing' WHERE id=?").bind(id).run();
   for (const pl of plats) {
     if (res[pl] && res[pl].ok) continue;
     try {
-      if (pl === 'facebook') { const pid = await fbPublish(conn, p, media); res.facebook = { ok: true, id: pid }; }
+      if (pl === 'pinterest') { if (!pconn || !pconn.token) throw new Error('Connect Pinterest first (Social > Connections).'); res.pinterest = { ok: true, id: await pinPublish(pconn, p, media) }; }
+      else if (!conn || !conn.token) throw new Error('Connect your Facebook Page first (Social > Connections).');
+      else if (pl === 'facebook') { const pid = await fbPublish(conn, p, media); res.facebook = { ok: true, id: pid }; }
       else { const r = await igStep(conn, p, media, res.instagram); res.instagram = r.done ? { ok: true, id: r.id } : { pending: true, container: r.container }; }
     } catch (e) { res[pl] = { ok: false, error: String(e.message || e).slice(0, 300), container: undefined }; }
   }
@@ -108,7 +113,7 @@ export async function publishPost(env, id) {
 
 // Called by the schedule runner: publish everything that is due.
 export async function runDue(env) {
-  const conn = await kvGet(env, 'meta', null); if (!conn || !conn.token) return { ran: 0, note: 'not connected' };
+  const conn = await kvGet(env, 'meta', null), pc = await kvGet(env, 'pinterest', null); if (!(conn && conn.token) && !(pc && pc.token)) return { ran: 0, note: 'not connected' };
   // one runner at a time (the GitHub schedule and site visits can both trigger a run): take a 2 minute lock
   const now = Date.now();
   const got = await env.DB.prepare("INSERT INTO social_kv (k,v) VALUES ('lock',?) ON CONFLICT(k) DO UPDATE SET v=excluded.v WHERE CAST(social_kv.v AS INTEGER) < ?").bind(String(now), now - 120000).run();

@@ -39,7 +39,7 @@ export const DEFAULTS = {
     street: '155-156, Shyam Sarovar Apartment, Patparganj', city: 'Delhi', state: 'Delhi', postcode: '110091',
     phone: '+91 9798776985', email: 'support@winkcasa.com', hours: '', grievanceOfficer: 'Rinkesh Jha',
   },
-  social: { instagram: '', facebook: '', youtube: '', whatsapp: '' },
+  social: { instagram: '', facebook: '', youtube: '', whatsapp: '', pinterest: 'https://www.pinterest.com/winkcasa/' },
   verify: { pinterest: '' },
   logo: { style: 'classic', image: '' },
   contact: {
@@ -85,7 +85,7 @@ function coerce(def, val, key = '') {
   if (typeof def === 'string') {
     const max = /^(a|text|details)$/.test(key) ? 1500 : 500;
     const s = String(val ?? def).trim().slice(0, max);
-    return /^(href|link|ctaLink|instagram|facebook|youtube|whatsapp|ogImage|image)$/.test(key) ? safeHref(s) : s;
+    return /^(href|link|ctaLink|instagram|facebook|youtube|whatsapp|pinterest|ogImage|image)$/.test(key) ? safeHref(s) : s;
   }
   if (typeof def === 'boolean') return val === undefined ? def : !!val;
   if (typeof def === 'number') { const n = Math.round(Number(val)); return Number.isFinite(n) && n >= 0 ? Math.min(n, 1000000) : def; }

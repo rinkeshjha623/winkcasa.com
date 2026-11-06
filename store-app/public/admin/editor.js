@@ -244,7 +244,7 @@ function drawStore() {
     ${txt('Trading name', 'business.name')}${txt('Legal name', 'business.legalName')}${txt('GSTIN', 'business.gstin')}${txt('Street address', 'business.street')}
     <div class="row2"><div>${txt('City', 'business.city')}</div><div>${txt('State', 'business.state')}</div></div>${txt('Pincode', 'business.postcode')}${txt('Phone', 'business.phone')}${txt('Email', 'business.email')}${txt('Opening hours (optional, e.g. Mo-Sa 10:00-18:00)', 'business.hours')}</div>
   <div class="card sect"><h3>Social profiles</h3><p class="hint">Full links. They appear in the footer and help Google and AI link your brand to your accounts.</p>
-    ${txt('Instagram', 'social.instagram', 'https://instagram.com/…')}${txt('Facebook', 'social.facebook', 'https://facebook.com/…')}${txt('YouTube', 'social.youtube', 'https://youtube.com/…')}${txt('WhatsApp link', 'social.whatsapp', 'https://wa.me/919798776985')}</div>
+    ${txt('Instagram', 'social.instagram', 'https://instagram.com/…')}${txt('Facebook', 'social.facebook', 'https://facebook.com/…')}${txt('YouTube', 'social.youtube', 'https://youtube.com/…')}${txt('Pinterest', 'social.pinterest', 'https://www.pinterest.com/winkcasa/')}${txt('WhatsApp link', 'social.whatsapp', 'https://wa.me/919798776985')}</div>
   <div class="card sect"><h3>Site verification</h3><p class="hint">Paste only the code (the long letters and numbers) from the verification tag. It is added to every page.</p>
     ${txt('Pinterest domain verification code', 'verify.pinterest', '08181eb4…')}</div>
   <div class="card sect"><h3>Logo</h3><p class="hint">Pick a style for the header and footer, or upload your own logo image (PNG with a transparent background works best, about 300 px wide). An uploaded image replaces the style.</p>

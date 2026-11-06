@@ -135,7 +135,7 @@ export function logoHtml(S, cls = '') {
 
 export function footerHtml(S, cats) {
   const b = S.business, f = S.footer;
-  const social = [['Instagram', S.social.instagram], ['Facebook', S.social.facebook], ['YouTube', S.social.youtube], ['WhatsApp', S.social.whatsapp]].filter(([, u]) => u);
+  const social = [['Instagram', S.social.instagram], ['Facebook', S.social.facebook], ['YouTube', S.social.youtube], ['Pinterest', S.social.pinterest], ['WhatsApp', S.social.whatsapp]].filter(([, u]) => u);
   const L = (h, t) => `<li><a href="${esc(h)}">${esc(t)}</a></li>`;
   const care = [['/track', 'Track your order'], ['/returns', 'Returns & refunds'], ['/shipping', 'Shipping & delivery'], ['/#faq', 'FAQs'], ['/contact', 'Contact us']];
   const company = [['/about', 'About WinkCasa'], ['/blog', 'The Journal'], ['/try', 'Find your look'], ['/account', 'My account']];
