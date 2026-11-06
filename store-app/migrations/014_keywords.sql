@@ -1,0 +1,2 @@
+CREATE TABLE IF NOT EXISTS keywords (id INTEGER PRIMARY KEY AUTOINCREMENT, kw TEXT NOT NULL UNIQUE, category TEXT, intent TEXT NOT NULL DEFAULT 'browse', score INTEGER NOT NULL DEFAULT 0, hits INTEGER NOT NULL DEFAULT 1, sources TEXT NOT NULL DEFAULT '', covered INTEGER NOT NULL DEFAULT 0, page TEXT, status TEXT NOT NULL DEFAULT 'new', found_at TEXT NOT NULL DEFAULT (datetime('now')), last_seen TEXT NOT NULL DEFAULT (datetime('now')));
+CREATE INDEX IF NOT EXISTS idx_kw_score ON keywords (covered, score);

@@ -4,6 +4,7 @@ import { kvGet } from './social.js';
 import { syncOrders, pushOrder } from './cj-orders.js';
 import { submitIndexNow } from './indexnow.js';
 import { productPath } from './store.js';
+import { keywordResearch, topKeywords } from './keywords.js';
 import { SITE_ORIGIN, absUrl } from './social.js';
 
 const sql = (d = new Date()) => d.toISOString().slice(0, 19).replace('T', ' ');
@@ -13,6 +14,7 @@ const istHour = () => new Date(Date.now() + IST).getUTCHours();
 const rupees = (p) => '₹' + Math.round((p || 0) / 100).toLocaleString('en-IN');
 
 export const SKILLS = [
+  { id: 'keyword_research', title: 'Keyword research (runs first)', about: 'Reads Google and Amazon.in search suggestions for every product type, keeps what shoppers in India really type, scores it, and marks which keywords already have a page and which are gaps. The social, blog, SEO and report skills all use this list.', everyMin: 240 },
   { id: 'cj_orders', title: 'Orders to CJ and tracking', about: 'Sends paid CJ orders to CJ (you still pay them inside CJ) and pulls tracking and delivery status back. Up to 5 orders per run.', everyMin: 30, needs: 'CJ_API_KEY' },
   { id: 'order_watch', title: 'Order watch', about: 'Flags paid orders not sent to CJ, orders with no tracking after 4 days, parcels not delivered after 21 days, and refund requests.', everyMin: 120 },
   { id: 'social_fill', title: 'Daily social posts', about: 'Keeps the next 7 days filled with one product post a day (image, caption, link) for every connected platform, from products not posted recently.', everyMin: 360 },
@@ -21,7 +23,7 @@ export const SKILLS = [
   { id: 'daily_report', title: 'Daily business report', about: 'At 8 AM India time: yesterday and 7-day sales, what needs attention, and the social queue.', everyMin: 1440, hourIst: 8 },
   { id: 'ads', title: 'Google Ads', about: 'Needs Google Ads API access before it can read or change a campaign. Not active: ads are reviewed with you in Claude for now.', everyMin: 0, locked: true },
 ];
-const DEFAULT_ON = { cj_orders: true, order_watch: true, social_fill: true, seo_health: true, content_review: true, daily_report: true };
+const DEFAULT_ON = { keyword_research: true, cj_orders: true, order_watch: true, social_fill: true, seo_health: true, content_review: true, daily_report: true };
 
 export async function agentState(env) {
   const row = await env.DB.prepare("SELECT value FROM settings WHERE key='agent'").first();
@@ -92,7 +94,8 @@ async function socialFill(env) {
     let imgs = []; try { imgs = JSON.parse(p.images_json) || []; } catch {}
     const url = imgs.find((u) => typeof u === 'string' && u); if (!url) continue;
     const name = trimName(p.name), link = SITE_ORIGIN + productPath(p), price = '₹' + Number(p.price).toLocaleString('en-IN');
-    const caption = `${name}\n\n${price} · Free delivery above ₹999 · 7-day returns\nShop it at winkcasa.com\n\n${pick(TAGS, p.category)}`;
+    const kwTags = (await topKeywords(env, p.category + ' ' + p.name, 3)).map((k) => '#' + k.replace(/[^a-z0-9]/g, '')).join(' ');
+    const caption = `${name}\n\n${price} · Free delivery above ₹999 · 7-day returns\nShop it at winkcasa.com\n\n${pick(TAGS, p.category)} ${kwTags}`.trim();
     const board = pin && pin.boards ? (pin.boards.find((b) => BOARD.some(([c, bn]) => c.test(p.category + ' ' + p.name) && bn.test(b.name))) || pin.boards[0] || {}).id : null;
     await env.DB.prepare("INSERT INTO social_posts (title,caption,format,platforms,media_json,scheduled_at,auto,status,note,pin_board,pin_link) VALUES (?,?,?,?,?,?,1,'scheduled',?,?,?)")
       .bind(name.slice(0, 100), caption, 'post', plats.join(','), JSON.stringify([{ url: absUrl(url), type: 'image' }]), slotUtc(d), 'agent:p' + p.id, board || null, link + '?utm_source=social&utm_medium=agent').run();
@@ -114,6 +117,8 @@ async function seoHealth(env) {
   if (thin.length) issues.push(`Products with very short description: ${thin.map((x) => '#' + x.id).join(', ')}`);
   if (dup.length) issues.push(`Duplicate product names: ${dup.map((x) => x.name.slice(0, 40)).join(' | ')}`);
   if (noKw) issues.push(`${noKw} product(s) have no focus keyword.`);
+  const gk = (await q("SELECT kw FROM keywords WHERE covered=0 AND intent='buy' ORDER BY score DESC LIMIT 8")).map((x) => x.kw);
+  if (gk.length) issues.push('Buying keywords with no page yet: ' + gk.join(' | '));
   if (!idx.ok) issues.push('IndexNow submission failed: ' + idx.status);
   await note(env, 'seo_health', issues.length ? 'warn' : 'info', `IndexNow ${idx.ok ? 'accepted ' + idx.submitted + ' URLs' : 'failed'}; ${issues.length} issue type(s)`, issues.join('\n') || 'No issues found.');
   return { summary: `${idx.submitted || 0} URLs sent, ${issues.length} issue type(s).`, quiet: true };
@@ -168,12 +173,21 @@ async function dailyReport(env) {
   const queue = await one("SELECT COUNT(*) n FROM social_posts WHERE status='scheduled'");
   const alerts = (await env.DB.prepare("SELECT title FROM agent_log WHERE level IN ('alert','warn') AND at > datetime('now','-1 day') ORDER BY id DESC LIMIT 8").all()).results.map((r) => r.title);
   const lines = [`Yesterday (${day}): ${y.n} order(s), ${rupees(y.t)}`, `Last 7 days: ${w.n} order(s), ${rupees(w.t)}`, `Last 30 days: ${m.n} order(s), ${rupees(m.t)}`, `Orders in progress: ${open.n}`, `Live products: ${prods.n} · Blog drafts: ${drafts.n} · Comments waiting: ${pend.n} · Social posts queued: ${queue.n}`];
+  const kws = (await env.DB.prepare("SELECT kw FROM keywords WHERE covered=0 AND intent!='question' ORDER BY score DESC LIMIT 5").all()).results.map((r) => r.kw);
+  if (kws.length) lines.push('Top keyword gaps: ' + kws.join(' | '));
   if (alerts.length) lines.push('', 'Needs attention:', ...alerts.map((a) => '• ' + a));
   await note(env, 'daily_report', 'report', `Daily report ${day}`, lines.join('\n'));
   return { summary: lines[0] + '; ' + lines[1], quiet: true };
 }
 
-const RUN = { cj_orders: cjOrders, order_watch: orderWatch, social_fill: socialFill, seo_health: seoHealth, content_review: contentReview, daily_report: dailyReport };
+async function keywordSkill(env) {
+  const r = await keywordResearch(env);
+  const top = r.fresh ? (await env.DB.prepare("SELECT kw,intent,score FROM keywords WHERE covered=0 AND intent!='question' ORDER BY found_at DESC, score DESC LIMIT 8").all()).results : [];
+  if (r.fresh) await note(env, 'keyword_research', 'action', `${r.fresh} new keyword(s) from ${r.seeds.join(', ')}`, top.map((t) => `${t.kw} (${t.intent}, score ${t.score})`).join('\n'));
+  return { summary: `${r.found} keywords seen, ${r.fresh} new (${r.calls} lookups).`, quiet: true };
+}
+
+const RUN = { keyword_research: keywordSkill, cj_orders: cjOrders, order_watch: orderWatch, social_fill: socialFill, seo_health: seoHealth, content_review: contentReview, daily_report: dailyReport };
 
 // Runs every skill that is switched on and due. Safe to call often: each skill has its own interval, and only one run goes at a time.
 export async function runAgent(env, { only, force } = {}) {

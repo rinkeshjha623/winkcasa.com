@@ -1,5 +1,6 @@
 import { json } from '../../../src/lib.js';
 import { requireAdmin } from '../../../src/admin.js';
+import { keywordSummary } from '../../../src/keywords.js';
 import { SKILLS, agentState, setAgent, runAgent } from '../../../src/agent.js';
 
 export async function onRequestGet({ request, env }) {
@@ -7,7 +8,7 @@ export async function onRequestGet({ request, env }) {
   const st = await agentState(env);
   const { results } = await env.DB.prepare("SELECT * FROM agent_log ORDER BY id DESC LIMIT 120").all();
   const report = await env.DB.prepare("SELECT * FROM agent_log WHERE level='report' ORDER BY id DESC LIMIT 1").first();
-  return json({ skills: SKILLS.map((s) => ({ ...s, on: !!st.on[s.id], last: st.last[s.id] || 0 })), autoBlog: st.autoBlog, log: results, report });
+  return json({ skills: SKILLS.map((s) => ({ ...s, on: !!st.on[s.id], last: st.last[s.id] || 0 })), autoBlog: st.autoBlog, log: results, report, keywords: await keywordSummary(env) });
 }
 
 export async function onRequestPost({ request, env }) {
