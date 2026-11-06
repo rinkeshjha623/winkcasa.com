@@ -18,8 +18,8 @@ export const SKILLS = [
   { id: 'keyword_research', title: 'Keyword research (runs first)', about: 'Reads Google and Amazon.in search suggestions for every product type, keeps what shoppers in India really type, scores it, and marks which keywords already have a page and which are gaps. The social, blog, SEO and report skills all use this list.', everyMin: 240 },
   { id: 'cj_orders', title: 'Orders to CJ and tracking', about: 'Sends paid CJ orders to CJ (you still pay them inside CJ) and pulls tracking and delivery status back. Up to 5 orders per run.', everyMin: 30, needs: 'CJ_API_KEY' },
   { id: 'order_watch', title: 'Order watch', about: 'Flags paid orders not sent to CJ, orders with no tracking after 4 days, parcels not delivered after 21 days, and refund requests.', everyMin: 120 },
-  { id: 'content_writer', title: 'Blog writer (from keywords)', about: 'Takes the best keyword gap and writes one blog draft with Claude (up to 2 a day). The review skill below then checks it and publishes it if it passes.', everyMin: 360, needs: 'ANTHROPIC_API_KEY' },
-  { id: 'product_copy', title: 'Product description writer', about: 'Rewrites thin product descriptions (under 80 characters) from the product facts only. Up to 4 per run, nothing invented.', everyMin: 360, needs: 'ANTHROPIC_API_KEY' },
+  { id: 'content_writer', title: 'Blog writer (from keywords)', about: 'Takes the best keyword gap and writes one blog draft with Claude (up to 2 a day). The review skill below then checks it and publishes it if it passes.', everyMin: 360, needs: 'GEMINI_API_KEY' },
+  { id: 'product_copy', title: 'Product description writer', about: 'Rewrites thin product descriptions (under 80 characters) from the product facts only. Up to 4 per run, nothing invented.', everyMin: 360, needs: 'GEMINI_API_KEY' },
   { id: 'social_fill', title: 'Daily social posts', about: 'Keeps the next 7 days filled with one product post a day (image, caption, link) for every connected platform, from products not posted recently.', everyMin: 360 },
   { id: 'seo_health', title: 'SEO and indexing', about: 'Sends all pages to Bing/IndexNow once a day and checks products and posts for missing images, thin text or duplicate names.', everyMin: 1440 },
   { id: 'content_review', title: 'Blog and comment review', about: 'Checks blog drafts (length, headings, links, risky claims) and publishes one that passes per day. Approves clean comments and holds the rest.', everyMin: 360 },
@@ -191,7 +191,7 @@ async function keywordSkill(env) {
 }
 
 async function contentWriter(env) {
-  if (!hasKey(env)) return { summary: 'Waiting for ANTHROPIC_API_KEY on the server.', quiet: true };
+  if (!hasKey(env)) return { summary: 'Waiting for an AI key (GEMINI_API_KEY) on the server.', quiet: true };
   const today = (await env.DB.prepare("SELECT COUNT(*) n FROM agent_log WHERE skill='content_writer' AND level='action' AND at > datetime('now','-1 day')").first()).n;
   const queued = (await env.DB.prepare('SELECT COUNT(*) n FROM posts WHERE published=0').first()).n;
   if (today >= 2) return { summary: 'Daily limit of 2 drafts reached.', quiet: true };
@@ -204,7 +204,7 @@ async function contentWriter(env) {
 }
 
 async function productCopy(env) {
-  if (!hasKey(env)) return { summary: 'Waiting for ANTHROPIC_API_KEY on the server.', quiet: true };
+  if (!hasKey(env)) return { summary: 'Waiting for an AI key (GEMINI_API_KEY) on the server.', quiet: true };
   const { results } = await env.DB.prepare("SELECT id,name,category,material,price FROM products WHERE active=1 AND LENGTH(description)<80 ORDER BY id LIMIT 4").all();
   let n = 0; const fails = [];
   for (const p of results) {
