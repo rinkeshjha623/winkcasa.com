@@ -1,6 +1,7 @@
 import { getSettings, activeProducts, categoriesOf, productPath } from '../src/store.js';
 import { SITE, esc } from '../src/seo.js';
 import { publishedPosts } from '../src/blog.js';
+import { JTYPES, JTYPE_ORDER } from '../src/jtypes.js';
 
 export async function onRequestGet({ env }) {
   const [rows, S, posts] = await Promise.all([activeProducts(env), getSettings(env), publishedPosts(env)]);
@@ -10,6 +11,7 @@ export async function onRequestGet({ env }) {
   const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` + [
     u('/', latest, '1.0', 'daily'),
     ...categoriesOf(rows, S).map((c) => u(c.path, latest, '0.8', 'daily')),
+    ...JTYPE_ORDER.filter((k) => rows.filter((r) => r.category === 'Jewellery' && JTYPES[k].match(r.name)).length >= 3).map((k) => u('/' + k, latest, '0.9', 'daily')),
     ...rows.filter((r) => !r.noindex).map((r) => u(productPath(r), r.updated_at, '0.9', 'weekly')),
     u('/links', latest, '0.5', 'daily'),
     u('/press', '', '0.4', 'monthly'),
