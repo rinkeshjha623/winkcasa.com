@@ -5,6 +5,7 @@ import { syncOrders, pushOrder } from './cj-orders.js';
 import { submitIndexNow } from './indexnow.js';
 import { productPath } from './store.js';
 import { keywordResearch, topKeywords } from './keywords.js';
+import { hasKey, writePost, improveProduct } from './writer.js';
 import { SITE_ORIGIN, absUrl } from './social.js';
 
 const sql = (d = new Date()) => d.toISOString().slice(0, 19).replace('T', ' ');
@@ -17,13 +18,15 @@ export const SKILLS = [
   { id: 'keyword_research', title: 'Keyword research (runs first)', about: 'Reads Google and Amazon.in search suggestions for every product type, keeps what shoppers in India really type, scores it, and marks which keywords already have a page and which are gaps. The social, blog, SEO and report skills all use this list.', everyMin: 240 },
   { id: 'cj_orders', title: 'Orders to CJ and tracking', about: 'Sends paid CJ orders to CJ (you still pay them inside CJ) and pulls tracking and delivery status back. Up to 5 orders per run.', everyMin: 30, needs: 'CJ_API_KEY' },
   { id: 'order_watch', title: 'Order watch', about: 'Flags paid orders not sent to CJ, orders with no tracking after 4 days, parcels not delivered after 21 days, and refund requests.', everyMin: 120 },
+  { id: 'content_writer', title: 'Blog writer (from keywords)', about: 'Takes the best keyword gap and writes one blog draft with Claude (up to 2 a day). The review skill below then checks it and publishes it if it passes.', everyMin: 360, needs: 'ANTHROPIC_API_KEY' },
+  { id: 'product_copy', title: 'Product description writer', about: 'Rewrites thin product descriptions (under 80 characters) from the product facts only. Up to 4 per run, nothing invented.', everyMin: 360, needs: 'ANTHROPIC_API_KEY' },
   { id: 'social_fill', title: 'Daily social posts', about: 'Keeps the next 7 days filled with one product post a day (image, caption, link) for every connected platform, from products not posted recently.', everyMin: 360 },
   { id: 'seo_health', title: 'SEO and indexing', about: 'Sends all pages to Bing/IndexNow once a day and checks products and posts for missing images, thin text or duplicate names.', everyMin: 1440 },
   { id: 'content_review', title: 'Blog and comment review', about: 'Checks blog drafts (length, headings, links, risky claims) and publishes one that passes per day. Approves clean comments and holds the rest.', everyMin: 360 },
   { id: 'daily_report', title: 'Daily business report', about: 'At 8 AM India time: yesterday and 7-day sales, what needs attention, and the social queue.', everyMin: 1440, hourIst: 8 },
   { id: 'ads', title: 'Google Ads', about: 'Needs Google Ads API access before it can read or change a campaign. Not active: ads are reviewed with you in Claude for now.', everyMin: 0, locked: true },
 ];
-const DEFAULT_ON = { keyword_research: true, cj_orders: true, order_watch: true, social_fill: true, seo_health: true, content_review: true, daily_report: true };
+const DEFAULT_ON = { keyword_research: true, content_writer: true, product_copy: true, cj_orders: true, order_watch: true, social_fill: true, seo_health: true, content_review: true, daily_report: true };
 
 export async function agentState(env) {
   const row = await env.DB.prepare("SELECT value FROM settings WHERE key='agent'").first();
@@ -187,7 +190,32 @@ async function keywordSkill(env) {
   return { summary: `${r.found} keywords seen, ${r.fresh} new (${r.calls} lookups).`, quiet: true };
 }
 
-const RUN = { keyword_research: keywordSkill, cj_orders: cjOrders, order_watch: orderWatch, social_fill: socialFill, seo_health: seoHealth, content_review: contentReview, daily_report: dailyReport };
+async function contentWriter(env) {
+  if (!hasKey(env)) return { summary: 'Waiting for ANTHROPIC_API_KEY on the server.', quiet: true };
+  const today = (await env.DB.prepare("SELECT COUNT(*) n FROM agent_log WHERE skill='content_writer' AND level='action' AND at > datetime('now','-1 day')").first()).n;
+  const queued = (await env.DB.prepare('SELECT COUNT(*) n FROM posts WHERE published=0').first()).n;
+  if (today >= 2) return { summary: 'Daily limit of 2 drafts reached.', quiet: true };
+  if (queued >= 5) return { summary: 'Five drafts are already waiting for review.', quiet: true };
+  const kw = await env.DB.prepare("SELECT kw,intent,score FROM keywords WHERE covered=0 AND status='new' AND (intent='question' OR kw LIKE '%for women%' OR kw LIKE '%design%' OR kw LIKE '%set%' OR kw LIKE '%under%') ORDER BY (intent='question') DESC, score DESC LIMIT 1").first();
+  if (!kw) return { summary: 'No keyword gap ready to write.', quiet: true };
+  const r = await writePost(env, kw);
+  await note(env, 'content_writer', 'action', `Drafted: ${r.title}`, `Keyword "${kw.kw}" · ${r.words} words · /blog/${r.slug} (draft, goes through review)`);
+  return { summary: `Drafted "${r.title}".`, quiet: true };
+}
+
+async function productCopy(env) {
+  if (!hasKey(env)) return { summary: 'Waiting for ANTHROPIC_API_KEY on the server.', quiet: true };
+  const { results } = await env.DB.prepare("SELECT id,name,category,material,price FROM products WHERE active=1 AND LENGTH(description)<80 ORDER BY id LIMIT 4").all();
+  let n = 0; const fails = [];
+  for (const p of results) {
+    try { const kws = await topKeywords(env, p.category + ' ' + p.name, 2); const t = await improveProduct(env, p, kws); n++; await note(env, 'product_copy', 'action', `Rewrote description: #${p.id} ${p.name.slice(0, 50)}`, t); }
+    catch (e) { fails.push(`#${p.id}: ${e.message}`); }
+  }
+  if (fails.length) await note(env, 'product_copy', 'warn', `${fails.length} description(s) not written`, fails.join('\n'));
+  return { summary: `${n} description(s) rewritten.`, quiet: true };
+}
+
+const RUN = { content_writer: contentWriter, product_copy: productCopy, keyword_research: keywordSkill, cj_orders: cjOrders, order_watch: orderWatch, social_fill: socialFill, seo_health: seoHealth, content_review: contentReview, daily_report: dailyReport };
 
 // Runs every skill that is switched on and due. Safe to call often: each skill has its own interval, and only one run goes at a time.
 export async function runAgent(env, { only, force } = {}) {
