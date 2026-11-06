@@ -26,6 +26,8 @@ export const DEFAULTS = {
     showUnsplash: false,
   },
   shipping: { freeShippingAbove: 999, charge: 79 },
+  // Cash on delivery: customer pays `advance` rupees online now (kept if the parcel is refused), the rest plus `fee` in cash on delivery.
+  cod: { enabled: true, fee: 79, advance: 99 },
   seo: {
     title: 'Jewellery Online in India | Earrings & Hair Clips | WinkCasa',
     description: 'Shop jewellery online in India at WinkCasa: earrings, necklaces, hair accessories and beauty tools. Free delivery above ₹999 and 7-day returns.',

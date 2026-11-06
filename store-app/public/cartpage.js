@@ -1,6 +1,6 @@
 (function () {
   var root = document.getElementById('cartRoot'); if (!root) return;
-  var COUP = null, CODE = '', CERR = '', P = {}, CFG = { freeShippingAbove: 999, shipping: 79 }, CLOSED = false, busy = false, S = null;
+  var MODE = 'online', COUP = null, CODE = '', CERR = '', P = {}, CFG = { freeShippingAbove: 999, shipping: 79 }, CLOSED = false, busy = false, S = null;
   var $ = function (id) { return document.getElementById(id); };
   var esc = function (t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
   var rupee = function (n) { n = Number(n); return '₹' + n.toLocaleString('en-IN', { minimumFractionDigits: n % 1 ? 2 : 0, maximumFractionDigits: 2 }); };
@@ -15,7 +15,9 @@
     var ship = sub === 0 ? 0 : (sub >= CFG.freeShippingAbove ? 0 : CFG.shipping);
     var disc = COUP && COUP.discount ? COUP.discount / 100 : 0, soff = COUP && COUP.shippingOff ? COUP.shippingOff / 100 : 0;
     ship = Math.max(0, ship - soff);
-    return { sub: sub, ship: ship, disc: disc, total: Math.max(1, sub - disc + ship) };
+    var codOn = MODE === 'cod' && CFG.cod && CFG.cod.enabled, fee = codOn ? CFG.cod.fee : 0, total = Math.max(1, sub - disc + ship) + fee;
+  var adv = codOn ? Math.min(CFG.cod.advance, total - 1) : 0;
+  return { sub: sub, ship: ship, disc: disc, cod: fee, total: total, adv: adv, due: codOn ? total - adv : 0, codOn: codOn };
   }
 
   function couponBox() {
@@ -37,7 +39,15 @@
     }
     keepForm(); render();
   }
-  function render() {
+  function payOpts(t) {
+  var c = CFG.cod, on = c && c.enabled;
+  return '<fieldset class="payopts"><legend>Payment method</legend>' +
+    '<label class="po' + (MODE === 'online' || !on ? ' on' : '') + '"><input type="radio" name="paymode" value="online"' + (MODE === 'online' || !on ? ' checked' : '') + '> <span><b>Pay online now</b><small>UPI, cards or net banking. Secure, via Razorpay.</small></span></label>' +
+    (on ? '<label class="po' + (MODE === 'cod' ? ' on' : '') + '"><input type="radio" name="paymode" value="cod"' + (MODE === 'cod' ? ' checked' : '') + '> <span><b>Cash on Delivery</b><small>Pay ' + rupee(c.advance) + ' now online, and the rest in cash when it arrives. A ' + rupee(c.fee) + ' cash on delivery fee applies. The advance is not refunded if you refuse the parcel at the door. It is refunded if you cancel before dispatch, or if the item is damaged or wrong.</small></span></label>'
+      : '<label class="po off" aria-disabled="true"><input type="radio" name="paymode" value="cod" disabled> <span><b>Cash on Delivery <em>Coming soon</em></b><small>Not available yet. Pay online for now, and damaged or wrong items can be returned within 7 days.</small></span></label>') +
+    '</fieldset>';
+}
+function render() {
     var ls = lines(), t = totals(ls);
     if (!ls.length) {
       root.innerHTML = '<div class="emptycart"><h2 style="font-family:var(--display);font-weight:500;font-size:1.8rem;color:var(--fg)">Your cart is empty</h2><p>Add something you like and it will wait for you here.</p><a class="btn" href="/#shop">Continue shopping</a></div>';
@@ -56,9 +66,11 @@
       '<div class="srow"><span>Delivery</span><span>' + (t.ship ? rupee(t.ship) : 'Free') + '</span></div>' +
       (t.ship ? '<div class="srow" style="font-size:.8rem">Add ' + rupee(CFG.freeShippingAbove - t.sub) + ' more for free delivery</div>' : '') +
       couponBox() +
+      (t.codOn ? '<div class="srow"><span>Cash on delivery fee</span><span>' + rupee(t.cod) + '</span></div>' : '') +
       '<div class="srow t"><span>Total</span><span>' + rupee(t.total) + '</span></div>' +
+      (t.codOn ? '<div class="srow"><span>Pay now (advance)</span><span>' + rupee(t.adv) + '</span></div><div class="srow"><span>Pay in cash on delivery</span><span>' + rupee(t.due) + '</span></div>' : '') +
       '<div class="paym" aria-label="Payment options"><span class="pm">UPI</span><span class="pm">Credit &amp; debit cards</span><span class="pm">Net banking</span></div>' +
-      '<fieldset class="payopts"><legend>Payment method</legend><label class="po on"><input type="radio" name="paymode" value="online" checked> <span><b>Pay online now</b><small>UPI, cards or net banking. Secure, via Razorpay.</small></span></label><label class="po off" aria-disabled="true"><input type="radio" name="paymode" value="cod" disabled> <span><b>Cash on Delivery <em>Coming soon</em></b><small>Not available yet. Pay online for now, and damaged or wrong items can be returned within 7 days.</small></span></label></fieldset>' +
+      payOpts(t) +
       '<form class="form" id="co" novalidate><h2 style="margin-top:14px">Delivery details</h2>' +
       '<label for="f_name">Full name</label><input id="f_name" name="name" autocomplete="name" required>' +
       '<div class="two"><div><label for="f_phone">Mobile number</label><input id="f_phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel" required></div>' +
@@ -67,11 +79,12 @@
       '<div class="two"><div><label for="f_city">City</label><input id="f_city" name="city" autocomplete="address-level2" required></div>' +
       '<div><label for="f_pincode">Pincode</label><input id="f_pincode" name="pincode" inputmode="numeric" maxlength="6" autocomplete="postal-code" required></div></div>' +
       '<label for="f_state">State</label><input id="f_state" name="state" autocomplete="address-level1" required>' +
-      '<button class="btn full" id="pay" type="submit"' + (CLOSED ? ' disabled' : '') + '>' + (CLOSED ? 'Store closed' : 'Pay ' + rupee(t.total) + ' securely') + '</button>' +
+      '<button class="btn full" id="pay" type="submit"' + (CLOSED ? ' disabled' : '') + '>' + (CLOSED ? 'Store closed' : (t.codOn ? 'Pay ' + rupee(t.adv) + ' advance and place order' : 'Pay ' + rupee(t.total) + ' securely')) + '</button>' +
       '<p class="msg" id="msg" role="status">' + (CLOSED ? esc(S.store.closedMessage) : '') + '</p>' +
-      '<p style="font-size:.78rem;color:var(--muted);margin:8px 0 0">Pay by UPI, card or net banking on the next screen. By paying you agree to our <a href="/terms">Terms</a> and <a href="/returns">Returns policy</a>.</p></form></aside></div>';
+      '<p style="font-size:.78rem;color:var(--muted);margin:8px 0 0">' + (MODE === 'cod' ? 'The advance is paid by UPI, card or net banking on the next screen.' : 'Pay by UPI, card or net banking on the next screen.') + ' By paying you agree to our <a href="/terms">Terms</a> and <a href="/returns">Returns policy</a>.</p></form></aside></div>';
     WC.paint(); var e = root.querySelector('[data-eta]'); if (e) e.innerHTML = WC.etaHtml(new Date());
     $('co').onsubmit = function (ev) { ev.preventDefault(); pay(); };
+  Array.prototype.forEach.call(root.querySelectorAll('input[name=paymode]'), function (r) { r.onchange = function () { if (r.value === MODE) return; MODE = r.value; keepForm(); render(); }; });
     if ($('cpGo')) { $('cpGo').onclick = function () { var v = $('cpIn').value.trim(); if (v) refreshCoupon(v.toUpperCase(), true); }; $('cpIn').onkeydown = function (e) { if (e.key === 'Enter') { e.preventDefault(); $('cpGo').click(); } }; }
     if ($('cpRm')) $('cpRm').onclick = function () { CERR = ''; refreshCoupon('', false); };
   }
@@ -98,7 +111,7 @@
   }).catch(function () {});
 
   function say(t, cls) { var m = $('msg'); if (m) { m.textContent = t; m.className = 'msg ' + (cls || ''); } }
-  function setBusy(v) { busy = v; var b = $('pay'); if (b) { b.disabled = v || CLOSED; b.textContent = v ? 'Please wait…' : 'Pay ' + rupee(totals(lines()).total) + ' securely'; } }
+  function setBusy(v) { busy = v; var b = $('pay'); if (b) { b.disabled = v || CLOSED; var tt = totals(lines()); b.textContent = v ? 'Please wait…' : (tt.codOn ? 'Pay ' + rupee(tt.adv) + ' advance and place order' : 'Pay ' + rupee(tt.total) + ' securely'); } }
   async function post(url, data) {
     var r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
     var d = {}; try { d = await r.json(); } catch (e) {}
@@ -117,7 +130,7 @@
     var items = lines().map(function (l) { return { id: l.p.id, qty: l.q }; });
     setBusy(true); say('Creating your order…');
     try {
-      var d = await post('/api/checkout', { items: items, customer: customer, coupon: CODE });
+      var d = await post('/api/checkout', { items: items, customer: customer, coupon: CODE, mode: MODE });
       if (!window.Razorpay) throw new Error('The payment window did not load. Check your connection and try again.');
       var rz = new Razorpay({ key: d.keyId, amount: d.amount, currency: 'INR', name: 'WinkCasa', description: 'Order ' + d.orderRef, order_id: d.razorpayOrderId,
         prefill: { name: customer.name, email: customer.email, contact: customer.phone }, theme: { color: '#C9A45C' },
@@ -136,14 +149,14 @@
     var placed = parseUtc(d.placedAt), mn = parseUtc(d.deliveryMinAt), mx = parseUtc(d.deliveryMaxAt);
     try {
       var sent = false; try { sent = sessionStorage.getItem('wc_pur_' + ref) === '1'; } catch (e) {}
-      if (!sent) { gtag('event', 'purchase', { transaction_id: ref, value: d.amount / 100, currency: 'INR', items: gitems() }); try { sessionStorage.setItem('wc_pur_' + ref, '1'); } catch (e) {} }
+      if (!sent) { gtag('event', 'purchase', { transaction_id: ref, value: (d.orderTotal || d.amount) / 100, currency: 'INR', items: gitems() }); try { sessionStorage.setItem('wc_pur_' + ref, '1'); } catch (e) {} }
     } catch (x) {}
     WC.clear();
     document.title = 'Order confirmed | WinkCasa';
-    root.innerHTML = '<div class="done"><h1>Thank you, your order is confirmed</h1><p style="color:var(--muted)">We have received your payment. Keep your order number to track delivery.</p>' +
+    root.innerHTML = '<div class="done"><h1>Thank you, your order is confirmed</h1><p style="color:var(--muted)">' + (d.mode === 'cod' ? 'We have received your advance. Keep your order number to track delivery, and keep the balance ready in cash for the delivery person.' : 'We have received your payment. Keep your order number to track delivery.') + '</p>' +
       '<dl><dt>Order number</dt><dd><b>' + esc(ref) + '</b></dd><dt>Order placed</dt><dd>' + esc(WC.fmtDT(placed)) + '</dd>' +
       '<dt>Expected delivery</dt><dd>' + esc(WC.fmtD(mn)) + ' to ' + esc(WC.fmtD(mx)) + ', by 9:00 PM</dd>' +
-      '<dt>Amount paid</dt><dd>' + rupee(d.amount / 100) + '</dd><dt>Delivering to</dt><dd>' + esc(c.name) + ', ' + esc(c.address) + ', ' + esc(c.city) + ' ' + esc(c.pincode) + '</dd></dl>' +
+      '<dt>' + (d.mode === 'cod' ? 'Advance paid' : 'Amount paid') + '</dt><dd>' + rupee(d.amount / 100) + '</dd>' + (d.mode === 'cod' ? '<dt>Pay in cash on delivery</dt><dd>' + rupee((d.orderTotal - d.amount) / 100) + '</dd>' : '') + '<dt>Delivering to</dt><dd>' + esc(c.name) + ', ' + esc(c.address) + ', ' + esc(c.city) + ' ' + esc(c.pincode) + '</dd></dl>' +
       '<a class="btn" href="/track?ref=' + encodeURIComponent(ref) + '">Track your order</a> &nbsp; <a class="btn alt" href="/">Continue shopping</a></div>';
     window.scrollTo(0, 0);
   }

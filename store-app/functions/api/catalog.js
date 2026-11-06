@@ -6,7 +6,7 @@ export async function onRequestGet({ env }) {
   const [rows, settings] = await Promise.all([activeProducts(env), getSettings(env)]);
   return json({
     settings,
-    config: { freeShippingAbove: settings.shipping.freeShippingAbove, shipping: settings.shipping.charge },
+    config: { freeShippingAbove: settings.shipping.freeShippingAbove, shipping: settings.shipping.charge, cod: settings.cod },
     products: rows.map(publicProduct),
   });
 }
