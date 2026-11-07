@@ -28,10 +28,11 @@ export async function makeGraphic(env, src, kind = 'social') {
 
 // Best real product photo for a piece of text (title, keyword, caption).
 export async function productFor(env, text) {
-  const toks = new Set(String(text).toLowerCase().replace(/[^a-z ]/g, ' ').split(' ').filter((t) => t.length > 3 && !/^(women|womens|girls|with|that|this|from|your|best|how|what|guide|online|india|style|wear|every)$/.test(t)).map((t) => t.replace(/s$/, '')));
+  const toks = new Set(String(text).toLowerCase().replace(/[^a-z ]/g, ' ').split(' ').filter((t) => t.length > 3 && !/^(women|womens|girls|with|that|this|from|your|best|how|what|guide|online|india|style|wear|every|face|shape|home|easy|methods?|tips?|best|beginner|which|suit|right|choose|find|your|ideas?|under|gift|gifts|happy|festive|rule|piece)$/.test(t)).map((t) => t.replace(/s$/, '')));
   const rows = (await env.DB.prepare("SELECT id,name,category,images_json FROM products WHERE active=1 AND noindex=0 AND (stock IS NULL OR stock>0) AND images_json NOT IN ('[]','') ORDER BY id DESC LIMIT 400").all()).results;
   let best = null, bs = -1;
   for (const p of rows) { const w = (p.name + ' ' + p.category).toLowerCase().replace(/[^a-z ]/g, ' ').split(' ').map((t) => t.replace(/s$/, '')); const s = w.filter((t) => toks.has(t)).length; if (s > bs) { bs = s; best = p; } }
+  if (bs < 1) best = rows.find((p) => /ewel/i.test(p.category)) || best;
   if (!best) return null;
   let imgs = []; try { imgs = JSON.parse(best.images_json) || []; } catch {}
   const url = imgs.find((u) => typeof u === 'string' && u); return url ? { ...best, url } : null;
@@ -108,7 +109,7 @@ export async function makeBlogCover(env, src, { title, label }) {
   } finally { await dropTemp(env, [tid, pid]); }
 }
 
-const plain = (t) => String(t || '').replace(/^(blog|story|reel|post|carousel)\s*:\s*/i, '').trim();
+const plain = (t) => String(t || '').replace(/^(blog|story|reel|post|carousel)\s*:\s*/i, '').replace(/\s*\((post|story|reel|carousel)\)\s*$/i, '').trim();
 const catLabel = (p) => (p.category && String(p.category).trim()) || (/guide|how to|best|style|wear/i.test(p.title) ? 'Style guide' : 'WinkCasa blog');
 
 // Every blog post whose cover is missing or is a plain text card gets a real-photo cover. Two per run.
