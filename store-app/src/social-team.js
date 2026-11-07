@@ -152,6 +152,6 @@ export const brief = (p) => j(p.brief_json);
 
 // Everything else the visual expert makes: covers for blog posts that have none, pictures for auto posts that have none.
 export async function graphicsDesk(env) {
-  const b = await upgradeBlogCovers(env, 2), c = await upgradeSocialCards(env, 2), sm = await socialNoMedia(env, 2);
+  const b = await upgradeBlogCovers(env, 4), c = await upgradeSocialCards(env, 3), sm = await socialNoMedia(env, 2);
   return { made: [...b.made.map((x) => 'Blog cover: ' + x), ...c.made.map((x) => 'Social card: ' + x), ...sm.made.map((x) => 'Social graphic: ' + x)], fails: [...b.fails, ...c.fails, ...sm.fails] };
 }
