@@ -35,7 +35,8 @@ export async function pinPublish(conn, p, media) {
   if (!p.pin_board) throw new Error('Choose a Pinterest board for this post.');
   const img = media.find((m) => m.type === 'image'); if (!img) throw new Error('Pinterest needs an image (video is not supported here).');
   if (!/^https?:\/\//.test(p.pin_link || '')) throw new Error('Add the link the Pin should open (a winkcasa.com page).');
-  const desc = String(p.caption || '').replace(/\s+/g, ' ').trim().slice(0, 800);
+  let pd = ''; try { pd = JSON.parse(p.brief_json || '{}').pin_desc || ''; } catch {}
+  const desc = String(pd || p.caption || '').replace(/\s+/g, ' ').trim().slice(0, 800);
   const r = await pin('/pins', conn.token, conn.sandbox, 'POST', { board_id: p.pin_board, title: String(p.title || desc).slice(0, 100), description: desc, link: p.pin_link, media_source: { source_type: 'image_url', url: img.url } });
   return r.id;
 }

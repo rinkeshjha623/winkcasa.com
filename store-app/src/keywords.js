@@ -38,8 +38,6 @@ export async function keywordResearch(env) {
     const seed = picks[n];
     const qs = [seed, ...L(n).map((l) => seed + ' ' + l)];
     for (const q of qs) { (await suggestGoogle(q)).forEach((s, i) => add(s, i, 'google', seed)); calls++; }
-    (await suggestAmazon(seed)).forEach((s, i) => add(s, i, 'amazon', seed)); calls++;
-    (await suggestAmazon(seed + ' for women')).forEach((s, i) => add(s, i, 'amazon', seed)); calls++;
   }
   await env.DB.prepare("INSERT OR REPLACE INTO settings (key,value) VALUES ('kw_cursor',?)").bind(String((cur + SEEDS_PER_RUN) % seeds.length)).run();
   // what the shop already covers: product names, focus keywords and category pages

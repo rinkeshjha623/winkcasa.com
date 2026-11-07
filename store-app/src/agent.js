@@ -6,6 +6,7 @@ import { submitIndexNow } from './indexnow.js';
 import { productPath } from './store.js';
 import { keywordResearch, topKeywords } from './keywords.js';
 import { hasKey, writePost, improveProduct } from './writer.js';
+import { researchDesk, visualDesk, writerDesk, managerDesk, safetyNet } from './social-team.js';
 import { SITE_ORIGIN, absUrl } from './social.js';
 
 const sql = (d = new Date()) => d.toISOString().slice(0, 19).replace('T', ' ');
@@ -15,18 +16,22 @@ const istHour = () => new Date(Date.now() + IST).getUTCHours();
 const rupees = (p) => '₹' + Math.round((p || 0) / 100).toLocaleString('en-IN');
 
 export const SKILLS = [
-  { id: 'keyword_research', title: 'Keyword research (runs first)', about: 'Reads Google and Amazon.in search suggestions for every product type, keeps what shoppers in India really type, scores it, and marks which keywords already have a page and which are gaps. The social, blog, SEO and report skills all use this list.', everyMin: 240 },
-  { id: 'cj_orders', title: 'Orders to CJ and tracking', about: 'Sends paid CJ orders to CJ (you still pay them inside CJ) and pulls tracking and delivery status back. Up to 5 orders per run.', everyMin: 30, needs: 'CJ_API_KEY' },
+  { id: 'keyword_research', title: 'Keyword research (runs first)', about: 'Reads Google and Amazon.in search suggestions for every product type, keeps what shoppers in India really type, scores it, and marks which keywords already have a page and which are gaps. The social, blog, SEO and report skills all use this list.', everyMin: 240, cost: 22 },
+  { id: 'cj_orders', title: 'Orders to CJ and tracking', about: 'Sends paid CJ orders to CJ (you still pay them inside CJ) and pulls tracking and delivery status back. Up to 5 orders per run.', everyMin: 30, needs: 'CJ_API_KEY', cost: 10 },
   { id: 'order_watch', title: 'Order watch', about: 'Flags paid orders not sent to CJ, orders with no tracking after 4 days, parcels not delivered after 21 days, and refund requests.', everyMin: 120 },
   { id: 'content_writer', title: 'Blog writer (from keywords)', about: 'Takes the best keyword gap and writes one blog draft with Claude (up to 2 a day). The review skill below then checks it and publishes it if it passes.', everyMin: 360, needs: 'GEMINI_API_KEY' },
   { id: 'product_copy', title: 'Product description writer', about: 'Rewrites thin product descriptions (under 80 characters) from the product facts only. Up to 4 per run, nothing invented.', everyMin: 360, needs: 'GEMINI_API_KEY' },
-  { id: 'social_fill', title: 'Daily social posts', about: 'Keeps the next 7 days filled with one product post a day (image, caption, link) for every connected platform, from products not posted recently.', everyMin: 360 },
+  { id: 'social_fill', title: 'Social planner', about: 'Picks one product a day for the next 7 days (not posted in 45 days, rotating categories) and hands it to the team below. Nothing is scheduled until the manager approves it.', everyMin: 360, cost: 0 },
+  { id: 'social_research', title: 'Research team: keywords and topic', about: 'For each planned post, picks the keywords from our keyword list that match the product and the seasonal topic (festive, wedding season and so on).', everyMin: 15, cost: 0 },
+  { id: 'social_visual', title: 'Visual expert: image, video, graphics', about: 'Checks the image loads, is sharp enough and the right shape (drops Instagram if the shape is not allowed). With an AI key it also looks at the picture and rejects blurry, off-product or watermarked images. Videos are checked to load.', everyMin: 15, cost: 8 },
+  { id: 'social_writer', title: 'Content writer: caption and pin text', about: 'Writes the caption, Pin title and Pin description from the keywords and topic, using only the product facts. Falls back to a plain template if no AI key is set.', everyMin: 15, cost: 4 },
+  { id: 'social_manager', title: 'Manager: final review, then schedule', about: 'Checks price, claims, hashtags, links, board and duplicates, and reads the copy. Approved posts are scheduled for publishing. Rejected copy goes back to the writer once, then is dropped. Also safety-checks other auto posts due in 24 hours.', everyMin: 15, cost: 4 },
   { id: 'seo_health', title: 'SEO and indexing', about: 'Sends all pages to Bing/IndexNow once a day and checks products and posts for missing images, thin text or duplicate names.', everyMin: 1440 },
   { id: 'content_review', title: 'Blog and comment review', about: 'Checks blog drafts (length, headings, links, risky claims) and publishes one that passes per day. Approves clean comments and holds the rest.', everyMin: 360 },
   { id: 'daily_report', title: 'Daily business report', about: 'At 8 AM India time: yesterday and 7-day sales, what needs attention, and the social queue.', everyMin: 1440, hourIst: 8 },
   { id: 'ads', title: 'Google Ads', about: 'Needs Google Ads API access before it can read or change a campaign. Not active: ads are reviewed with you in Claude for now.', everyMin: 0, locked: true },
 ];
-const DEFAULT_ON = { keyword_research: true, content_writer: true, product_copy: true, cj_orders: true, order_watch: true, social_fill: true, seo_health: true, content_review: true, daily_report: true };
+const DEFAULT_ON = { social_research: true, social_visual: true, social_writer: true, social_manager: true, keyword_research: true, content_writer: true, product_copy: true, cj_orders: true, order_watch: true, social_fill: true, seo_health: true, content_review: true, daily_report: true };
 
 export async function agentState(env) {
   const row = await env.DB.prepare("SELECT value FROM settings WHERE key='agent'").first();
@@ -84,7 +89,7 @@ async function socialFill(env) {
   if (!plats.length) return { summary: 'No social account is connected for live posting yet (Pinterest in sandbox mode does not count).', quiet: true };
   const days = []; for (let i = 1; i <= 7; i++) days.push(new Date(Date.now() + i * 86400000));
   const slotUtc = (d) => istDay(d) + ' 14:00:00'; // 7:30 PM India
-  const have = new Set((await env.DB.prepare("SELECT scheduled_at FROM social_posts WHERE status IN ('scheduled','publishing') AND scheduled_at >= datetime('now')").all()).results.map((r) => String(r.scheduled_at).slice(0, 10)));
+  const have = new Set((await env.DB.prepare("SELECT scheduled_at FROM social_posts WHERE (status IN ('scheduled','publishing') OR stage IN ('research','visual','writing','review')) AND scheduled_at >= datetime('now')").all()).results.map((r) => String(r.scheduled_at).slice(0, 10)));
   const need = days.filter((d) => !have.has(slotUtc(d).slice(0, 10)));
   if (!need.length) return { summary: 'Next 7 days already filled.', quiet: true };
   const used = new Set((await env.DB.prepare("SELECT note FROM social_posts WHERE note LIKE 'agent:p%' AND created_at > datetime('now','-45 days')").all()).results.map((r) => r.note));
@@ -100,12 +105,12 @@ async function socialFill(env) {
     const kwTags = (await topKeywords(env, p.category + ' ' + p.name, 3)).map((k) => '#' + k.replace(/[^a-z0-9]/g, '')).join(' ');
     const caption = `${name}\n\n${price} · Free delivery above ₹999 · 7-day returns\nShop it at winkcasa.com\n\n${pick(TAGS, p.category)} ${kwTags}`.trim();
     const board = pin && pin.boards ? (pin.boards.find((b) => BOARD.some(([c, bn]) => c.test(p.category + ' ' + p.name) && bn.test(b.name))) || pin.boards[0] || {}).id : null;
-    await env.DB.prepare("INSERT INTO social_posts (title,caption,format,platforms,media_json,scheduled_at,auto,status,note,pin_board,pin_link) VALUES (?,?,?,?,?,?,1,'scheduled',?,?,?)")
-      .bind(name.slice(0, 100), caption, 'post', plats.join(','), JSON.stringify([{ url: absUrl(url), type: 'image' }]), slotUtc(d), 'agent:p' + p.id, board || null, link + '?utm_source=social&utm_medium=agent').run();
+    await env.DB.prepare("INSERT INTO social_posts (title,caption,format,platforms,media_json,scheduled_at,auto,status,note,pin_board,pin_link,stage,product_id) VALUES (?,?,?,?,?,?,1,'draft',?,?,?,'research',?)")
+      .bind(name.slice(0, 100), caption, 'post', plats.join(','), JSON.stringify([{ url: absUrl(url), type: 'image' }]), slotUtc(d), 'agent:p' + p.id, board || null, link + '?utm_source=social&utm_medium=agent', p.id).run();
     made++; titles.push(name.slice(0, 40));
   }
-  if (made) await note(env, 'social_fill', 'action', `Scheduled ${made} product post(s) for ${plats.join(', ')}`, titles.join('\n'));
-  return { summary: `Scheduled ${made} post(s).`, quiet: !made };
+  if (made) await note(env, 'social_fill', 'action', `Planned ${made} product post(s) for ${plats.join(', ')}, sent to the team`, titles.join('\n'));
+  return { summary: `Planned ${made} post(s).`, quiet: !made };
 }
 
 async function seoHealth(env) {
@@ -215,14 +220,28 @@ async function productCopy(env) {
   return { summary: `${n} description(s) rewritten.`, quiet: true };
 }
 
-const RUN = { content_writer: contentWriter, product_copy: productCopy, keyword_research: keywordSkill, cj_orders: cjOrders, order_watch: orderWatch, social_fill: socialFill, seo_health: seoHealth, content_review: contentReview, daily_report: dailyReport };
+const stageLog = async (env, skill, who, n, extra) => { if (n) await note(env, skill, 'action', `${who}: handled ${n} post(s)`, extra || null); return { summary: `${n} post(s) handled.`, quiet: true }; };
+async function pipe(env, skill, who, fn) { const n = await fn(env, 3); return stageLog(env, skill, who, n); }
+async function managerSkill(env) {
+  const before = (await env.DB.prepare("SELECT COUNT(*) n FROM social_posts WHERE stage='approved'").first()).n;
+  const n = await managerDesk(env, 3);
+  const after = (await env.DB.prepare("SELECT COUNT(*) n FROM social_posts WHERE stage='approved'").first()).n;
+  const rej = (await env.DB.prepare("SELECT title, review_json FROM social_posts WHERE stage='rejected' AND created_at > datetime('now','-1 day') ORDER BY id DESC LIMIT 5").all()).results;
+  const sn = await safetyNet(env);
+  if (n) await note(env, 'social_manager', 'action', `Manager reviewed ${n} post(s): ${after - before} approved and scheduled`, null);
+  if (sn.held.length) await note(env, 'social_manager', 'alert', `Safety check held ${sn.held.length} upcoming post(s)`, sn.held.join('\n'));
+  if (rej.length && n) await note(env, 'social_manager', 'warn', `${rej.length} post(s) dropped by the team (last 24h)`, rej.map((r) => { const v = JSON.parse(r.review_json || '{}'); return r.title + ': ' + ((v.visual && !v.visual.ok ? 'visual: ' + v.visual.notes.join(', ') : '') || (v.manager && v.manager.feedback) || 'n/a'); }).join('\n'));
+  return { summary: `${n} reviewed.`, quiet: true };
+}
+
+const RUN = { social_research: (e) => pipe(e, 'social_research', 'Research team', researchDesk), social_visual: (e) => pipe(e, 'social_visual', 'Visual expert', visualDesk), social_writer: (e) => pipe(e, 'social_writer', 'Content writer', writerDesk), social_manager: managerSkill, content_writer: contentWriter, product_copy: productCopy, keyword_research: keywordSkill, cj_orders: cjOrders, order_watch: orderWatch, social_fill: socialFill, seo_health: seoHealth, content_review: contentReview, daily_report: dailyReport };
 
 // Runs every skill that is switched on and due. Safe to call often: each skill has its own interval, and only one run goes at a time.
 export async function runAgent(env, { only, force } = {}) {
   const now = Date.now();
   const got = await env.DB.prepare("INSERT INTO settings (key,value) VALUES ('agent_lock',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value WHERE CAST(settings.value AS INTEGER) < ?").bind(String(now), now - 240000).run();
   if (!got.meta || got.meta.changes < 1) return { ran: [], note: 'busy' };
-  const ran = [];
+  const ran = []; let budget = 45;
   try {
     const st = await agentState(env);
     for (const sk of SKILLS) {
@@ -230,6 +249,7 @@ export async function runAgent(env, { only, force } = {}) {
       const last = st.last[sk.id] || 0;
       if (!force && now - last < sk.everyMin * 60000) continue;
       if (!force && sk.hourIst !== undefined && istHour() < sk.hourIst) continue;
+      const cost = sk.cost ?? 3; if (!force && cost > budget) continue; budget -= cost;
       st.last[sk.id] = now;
       try { const r = await RUN[sk.id](env, st); ran.push({ skill: sk.id, ...r }); if (!r.quiet) await note(env, sk.id, 'info', r.summary, null).catch(() => {}); }
       catch (e) { ran.push({ skill: sk.id, error: String(e.message || e) }); await note(env, sk.id, 'alert', `${sk.title} failed`, String(e.message || e)).catch(() => {}); }

@@ -3,11 +3,11 @@ import { slugify } from './store.js';
 
 export const hasKey = (env) => !!(env.GEMINI_API_KEY || env.ANTHROPIC_API_KEY);
 // Uses Claude when ANTHROPIC_API_KEY is set, otherwise Google Gemini's free tier (GEMINI_API_KEY).
-export async function claude(env, { system, prompt, max = 3500 }) {
+export async function claude(env, { system, prompt, max = 3500, image }) {
   if (env.ANTHROPIC_API_KEY) {
     const r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST', headers: { 'content-type': 'application/json', 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-      body: JSON.stringify({ model: env.ANTHROPIC_MODEL || 'claude-sonnet-5-5', max_tokens: max, system, messages: [{ role: 'user', content: prompt }] }),
+      body: JSON.stringify({ model: env.ANTHROPIC_MODEL || 'claude-sonnet-5-5', max_tokens: max, system, messages: [{ role: 'user', content: image ? [{ type: 'image', source: { type: 'base64', media_type: image.mime, data: image.b64 } }, { type: 'text', text: prompt }] : prompt }] }),
     });
     const j = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error('Claude API: ' + (j.error?.message || r.status));
@@ -17,7 +17,7 @@ export async function claude(env, { system, prompt, max = 3500 }) {
   const model = env.GEMINI_MODEL || 'gemini-2.5-flash';
   const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
     method: 'POST', headers: { 'content-type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY },
-    body: JSON.stringify({ systemInstruction: { parts: [{ text: system }] }, contents: [{ role: 'user', parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: max + 2000, temperature: 0.7, thinkingConfig: { thinkingBudget: 0 } } }),
+    body: JSON.stringify({ systemInstruction: { parts: [{ text: system }] }, contents: [{ role: 'user', parts: [...(image ? [{ inlineData: { mimeType: image.mime, data: image.b64 } }] : []), { text: prompt }] }], generationConfig: { maxOutputTokens: max + 2000, temperature: 0.7, thinkingConfig: { thinkingBudget: 0 } } }),
   });
   const j = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error('Gemini API: ' + (j.error?.message || r.status));
