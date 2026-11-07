@@ -28,7 +28,7 @@ export function headTags({ title, description, canonical, image, type = 'website
   gtag('js', new Date());
   gtag('config', 'AW-18551578709');
 </script>
-<script>(function(){function s(){var d=new Date(),i=new Date(d.getTime()+19800000),y=i.getUTCFullYear(),n=Math.floor((Date.UTC(y,i.getUTCMonth(),i.getUTCDate())-Date.UTC(y,0,0))/864e5),g=2*Math.PI/365*(n-1),r=Math.PI/180,la=28.6139*r,q=229.18*(7.5e-5+.001868*Math.cos(g)-.032077*Math.sin(g)-.014615*Math.cos(2*g)-.040849*Math.sin(2*g)),de=.006918-.399912*Math.cos(g)+.070257*Math.sin(g)-.006758*Math.cos(2*g)+.000907*Math.sin(2*g)-.002697*Math.cos(3*g)+.00148*Math.sin(3*g),h=Math.acos(Math.cos(90.833*r)/(Math.cos(la)*Math.cos(de))-Math.tan(la)*Math.tan(de))/r,up=720-4*(77.209+h)-q+330,dn=720-4*(77.209-h)-q+330,m=i.getUTCHours()*60+i.getUTCMinutes();return m<up||m>=dn?'dark':'light'}function a(){var t=s();try{var o=localStorage.getItem('wc_theme');if(o==='dark'||o==='light')t=o;var p=new URLSearchParams(location.search).get('theme');if(p==='dark'||p==='light')t=p}catch(e){}var e=document.documentElement;if(e.getAttribute('data-theme')!==t){e.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='dark'?'#1B1E24':'#2874F0')}}window.wcTheme={auto:s,apply:a};a();setInterval(a,6e4);document.addEventListener('visibilitychange',a)})()</script>
+<script>(function(){function s(){var d=new Date(),i=new Date(d.getTime()+19800000),y=i.getUTCFullYear(),n=Math.floor((Date.UTC(y,i.getUTCMonth(),i.getUTCDate())-Date.UTC(y,0,0))/864e5),g=2*Math.PI/365*(n-1),r=Math.PI/180,la=28.6139*r,q=229.18*(7.5e-5+.001868*Math.cos(g)-.032077*Math.sin(g)-.014615*Math.cos(2*g)-.040849*Math.sin(2*g)),de=.006918-.399912*Math.cos(g)+.070257*Math.sin(g)-.006758*Math.cos(2*g)+.000907*Math.sin(2*g)-.002697*Math.cos(3*g)+.00148*Math.sin(3*g),h=Math.acos(Math.cos(90.833*r)/(Math.cos(la)*Math.cos(de))-Math.tan(la)*Math.tan(de))/r,up=720-4*(77.209+h)-q+330,dn=720-4*(77.209-h)-q+330,m=i.getUTCHours()*60+i.getUTCMinutes();return m<up||m>=dn?'dark':'light'}function a(){var t=s();try{var o=localStorage.getItem('wc_mode');if(o==='dark'||o==='light')t=o;var p=new URLSearchParams(location.search).get('theme');if(p==='dark'||p==='light')t=p}catch(e){}var e=document.documentElement;if(e.getAttribute('data-theme')!==t){e.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='dark'?'#1B1E24':'#2874F0')}}window.wcTheme={auto:s,apply:a};a();setInterval(a,6e4);document.addEventListener('visibilitychange',a)})()</script>
 <meta property="og:site_name" content="WinkCasa">
 <meta property="og:locale" content="en_IN">
 <meta property="og:type" content="${type}">
@@ -182,7 +182,7 @@ ${verifyMeta(S)}
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Hanken+Grotesk:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="/page.css">
-<link rel="stylesheet" href="/site.css?v=20261118">
+<link rel="stylesheet" href="/site.css?v=20261119">
 ${jsonld.filter(Boolean).map(ld).join('\n')}
 </head><body><div class="wrap">${headerHtml(S, cats)}</div>${main}<div class="wrap">${footerHtml(S, cats)}</div><script src="/site.js" defer></script>${scripts}</body></html>`;
 }

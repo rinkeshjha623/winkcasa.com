@@ -145,7 +145,7 @@
     document.addEventListener('click', function (e) {
       var b = e.target.closest && e.target.closest('[data-theme-toggle]'); if (!b || !window.wcTheme) return;
       var n = cur() === 'dark' ? 'light' : 'dark';
-      try { if (n === window.wcTheme.auto()) localStorage.removeItem('wc_theme'); else localStorage.setItem('wc_theme', n); } catch (x) {}
+      try { if (n === window.wcTheme.auto()) localStorage.removeItem('wc_mode'); else localStorage.setItem('wc_mode', n); } catch (x) {}
       window.wcTheme.apply(); label();
     });
     label(); setInterval(label, 60000);
