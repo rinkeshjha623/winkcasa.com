@@ -673,3 +673,14 @@ html:root:root:root header.bar.amz .amz2 a:focus:not(:hover){border-color:transp
 html:root:root:root header.bar.amz .amz2{gap:0}
 html:root:root:root header.bar.amz .amz2 a,html:root:root:root header.bar.amz .amzall{padding:9px 8px;font-size:.9rem}
 html:root:root:root header.bar.amz .amz2::after{content:"";flex:0 0 14px}
+
+/* mobile header: row 1 = menu, logo, account, cart; row 2 = full-width search */
+@media(max-width:900px){
+ html:root:root:root header.bar.amz .amz1 .amzburger{order:-2}
+ html:root:root:root header.bar.amz .amz1 .logo{order:-1;margin-right:auto;font-size:1.25rem}
+ html:root:root:root header.bar.amz .amz1 .rt{order:1}
+ html:root:root:root header.bar.amz .amz1 .srchbar[hidden],html:root:root:root header.bar.amz .amz1 .srchbar{order:5;flex:0 0 100%;width:100%}
+ html:root:root:root header.bar.amz .amz1 .srchbar input{height:40px}
+ html:root:root:root header.bar.amz .amzl small{font-size:.68rem}
+ html:root:root:root header.bar.amz .amzl{font-size:.85rem}
+}
