@@ -541,3 +541,12 @@ html:root:root:root .sitefoot .fcols h4{color:#878787;letter-spacing:.06em;font-
 html:root:root:root .sitefoot .paym .pm{background:#fff;color:#212121;border:0;border-radius:2px}
 html:root:root:root .sitefoot .fbase{border-top-color:#3a3a3a}
 html:root:root:root header.bar .logo{font-size:1.55rem}html:root:root:root header.bar .logo .lashico{width:44px;height:26px}html:root:root:root header.bar .logo span{font-size:1.2rem;font-weight:600;letter-spacing:.14em}
+
+/* CTA colours as on current Flipkart: white "Add to cart", yellow gradient "Buy" / "Place order" with dark text */
+html:root:root:root button.add,html:root:root:root .add{background:#fff;color:#212121;border:1px solid #D5D5D5;border-radius:12px;font-weight:600;box-shadow:none}
+html:root:root:root button.add:hover,html:root:root:root .add:hover{border-color:#212121;background:#fff}
+html:root:root:root button.buy,html:root:root:root .buy,html:root:root:root .btn:not(.alt):not(.ghost),html:root:root:root button.btn:not(.alt),html:root:root:root .hero .btn:not(.alt),html:root:root:root body:has(#cartPage) .cartbar .btn,html:root:root:root body:has(#cartPage) #pay{background:linear-gradient(90deg,#FBE442,#F4C93D);color:#212121;border:0;border-radius:12px;font-weight:700;box-shadow:none;letter-spacing:.04em}
+html:root:root:root button.buy:hover,html:root:root:root .btn:not(.alt):not(.ghost):hover,html:root:root:root body:has(#cartPage) .cartbar .btn:hover,html:root:root:root body:has(#cartPage) #pay:hover{filter:brightness(.96)}
+html:root:root:root .btn.alt,html:root:root:root .btn.ghost{border-radius:12px}
+html:root:root:root .btn.alt:hover{background:#fff;color:#2874F0}
+html:root:root:root .btn[disabled],html:root:root:root button[disabled].buy,html:root:root:root #pay[disabled]{opacity:.55;filter:none}
