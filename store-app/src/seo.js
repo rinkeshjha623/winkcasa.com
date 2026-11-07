@@ -109,14 +109,21 @@ export function productLd(p, S) {
 
 /* ---------- shared HTML pieces (used by home, product and category pages) ---------- */
 export function headerHtml(S, cats = []) {
-  const shop = cats.map((c) => `<a href="${esc(c.path)}">${esc(c.name)}</a>`).join('');
-  const links = [['/', 'Home'], ['/#shop', 'Shop'], ['/blog', 'Blog'], ['/about', 'About us'], ['/contact', 'Contact us']];
-  return `<header class="bar"><div class="navwrap"><nav class="nav" aria-label="Main">
-<a href="/">Home</a>
-<div class="dd"><a href="/#shop" aria-haspopup="true">Categories ▾</a><div class="ddl"><a href="/#shop">All products</a>${shop}</div></div>
-<a href="/try">Find your look</a><a href="/blog">Blog</a><a href="/about">About us</a><a href="/contact">Contact us</a></nav>
-<details class="mmenu"><summary>Menu</summary><div class="mlist"><a href="/">Home</a>${shop}<a href="/#shop">All products</a><a href="/try">Find your look</a><a href="/blog">Blog</a><a href="/about">About us</a><a href="/contact">Contact us</a><a href="/track">Track your order</a><a class="macct" href="/account">My account</a></div></details></div>
-${logoHtml(S)}<div class="rt"><button class="srchbtn" type="button" data-search-open aria-label="Search products" title="Search"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5" stroke-linecap="round"/></svg></button><button class="themebtn" type="button" data-theme-toggle aria-label="Switch colour theme" title="Switch between dark and light"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 0 0 16z" fill="currentColor"/></svg></button><a class="acctlink" href="/account" data-acct>Account</a><a class="cartbtn" href="/cart" aria-label="View cart">Cart <b data-cartcount>0</b></a></div><div class="srchbar" id="srchbar" hidden><form action="/search" method="get" role="search"><input type="search" name="q" placeholder="Search for earrings, hair clips, beauty tools and more" aria-label="Search products" autocomplete="off" id="srchin"><button type="submit">Search</button><button type="button" class="srchx" data-search-close aria-label="Close search">&times;</button></form><div class="srchres" id="srchres"></div></div></header>`;
+  const catLinks = cats.map((c) => `<a href="${esc(c.path)}">${esc(c.name)}</a>`).join('');
+  const drawerCats = cats.map((c) => `<a href="${esc(c.path)}"><span>${esc(c.name)}</span><i aria-hidden="true">›</i></a>`).join('');
+  const burger = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>';
+  return `<header class="bar amz"><div class="amz1"><button class="amzall amzburger" type="button" data-drawer-open aria-label="Open menu">${burger}</button>${logoHtml(S)}
+<div class="amzloc"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.500C5 14.800 12 21 12 21Z"/><circle cx="12" cy="9.500" r="2.500"/></svg><span><small>Delivering across India</small><b>Free over ₹999</b></span></div>
+<div class="srchbar" id="srchbar" hidden><form action="/search" method="get" role="search"><input type="search" name="q" placeholder="Search for earrings, hair clips, beauty tools and more" aria-label="Search products" autocomplete="off" id="srchin"><button type="submit" aria-label="Search"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="6.500"/><path d="M16 16l4.500 4.500" stroke-linecap="round"/></svg></button><button type="button" class="srchx" data-search-close aria-label="Close search">&times;</button></form><div class="srchres" id="srchres"></div></div>
+<div class="rt"><button class="themebtn" type="button" data-theme-toggle aria-label="Switch colour theme" title="Switch between day and night"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 0 0 16z" fill="currentColor"/></svg></button>
+<a class="acctlink amzl" href="/account" data-acct><small data-hello>Hello, sign in</small><b>Account</b></a><a class="amzl amzret" href="/track"><small>Returns</small><b>&amp; Orders</b></a>
+<a class="cartbtn" href="/cart" aria-label="View cart"><span class="cico"><svg viewBox="0 0 32 28" width="34" height="30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h4l3.500 15h15L28 8H8"/><circle cx="12" cy="24" r="2"/><circle cx="23" cy="24" r="2"/></svg><b data-cartcount>0</b></span><span class="ctxt">Cart</span></a></div></div>
+<nav class="amz2" aria-label="Main"><button class="amzall" type="button" data-drawer-open>${burger}<span>All</span></button><a href="/">Home</a>${catLinks}<a href="/try">Find your look</a><a href="/blog">Blog</a><a href="/about">About us</a><a href="/contact">Contact us</a></nav>
+<div class="drawer" id="drawer" hidden><div class="dback" data-drawer-close></div><aside class="dpanel" role="dialog" aria-label="Menu"><a class="dhead" href="/account"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor" aria-hidden="true"><circle cx="12" cy="8" r="4.500"/><path d="M3.500 21c.5-4.500 4-7 8.500-7s8 2.500 8.500 7z"/></svg><b data-hello2>Hello, sign in</b></a>
+<div class="dsec"><h3>Shop by category</h3><a href="/#shop"><span>All products</span><i aria-hidden="true">›</i></a>${drawerCats}</div>
+<div class="dsec"><h3>Explore</h3><a href="/try"><span>Find your look</span></a><a href="/blog"><span>The Journal</span></a><a href="/about"><span>About WinkCasa</span></a></div>
+<div class="dsec"><h3>Help &amp; settings</h3><a href="/account"><span>Your account</span></a><a href="/track"><span>Track your order</span></a><a href="/returns"><span>Returns &amp; refunds</span></a><a href="/shipping"><span>Shipping &amp; delivery</span></a><a href="/contact"><span>Contact us</span></a></div>
+<button class="dclose" type="button" data-drawer-close aria-label="Close menu">&times;</button></aside></div></header>`;
 }
 
 export const payMethodsHtml = () => `<div class="paym" aria-label="Payment options"><span class="pm">UPI</span><span class="pm">Credit &amp; debit cards</span><span class="pm">Net banking</span><span class="pms">Secure payment by Razorpay</span></div>`;
@@ -182,7 +189,7 @@ ${verifyMeta(S)}
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Hanken+Grotesk:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="/page.css">
-<link rel="stylesheet" href="/site.css?v=20261119">
+<link rel="stylesheet" href="/site.css?v=20261120">
 ${jsonld.filter(Boolean).map(ld).join('\n')}
 </head><body><div class="wrap">${headerHtml(S, cats)}</div>${main}<div class="wrap">${footerHtml(S, cats)}</div><script src="/site.js" defer></script>${scripts}</body></html>`;
 }

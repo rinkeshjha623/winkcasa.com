@@ -586,3 +586,66 @@ html:root:root:root header.bar .themebtn:hover{border-color:#2874F0;color:#2874F
 html:root:root:root[data-theme="dark"] header.bar .themebtn{background:#262A31;border-color:#3A404A;color:#EDEDED}
 html:root:root:root[data-theme="dark"] header.bar .themebtn:hover{border-color:#5C9DFF;color:#5C9DFF}
 html:root:root:root header.bar .rt{gap:20px}
+
+/* ===== Amazon-style header: navy top bar with search + yellow button, second nav row, side drawer ===== */
+html:root:root:root header.bar.amz{display:block;position:relative;isolation:isolate;z-index:80;padding:0;background:none}
+html:root:root:root header.bar.amz::before{background:#131921;border:0;box-shadow:none;bottom:auto;height:100%}
+html:root:root:root header.bar.amz .amz1{display:flex;align-items:center;gap:18px;padding:10px 0;color:#fff}
+html:root:root:root header.bar.amz .logo{color:#fff;flex:none;font-size:1.5rem}
+html:root:root:root header.bar.amz .logo *{color:#fff}
+html:root:root:root header.bar.amz .amzloc{display:flex;align-items:center;gap:6px;color:#fff;flex:none;line-height:1.15;font-size:.9rem}
+html:root:root:root header.bar.amz .amzloc small{display:block;color:#CCC;font-size:.74rem}
+html:root:root:root header.bar.amz .amzloc b{font-weight:700}
+html:root:root:root header.bar.amz .srchbar[hidden],html:root:root:root header.bar.amz .srchbar{display:block;position:relative;flex:1;min-width:0;grid-area:auto;padding:0;background:none;border:0;box-shadow:none}
+html:root:root:root header.bar.amz .srchbar form{display:flex}
+html:root:root:root header.bar.amz .srchbar input{flex:1;min-width:0;height:42px;border:2px solid #FEBD69 !important;border-right:0 !important;border-radius:6px 0 0 6px !important;background:#fff !important;color:#0F1111 !important;padding:0 14px;font-size:.95rem}
+html:root:root:root header.bar.amz .srchbar input:focus{outline:0;box-shadow:0 0 0 3px rgba(254,189,105,.5)}
+html:root:root:root header.bar.amz .srchbar form>button[type=submit]{display:flex;align-items:center;justify-content:center;width:48px;height:42px;padding:0;border:0;border-radius:0 6px 6px 0;background:#FEBD69;color:#131921;cursor:pointer}
+html:root:root:root header.bar.amz .srchbar form>button[type=submit]:hover{background:#F3A847}
+html:root:root:root header.bar.amz .srchbar .srchx{display:none}
+html:root:root:root header.bar.amz .srchres{position:absolute;top:100%;left:0;right:0;z-index:90;background:#fff;color:#0F1111;border-radius:0 0 6px 6px;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+html:root:root:root header.bar.amz .rt{display:flex;align-items:center;gap:16px;flex:none}
+html:root:root:root header.bar.amz .amzl{display:block;color:#fff;line-height:1.15;font-size:.95rem;white-space:nowrap;text-decoration:none;padding:4px 2px;border:1px solid transparent;border-radius:2px;margin:0;letter-spacing:0;text-transform:none}
+html:root:root:root header.bar.amz .amzl small{display:block;font-size:.74rem;font-weight:400;color:#fff}
+html:root:root:root header.bar.amz .amzl b{font-weight:700}
+html:root:root:root header.bar.amz .amzl:hover,html:root:root:root header.bar.amz .cartbtn:hover{border-color:#fff;color:#fff;background:none}
+html:root:root:root header.bar.amz .cartbtn{display:flex;align-items:flex-end;gap:4px;color:#fff;border:1px solid transparent;padding:2px 4px;font-size:1rem;font-weight:700;letter-spacing:0;text-transform:none;background:none;margin:0}
+html:root:root:root header.bar.amz .cico{position:relative;display:inline-flex}
+html:root:root:root header.bar.amz .cartbtn b{position:absolute;left:11px;top:-7px;min-width:16px;text-align:center;background:none;color:#F08804;font-size:1rem;padding:0;border-radius:0}
+html:root:root:root header.bar.amz .themebtn{display:inline-flex;background:none;border:1px solid #5b6572;color:#fff}
+html:root:root:root header.bar.amz .themebtn:hover{border-color:#fff;color:#fff}
+html:root:root:root header.bar.amz .amzburger{display:none}
+html:root:root:root header.bar.amz .amz2{position:relative;isolation:isolate;display:flex;align-items:center;gap:4px;overflow-x:auto;scrollbar-width:none;padding:0;color:#fff}
+html:root:root:root header.bar.amz .amz2::-webkit-scrollbar{display:none}
+html:root:root:root header.bar.amz .amz2::before{content:"";position:absolute;z-index:-1;top:0;bottom:0;left:-100vmax;right:-100vmax;background:#232F3E}
+html:root:root:root header.bar.amz .amz2 a,html:root:root:root header.bar.amz .amzall{display:flex;align-items:center;gap:6px;color:#fff;background:none;border:1px solid transparent;border-radius:2px;padding:8px 10px;font:inherit;font-size:.92rem;font-weight:500;letter-spacing:0;text-transform:none;white-space:nowrap;text-decoration:none;cursor:pointer}
+html:root:root:root header.bar.amz .amz2 a:hover,html:root:root:root header.bar.amz .amzall:hover{border-color:#fff}
+html:root:root:root header.bar.amz .amz2 .amzall{font-weight:700;padding-left:2px}
+/* drawer */
+html:root:root:root header.bar.amz .drawer[hidden]{display:none}
+html:root:root:root header.bar.amz .drawer{position:fixed;inset:0;z-index:200}
+html:root:root:root header.bar.amz .dback{position:absolute;inset:0;background:rgba(0,0,0,.7)}
+html:root:root:root header.bar.amz .dpanel{position:absolute;left:0;top:0;bottom:0;width:min(365px,86vw);overflow-y:auto;background:#fff;color:#0F1111;animation:dslide .2s ease-out}
+@keyframes dslide{from{transform:translateX(-100%)}to{transform:none}}
+html:root:root:root header.bar.amz .dhead{display:flex;align-items:center;gap:10px;background:#232F3E;color:#fff;padding:14px 22px;font-size:1.15rem;text-decoration:none}
+html:root:root:root header.bar.amz .dsec{padding:10px 0;border-bottom:1px solid #D5D9D9}
+html:root:root:root header.bar.amz .dsec h3{margin:6px 0 4px;padding:6px 36px;font-family:inherit;font-size:1.1rem;font-weight:700;color:#0F1111}
+html:root:root:root header.bar.amz .dsec a{display:flex;justify-content:space-between;align-items:center;padding:12px 36px;color:#0F1111;text-decoration:none;font-size:.95rem}
+html:root:root:root header.bar.amz .dsec a:hover{background:#EAEDED}
+html:root:root:root header.bar.amz .dsec i{font-style:normal;color:#888;font-size:1.3rem}
+html:root:root:root header.bar.amz .dclose{position:fixed;left:calc(min(365px,86vw) + 10px);top:10px;background:none;border:0;color:#fff;font-size:2.2rem;line-height:1;cursor:pointer}
+html:root:root:root[data-theme="dark"] header.bar.amz .dpanel{background:#1B1E24;color:#EDEDED}
+html:root:root:root[data-theme="dark"] header.bar.amz .dsec{border-bottom-color:#2C313A}
+html:root:root:root[data-theme="dark"] header.bar.amz .dsec h3,html:root:root:root[data-theme="dark"] header.bar.amz .dsec a{color:#EDEDED}
+html:root:root:root[data-theme="dark"] header.bar.amz .dsec a:hover{background:#262A31}
+html:root:root:root[data-theme="dark"] header.bar.amz::before{background:#0B0F14}
+html:root:root:root[data-theme="dark"] header.bar.amz .themebtn{background:none;border-color:#5b6572;color:#fff}
+@media(max-width:900px){
+ html:root:root:root header.bar.amz .amz1{flex-wrap:wrap;gap:8px 10px;padding:8px 0}
+ html:root:root:root header.bar.amz .amzburger{display:flex;padding:4px}
+ html:root:root:root header.bar.amz .logo{margin-right:auto}
+ html:root:root:root header.bar.amz .amzloc,html:root:root:root header.bar.amz .amzret,html:root:root:root header.bar.amz .themebtn{display:none}
+ html:root:root:root header.bar.amz .rt{gap:8px}
+ html:root:root:root header.bar.amz .srchbar{order:5;flex:1 0 100%}
+ html:root:root:root header.bar.amz .ctxt{display:none}
+}

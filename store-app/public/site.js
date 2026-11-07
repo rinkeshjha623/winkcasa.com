@@ -151,6 +151,20 @@
     label(); setInterval(label, 60000);
   })();
 
+  // Amazon-style header: side menu drawer, and the signed-in name.
+  (function () {
+    var d = document.getElementById('drawer'); if (!d) return;
+    function open() { d.hidden = false; document.documentElement.style.overflow = 'hidden'; }
+    function close() { d.hidden = true; document.documentElement.style.overflow = ''; }
+    document.addEventListener('click', function (e) { var t = e.target; if (!t.closest) return; if (t.closest('[data-drawer-open]')) { open(); return; } if (t.closest('[data-drawer-close]')) { close(); return; } if (!d.hidden && t.closest('#drawer .dpanel a')) close(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !d.hidden) close(); });
+    if (/(?:^|;\s*)wc_in=1/.test(document.cookie)) fetch('/api/account', { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (x) {
+      if (!x.customer) return; var n = String(x.customer.name || '').trim().split(/\s+/)[0] || 'there';
+      [].forEach.call(document.querySelectorAll('[data-hello]'), function (e) { e.textContent = 'Hello, ' + n; });
+      [].forEach.call(document.querySelectorAll('[data-hello2]'), function (e) { e.textContent = 'Hello, ' + n; });
+    }).catch(function () {});
+  })();
+
   // Header search: opens a bar with instant suggestions; Enter goes to /search.
   (function () {
     var bar = document.getElementById('srchbar'); if (!bar) return;
