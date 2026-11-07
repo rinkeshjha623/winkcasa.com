@@ -3,7 +3,7 @@
 // Posts made by hand skip all of this. Every desk writes what it decided into the post (review_json) and the agent log.
 import { claude, hasKey } from './writer.js';
 import { topKeywords } from './keywords.js';
-import { dims, b64, makeGraphic, blogCovers, socialNoMedia } from './graphics.js';
+import { dims, b64, makeGraphic, makeSocialText, socialNoMedia, upgradeBlogCovers, upgradeSocialCards } from './graphics.js';
 
 const j = (v, d = {}) => { try { return JSON.parse(v) || d; } catch { return d; } };
 const save = (env, id, f) => { const ks = Object.keys(f); return env.DB.prepare(`UPDATE social_posts SET ${ks.map((k) => k + '=?').join(',')} WHERE id=?`).bind(...ks.map((k) => (typeof f[k] === 'object' && f[k] !== null ? JSON.stringify(f[k]) : f[k])), id).run(); };
@@ -63,7 +63,7 @@ export async function visualDesk(env, n = 3) {
     }
     let media2 = media;
     if (ok && img && !j(p.brief_json).branded) {
-      try { const g = await makeGraphic(env, img.url, 'social'); media2 = [{ url: g, type: 'image' }, ...media.filter((m) => m !== img)]; notes.push('branded WinkCasa graphic created'); await save(env, p.id, { brief_json: { ...j(p.brief_json), branded: true, original: img.url } }); }
+      try { const prod0 = p.product_id ? await env.DB.prepare('SELECT name,price FROM products WHERE id=?').bind(p.product_id).first() : null; const g = prod0 ? await makeSocialText(env, img.url, { line1: prod0.name.replace(/\s+/g, ' ').slice(0, 70), line2: '₹' + Number(prod0.price).toLocaleString('en-IN') + '  ·  FREE DELIVERY ABOVE ₹999  ·  WINKCASA.COM' }) : await makeGraphic(env, img.url, 'social'); media2 = [{ url: g, type: 'image' }, ...media.filter((m) => m !== img)]; notes.push('branded WinkCasa graphic created'); await save(env, p.id, { brief_json: { ...j(p.brief_json), branded: true, original: img.url } }); }
       catch (e) { notes.push('branding skipped: ' + e.message.slice(0, 120)); }
     }
     const rv = { ...j(p.review_json), visual: { ok, notes } };
@@ -152,6 +152,6 @@ export const brief = (p) => j(p.brief_json);
 
 // Everything else the visual expert makes: covers for blog posts that have none, pictures for auto posts that have none.
 export async function graphicsDesk(env) {
-  const b = await blogCovers(env, 2), sm = await socialNoMedia(env, 3);
-  return { made: [...b.made.map((x) => 'Blog cover: ' + x), ...sm.made.map((x) => 'Social graphic: ' + x)], fails: [...b.fails, ...sm.fails] };
+  const b = await upgradeBlogCovers(env, 2), c = await upgradeSocialCards(env, 2), sm = await socialNoMedia(env, 2);
+  return { made: [...b.made.map((x) => 'Blog cover: ' + x), ...c.made.map((x) => 'Social card: ' + x), ...sm.made.map((x) => 'Social graphic: ' + x)], fails: [...b.fails, ...c.fails, ...sm.fails] };
 }
