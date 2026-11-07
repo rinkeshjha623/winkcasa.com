@@ -509,3 +509,6 @@ html:root:root:root .hero::before{background:none}
 html:root:root:root .catcap small,html:root:root:root .catcap b{color:#fff}
 html:root:root:root .sitefoot .flogo,html:root:root:root .sitefoot .flogo *{color:#fff}
 html:root:root:root .sitefoot .flogo svg{color:#fff;stroke:#fff}
+html:root:root:root button.buy,html:root:root:root .buy{background:#FB641B;color:#fff;border-color:#FB641B;border-radius:2px}
+html:root:root:root button.add,html:root:root:root .add{background:#FF9F00;color:#fff;border-color:#FF9F00;border-radius:2px}
+html:root:root:root .hero .btn:not(.alt){background:#FB641B}
