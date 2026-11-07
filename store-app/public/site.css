@@ -614,7 +614,7 @@ html:root:root:root header.bar.amz .cico{position:relative;display:inline-flex}
 html:root:root:root header.bar.amz .cartbtn b{position:absolute;left:11px;top:-7px;min-width:16px;text-align:center;background:none;color:#F08804;font-size:1rem;padding:0;border-radius:0}
 html:root:root:root header.bar.amz .themebtn{display:inline-flex;background:none;border:1px solid #5b6572;color:#fff}
 html:root:root:root header.bar.amz .themebtn:hover{border-color:#fff;color:#fff}
-html:root:root:root header.bar.amz .amzburger{display:none}
+html:root:root:root header.bar.amz .amz1 .amzburger{display:none}
 html:root:root:root header.bar.amz .amz2{position:relative;isolation:isolate;display:flex;align-items:center;gap:4px;overflow-x:auto;scrollbar-width:none;padding:0;color:#fff}
 html:root:root:root header.bar.amz .amz2::-webkit-scrollbar{display:none}
 html:root:root:root header.bar.amz .amz2::before{content:"";position:absolute;z-index:-1;top:0;bottom:0;left:-100vmax;right:-100vmax;background:#232F3E}
@@ -642,7 +642,7 @@ html:root:root:root[data-theme="dark"] header.bar.amz::before{background:#0B0F14
 html:root:root:root[data-theme="dark"] header.bar.amz .themebtn{background:none;border-color:#5b6572;color:#fff}
 @media(max-width:900px){
  html:root:root:root header.bar.amz .amz1{flex-wrap:wrap;gap:8px 10px;padding:8px 0}
- html:root:root:root header.bar.amz .amzburger{display:flex;padding:4px}
+ html:root:root:root header.bar.amz .amz1 .amzburger{display:flex;padding:4px}
  html:root:root:root header.bar.amz .logo{margin-right:auto}
  html:root:root:root header.bar.amz .amzloc,html:root:root:root header.bar.amz .amzret,html:root:root:root header.bar.amz .themebtn{display:none}
  html:root:root:root header.bar.amz .rt{gap:8px}
