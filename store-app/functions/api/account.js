@@ -1,6 +1,10 @@
 import { json } from '../../src/lib.js';
 import { hashPassword, checkPassword, startSession, endSession, clearCookies, getCustomer, jsonCookies } from '../../src/auth.js';
 import { activeProducts, productPath } from '../../src/store.js';
+import { sendMail, mailReady } from '../../src/mail.js';
+
+const sha256 = async (x) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(x)))].map((n) => n.toString(16).padStart(2, '0')).join('');
+const RESET_SQL = 'CREATE TABLE IF NOT EXISTS password_resets (token_hash TEXT PRIMARY KEY, customer_id INTEGER NOT NULL, expires_at TEXT NOT NULL, created_at TEXT NOT NULL DEFAULT (datetime(\'now\')))';
 
 const t = (v, n) => String(v ?? '').trim().slice(0, n);
 const okEmail = (e) => /^\S+@\S+\.\S+$/.test(e);
@@ -60,6 +64,42 @@ export async function onRequestPost({ request, env }) {
     const r = await env.DB.prepare('INSERT INTO customers (email,name,phone,pass_hash,pass_salt) VALUES (?,?,?,?,?)').bind(email, name, phone || null, hash, salt).run();
     const me = { id: r.meta.last_row_id, email, name, phone: phone || null };
     return jsonCookies(await overview(env, me), 200, await startSession(env, me.id));
+  }
+
+  if (act === 'forgot') {
+    if (b.website) return json({ ok: true });
+    if (!mailReady(env)) return json({ error: 'Password reset by email is not switched on yet. Please write to us from the Contact page.' }, 503);
+    const email = t(b.email, 120).toLowerCase();
+    if (!okEmail(email)) return json({ error: 'Enter a valid email address.' }, 400);
+    await env.DB.prepare(RESET_SQL).run();
+    const c = await env.DB.prepare('SELECT id, name FROM customers WHERE email=?').bind(email).first();
+    if (c) {
+      const recent = await env.DB.prepare("SELECT COUNT(*) n FROM password_resets WHERE customer_id=? AND created_at > datetime('now','-1 hour')").bind(c.id).first();
+      if ((recent?.n || 0) < 3) {
+        const token = [...crypto.getRandomValues(new Uint8Array(32))].map((n) => n.toString(16).padStart(2, '0')).join('');
+        const exp = new Date(Date.now() + 30 * 60000).toISOString().slice(0, 19).replace('T', ' ');
+        await env.DB.prepare('INSERT INTO password_resets (token_hash, customer_id, expires_at) VALUES (?,?,?)').bind(await sha256(token), c.id, exp).run();
+        const link = 'https://www.winkcasa.com/account?reset=' + token;
+        try {
+          await sendMail(env, { to: email, subject: 'Reset your WinkCasa password',
+            text: `Hello ${c.name},\n\nUse this link to choose a new password (valid for 30 minutes):\n${link}\n\nIf you did not ask for this, ignore this email; your password stays the same.\n\nWinkCasa`,
+            html: `<p>Hello ${String(c.name).replace(/[<>&]/g, '')},</p><p><a href="${link}">Choose a new password</a> (this link works for 30 minutes).</p><p>If you did not ask for this, ignore this email. Your password stays the same.</p><p>WinkCasa</p>` });
+        } catch (e) { console.log('reset mail failed', e.message); }
+      }
+    }
+    return json({ ok: true });
+  }
+
+  if (act === 'reset') {
+    const token = t(b.token, 100), pe = badPw(b.password); if (pe) return json({ error: pe }, 400);
+    await env.DB.prepare(RESET_SQL).run();
+    const row = token ? await env.DB.prepare("SELECT customer_id FROM password_resets WHERE token_hash=? AND expires_at > datetime('now')").bind(await sha256(token)).first() : null;
+    if (!row) return json({ error: 'This reset link has expired or was already used. Please request a new one.' }, 400);
+    const { hash, salt } = await hashPassword(b.password);
+    await env.DB.prepare('UPDATE customers SET pass_hash=?, pass_salt=?, fails=0, locked_until=NULL WHERE id=?').bind(hash, salt, row.customer_id).run();
+    await env.DB.prepare('DELETE FROM password_resets WHERE customer_id=?').bind(row.customer_id).run();
+    await env.DB.prepare('DELETE FROM sessions WHERE customer_id=?').bind(row.customer_id).run();
+    return json({ ok: true });
   }
 
   if (act === 'login') {

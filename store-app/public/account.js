@@ -6,6 +6,7 @@
   var day = function (s) { return s ? utc(s).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Kolkata' }) : ''; };
   var LBL = { new: 'Order received', ordered: 'Being prepared', shipped: 'Shipped', delivered: 'Delivered', cancelled: 'Cancelled', returned: 'Returned' };
   var D = null, tab = 'orders', mode = 'login', editing = null;
+  var resetTok = new URLSearchParams(location.search).get('reset') || '';
   var next = new URLSearchParams(location.search).get('next');
   var safeNext = next && /^\/[^\/\\]/.test(next) ? next : '';
 
@@ -16,7 +17,22 @@
   function msg(id, text, ok) { var e = document.getElementById(id); if (e) { e.textContent = text; e.className = 'msg' + (ok ? ' ok' : ''); } }
   function hint(on) { try { window.__wcIn = on; } catch (e) {} }
 
+  function forgotView() {
+    H.textContent = 'Forgotten your password?';
+    root.innerHTML = '<div class="authbox"><form class="form" id="ff" novalidate><p class="fine">Enter your email and we will send you a link to choose a new password.</p><label for="f_email">Email</label><input id="f_email" name="email" type="email" autocomplete="email" required maxlength="120"><input type="text" name="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px" aria-hidden="true"><button class="btn full" type="submit">Send reset link</button><p class="msg" id="fmsg" role="status"></p></form><p class="fine"><a href="#" id="fb">Back to log in</a></p></div>';
+    document.getElementById('fb').onclick = function (e) { e.preventDefault(); mode = 'login'; authView(); };
+    var f = document.getElementById('ff');
+    f.onsubmit = function (e) { e.preventDefault(); msg('fmsg', 'Sending…'); api({ action: 'forgot', email: f.email.value, website: f.website.value }).then(function () { msg('fmsg', 'If that email has an account, a reset link is on its way. Check your inbox and spam folder. The link works for 30 minutes.', true); }).catch(function (x) { msg('fmsg', x.message); }); };
+  }
+  function resetView() {
+    H.textContent = 'Choose a new password';
+    root.innerHTML = '<div class="authbox"><form class="form" id="rf" novalidate><label for="r_pw">New password <span class="opt">(at least 8 characters)</span></label><input id="r_pw" name="password" type="password" autocomplete="new-password" required maxlength="100"><button class="btn full" type="submit">Save new password</button><p class="msg" id="rmsg" role="status"></p></form></div>';
+    var f = document.getElementById('rf');
+    f.onsubmit = function (e) { e.preventDefault(); msg('rmsg', 'Saving…'); api({ action: 'reset', token: resetTok, password: f.password.value }).then(function () { resetTok = ''; history.replaceState(null, '', '/account'); mode = 'login'; authView(); msg('amsg', 'Password changed. Please log in with your new password.', true); }).catch(function (x) { msg('rmsg', x.message); }); };
+  }
+
   function authView() {
+    if (mode === 'forgot') return forgotView();
     H.textContent = mode === 'login' ? 'Log in' : 'Create your account';
     var signup = mode === 'signup';
     root.innerHTML = '<div class="authbox"><div class="seg"><button type="button" data-m="login" class="' + (!signup ? 'on' : '') + '">Log in</button><button type="button" data-m="signup" class="' + (signup ? 'on' : '') + '">Sign up</button></div>' +
@@ -28,7 +44,7 @@
       '<input type="text" name="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px" aria-hidden="true">' +
       '<button class="btn full" type="submit">' + (signup ? 'Create account' : 'Log in') + '</button><p class="msg" id="amsg" role="status"></p></form>' +
       '<p class="fine">' + (signup ? 'Already have an account? <a href="#" data-m="login">Log in</a>.' : 'New to WinkCasa? <a href="#" data-m="signup">Create an account</a>.') +
-      ' Forgotten your password? Write to <a href="/contact">Contact us</a> and we will help you get back in.</p>' +
+      (signup ? '' : ' <a href="#" data-m="forgot">Forgotten your password?</a>') + '</p>' +
       '<p class="fine">You can still check out without an account. <a href="/track">Track an order</a> with your order number.</p></div>';
     [].forEach.call(root.querySelectorAll('[data-m]'), function (b) { b.onclick = function (e) { e.preventDefault(); mode = b.getAttribute('data-m'); authView(); }; });
     var f = document.getElementById('af');
@@ -87,7 +103,7 @@
   }
 
   function view() {
-    if (!D || !D.customer) { authView(); return; }
+    if (!D || !D.customer) { if (resetTok) { resetView(); return; } authView(); return; }
     H.textContent = 'Hello, ' + D.customer.name.split(' ')[0];
     var tabs = [['orders', 'Orders'], ['wish', 'Wishlist (' + D.wishlist.length + ')'], ['addr', 'Addresses'], ['profile', 'Profile']];
     root.innerHTML = '<div class="acctbar"><nav class="seg">' + tabs.map(function (t) { return '<button type="button" data-t="' + t[0] + '" class="' + (tab === t[0] ? 'on' : '') + '">' + t[1] + '</button>'; }).join('') + '</nav><button class="lnk" id="lo">Log out</button></div>' +
