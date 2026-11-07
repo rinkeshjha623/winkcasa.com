@@ -622,22 +622,22 @@ html:root:root:root header.bar.amz .amz2 a,html:root:root:root header.bar.amz .a
 html:root:root:root header.bar.amz .amz2 a:hover,html:root:root:root header.bar.amz .amzall:hover{border-color:#fff}
 html:root:root:root header.bar.amz .amz2 .amzall{font-weight:700;padding-left:2px}
 /* drawer */
-html:root:root:root header.bar.amz .drawer[hidden]{display:none}
-html:root:root:root header.bar.amz .drawer{position:fixed;inset:0;z-index:200}
-html:root:root:root header.bar.amz .dback{position:absolute;inset:0;background:rgba(0,0,0,.7)}
-html:root:root:root header.bar.amz .dpanel{position:absolute;left:0;top:0;bottom:0;width:min(365px,86vw);overflow-y:auto;background:#fff;color:#0F1111;animation:dslide .2s ease-out}
+html:root:root:root .amzdrawer.drawer[hidden]{display:none}
+html:root:root:root .amzdrawer.drawer{position:fixed;left:0;top:0;right:auto;bottom:auto;width:100vw;height:100vh;max-width:none;margin:0;padding:0;display:block;z-index:200}
+html:root:root:root .amzdrawer.drawer .dback{position:absolute;inset:0;background:rgba(0,0,0,.7)}
+html:root:root:root .amzdrawer.drawer .dpanel{position:absolute;left:0;top:0;bottom:0;width:min(365px,86vw);overflow-y:auto;background:#fff;color:#0F1111;animation:dslide .2s ease-out}
 @keyframes dslide{from{transform:translateX(-100%)}to{transform:none}}
-html:root:root:root header.bar.amz .dhead{display:flex;align-items:center;gap:10px;background:#232F3E;color:#fff;padding:14px 22px;font-size:1.15rem;text-decoration:none}
-html:root:root:root header.bar.amz .dsec{padding:10px 0;border-bottom:1px solid #D5D9D9}
-html:root:root:root header.bar.amz .dsec h3{margin:6px 0 4px;padding:6px 36px;font-family:inherit;font-size:1.1rem;font-weight:700;color:#0F1111}
-html:root:root:root header.bar.amz .dsec a{display:flex;justify-content:space-between;align-items:center;padding:12px 36px;color:#0F1111;text-decoration:none;font-size:.95rem}
-html:root:root:root header.bar.amz .dsec a:hover{background:#EAEDED}
-html:root:root:root header.bar.amz .dsec i{font-style:normal;color:#888;font-size:1.3rem}
-html:root:root:root header.bar.amz .dclose{position:fixed;left:calc(min(365px,86vw) + 10px);top:10px;background:none;border:0;color:#fff;font-size:2.2rem;line-height:1;cursor:pointer}
-html:root:root:root[data-theme="dark"] header.bar.amz .dpanel{background:#1B1E24;color:#EDEDED}
-html:root:root:root[data-theme="dark"] header.bar.amz .dsec{border-bottom-color:#2C313A}
-html:root:root:root[data-theme="dark"] header.bar.amz .dsec h3,html:root:root:root[data-theme="dark"] header.bar.amz .dsec a{color:#EDEDED}
-html:root:root:root[data-theme="dark"] header.bar.amz .dsec a:hover{background:#262A31}
+html:root:root:root .amzdrawer.drawer .dhead{display:flex;align-items:center;gap:10px;background:#232F3E;color:#fff;padding:14px 22px;font-size:1.15rem;text-decoration:none}
+html:root:root:root .amzdrawer.drawer .dsec{padding:10px 0;border-bottom:1px solid #D5D9D9}
+html:root:root:root .amzdrawer.drawer .dsec h3{margin:6px 0 4px;padding:6px 36px;font-family:inherit;font-size:1.1rem;font-weight:700;color:#0F1111}
+html:root:root:root .amzdrawer.drawer .dsec a{display:flex;justify-content:space-between;align-items:center;padding:12px 36px;color:#0F1111;text-decoration:none;font-size:.95rem}
+html:root:root:root .amzdrawer.drawer .dsec a:hover{background:#EAEDED}
+html:root:root:root .amzdrawer.drawer .dsec i{font-style:normal;color:#888;font-size:1.3rem}
+html:root:root:root .amzdrawer.drawer .dclose{position:fixed;left:calc(min(365px,86vw) + 10px);top:10px;background:none;border:0;color:#fff;font-size:2.2rem;line-height:1;cursor:pointer}
+html:root:root:root[data-theme="dark"] .amzdrawer.drawer .dpanel{background:#1B1E24;color:#EDEDED}
+html:root:root:root[data-theme="dark"] .amzdrawer.drawer .dsec{border-bottom-color:#2C313A}
+html:root:root:root[data-theme="dark"] .amzdrawer.drawer .dsec h3,html:root:root:root[data-theme="dark"] header.bar.amz .dsec a{color:#EDEDED}
+html:root:root:root[data-theme="dark"] .amzdrawer.drawer .dsec a:hover{background:#262A31}
 html:root:root:root[data-theme="dark"] header.bar.amz::before{background:#0B0F14}
 html:root:root:root[data-theme="dark"] header.bar.amz .themebtn{background:none;border-color:#5b6572;color:#fff}
 @media(max-width:900px){

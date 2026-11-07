@@ -153,7 +153,7 @@
 
   // Amazon-style header: side menu drawer, and the signed-in name.
   (function () {
-    var d = document.getElementById('drawer'); if (!d) return;
+    var d = document.getElementById('drawer'); if (!d) return; var hb = d.closest('header'); if (hb) hb.classList.add('amz'); document.body.appendChild(d); d.classList.add('amzdrawer');
     function open() { d.hidden = false; document.documentElement.style.overflow = 'hidden'; }
     function close() { d.hidden = true; document.documentElement.style.overflow = ''; }
     document.addEventListener('click', function (e) { var t = e.target; if (!t.closest) return; if (t.closest('[data-drawer-open]')) { open(); return; } if (t.closest('[data-drawer-close]')) { close(); return; } if (!d.hidden && t.closest('#drawer .dpanel a')) close(); });
