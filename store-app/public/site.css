@@ -656,3 +656,8 @@ html:root:root:root header.bar.amz .amz1{padding:10px 20px}
 html:root:root:root header.bar.amz .amz2{padding:0 20px;background:#232F3E;box-sizing:border-box}
 html:root:root:root header.bar.amz .amz2::before{display:none}
 @media(max-width:900px){html:root:root:root header.bar.amz .amz1{padding:8px 12px}html:root:root:root header.bar.amz .amz2{padding:0 8px}}
+
+/* Amazon-style full-width page frame */
+html:root:root:root .wrap{max-width:1840px}
+html:root:root:root body{padding-inline:max(20px,env(safe-area-inset-left,0px))}
+@media(max-width:700px){html:root:root:root body{padding-inline:12px}}
