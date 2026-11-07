@@ -17,7 +17,8 @@
     ship = Math.max(0, ship - soff);
     var codOn = MODE === 'cod' && CFG.cod && CFG.cod.enabled, fee = codOn ? CFG.cod.fee : 0, total = Math.max(1, sub - disc + ship) + fee;
   var adv = codOn ? Math.min(CFG.cod.advance, total - 1) : 0;
-  return { sub: sub, ship: ship, disc: disc, cod: fee, total: total, adv: adv, due: codOn ? total - adv : 0, codOn: codOn };
+  var mrpT = ls.reduce(function (a, l) { return a + (l.p.mrp || l.p.price) * l.q; }, 0), cnt = ls.reduce(function (a, l) { return a + l.q; }, 0);
+  return { mrpT: mrpT, mrpOff: mrpT - sub, cnt: cnt, sub: sub, ship: ship, disc: disc, cod: fee, total: total, adv: adv, due: codOn ? total - adv : 0, codOn: codOn };
   }
 
   function couponBox() {
@@ -47,27 +48,58 @@
       : '<label class="po off" aria-disabled="true"><input type="radio" name="paymode" value="cod" disabled> <span><b>Cash on Delivery <em>Coming soon</em></b><small>Not available yet. Pay online for now, and damaged or wrong items can be returned within 7 days.</small></span></label>') +
     '</fieldset>';
 }
+
+  var SK = 'wc_saved';
+  function getSaved() { try { return JSON.parse(localStorage.getItem(SK) || '[]').filter(function (id) { return P[id] && !P[id].soldOut; }); } catch (e) { return []; } }
+  function putSaved(a) { try { localStorage.setItem(SK, JSON.stringify(a)); } catch (e) {} }
+  function pct(p) { return p.mrp && p.mrp > p.price ? Math.round((p.mrp - p.price) / p.mrp * 100) : 0; }
+  function priceHtml(p, q) {
+    var d = pct(p);
+    return '<div class="lp">' + (d ? '<span class="off">↓' + d + '%</span><s>' + rupee(p.mrp * q) + '</s>' : '') + '<b>' + rupee(p.price * q) + '</b></div>';
+  }
+  function missed(ls) {
+    var inCart = {}; ls.forEach(function (l) { inCart[l.p.id] = 1; });
+    var list = Object.keys(P).map(function (k) { return P[k]; }).filter(function (p) { return !inCart[p.id] && !p.soldOut && p.image; });
+    var cat = ls.length ? ls[0].p.room : '';
+    list.sort(function (a, b) { return (b.room === cat) - (a.room === cat) || pct(b) - pct(a); });
+    list = list.slice(0, 10); if (!list.length) return '';
+    return '<section class="missed"><h2>Items you may have missed</h2><div class="mrow">' + list.map(function (p) {
+      var d = pct(p);
+      return '<div class="mcard"><a href="' + esc(p.url) + '"><img loading="lazy" src="' + esc(p.image) + '" alt="' + esc(p.name) + '" width="150" height="150"></a><a class="mn" href="' + esc(p.url) + '">' + esc(p.name) + '</a>' +
+        '<div class="lp">' + (d ? '<span class="off">↓' + d + '%</span><s>' + rupee(p.mrp) + '</s>' : '') + '<b>' + rupee(p.price) + '</b></div><button type="button" class="btn alt sm" data-add="' + p.id + '">Add to cart</button></div>';
+    }).join('') + '</div></section>';
+  }
+  function savedBox() {
+    var ids = getSaved(); if (!ids.length) return '';
+    return '<section class="savedbox"><h2>Saved for later (' + ids.length + ')</h2>' + ids.map(function (id) {
+      var p = P[id];
+      return '<div class="cline"><img src="' + esc(p.image) + '" alt="' + esc(p.name) + '" width="72" height="90"><div><h3><a href="' + esc(p.url) + '">' + esc(p.name) + '</a></h3>' + priceHtml(p, 1) +
+        '<div class="lact"><button type="button" data-unsave="' + id + '">Move to cart</button><button type="button" data-rmsaved="' + id + '">Remove</button></div></div></div>';
+    }).join('') + '</section>';
+  }
 function render() {
     var ls = lines(), t = totals(ls);
     if (!ls.length) {
-      root.innerHTML = '<div class="emptycart"><h2 style="font-family:var(--display);font-weight:500;font-size:1.8rem;color:var(--fg)">Your cart is empty</h2><p>Add something you like and it will wait for you here.</p><a class="btn" href="/#shop">Continue shopping</a></div>';
+      root.innerHTML = '<div class="emptycart"><h2 style="font-family:var(--display);font-weight:500;font-size:1.8rem;color:var(--fg)">Your cart is empty</h2><p>Add something you like and it will wait for you here.</p><a class="btn" href="/#shop">Continue shopping</a></div><div class="cartgrid one"><div>' + savedBox() + missed([]) + '</div></div>';
       return;
     }
     root.innerHTML =
-      '<div class="cartgrid"><div id="items">' + ls.map(function (l) {
-        var p = l.p, img = p.image ? '<img src="' + esc(p.image) + '" alt="' + esc(p.name) + '" width="84" height="104">' : '<div class="ph"></div>';
-        return '<div class="cline">' + img + '<div><h3><a href="' + esc(p.url) + '">' + esc(p.name) + '</a></h3><div class="dim" style="color:var(--muted);font-size:.85rem">' + esc(p.dim) + '</div>' +
-          '<div class="qtyc"><button data-dec="' + p.id + '" aria-label="Fewer">−</button><span>' + l.q + '</span><button data-inc="' + p.id + '" aria-label="More">+</button><button class="rm" data-rm="' + p.id + '">Remove</button></div></div>' +
-          '<div class="price" style="color:var(--accent)">' + rupee(p.price * l.q) + '</div></div>';
-      }).join('') + '<p class="contshop"><a href="/#shop">← Continue shopping</a></p><ul class="assure"><li><b>Secure payment</b><span>UPI, cards and net banking via Razorpay</span></li><li><b>Delivery in 10 to 20 days</b><span>Tracked, across India</span></li><li><b>Easy returns</b><span>If it arrives damaged or wrong</span></li><li><b>Support</b><span>support@winkcasa.com</span></li></ul></div>' +
-      '<aside class="summary"><h2>Order summary</h2>' +
-      '<div class="srow"><span>Subtotal</span><span>' + rupee(t.sub) + '</span></div>' +
-      (t.disc ? '<div class="srow disc"><span>Discount' + (COUP.code ? ' (' + esc(COUP.code) + ')' : '') + '</span><span>−' + rupee(t.disc) + '</span></div>' : '') +
-      '<div class="srow"><span>Delivery</span><span>' + (t.ship ? rupee(t.ship) : 'Free') + '</span></div>' +
+            '<div class="cartgrid"><div id="items"><div class="cartsec">' + ls.map(function (l) {
+        var p = l.p, img = p.image ? '<img src="' + esc(p.image) + '" alt="' + esc(p.name) + '" width="96" height="120">' : '<div class="ph"></div>';
+        return '<div class="cline">' + img + '<div class="lbody"><h3><a href="' + esc(p.url) + '">' + esc(p.name) + '</a></h3><div class="dim">' + esc(p.dim) + '</div>' +
+          priceHtml(p, l.q) + '<div class="ldel">Delivery in 10 to 20 days · Free over ' + rupee(CFG.freeShippingAbove) + '</div>' +
+          '<div class="qtyc"><button data-dec="' + p.id + '" aria-label="Fewer">−</button><span>' + l.q + '</span><button data-inc="' + p.id + '" aria-label="More">+</button></div>' +
+          '<div class="lact"><button type="button" data-save="' + p.id + '">Save for later</button><button type="button" data-rm="' + p.id + '">Remove</button><button type="button" data-buy="' + p.id + '">Buy this now</button></div></div></div>';
+      }).join('') + '</div>' + savedBox() + missed(ls) + '<p class="contshop"><a href="/#shop">← Continue shopping</a></p><ul class="assure"><li><b>Secure payment</b><span>UPI, cards and net banking via Razorpay</span></li><li><b>Delivery in 10 to 20 days</b><span>Tracked, across India</span></li><li><b>Easy returns</b><span>If it arrives damaged or wrong</span></li><li><b>Support</b><span>support@winkcasa.com</span></li></ul></div>' +
+            '<aside class="summary"><h2>Price details</h2>' +
+      '<div class="srow"><span>Price (' + t.cnt + ' item' + (t.cnt > 1 ? 's' : '') + ')</span><span>' + rupee(t.mrpT) + '</span></div>' +
+      ((t.mrpOff + t.disc) > 0 ? '<div class="srow disc"><span>Discount' + (t.disc && COUP.code ? ' (incl. ' + esc(COUP.code) + ')' : '') + '</span><span>−' + rupee(t.mrpOff + t.disc) + '</span></div>' : '') +
+      '<div class="srow"><span>Delivery charges</span><span>' + (t.ship ? rupee(t.ship) : (t.sub ? '<s>' + rupee(CFG.shipping) + '</s> <span class="free">Free</span>' : 'Free')) + '</span></div>' +
       (t.ship ? '<div class="srow" style="font-size:.8rem">Add ' + rupee(CFG.freeShippingAbove - t.sub) + ' more for free delivery</div>' : '') +
       couponBox() +
       (t.codOn ? '<div class="srow"><span>Cash on delivery fee</span><span>' + rupee(t.cod) + '</span></div>' : '') +
-      '<div class="srow t"><span>Total</span><span>' + rupee(t.total) + '</span></div>' +
+      '<div class="srow t"><span>Total amount</span><span>' + rupee(t.total) + '</span></div>' +
+      ((t.mrpOff + t.disc + (t.ship ? 0 : 0)) > 0 ? '<div class="savebanner">You will save ' + rupee(t.mrpOff + t.disc) + ' on this order</div>' : '') +
       (t.codOn ? '<div class="srow"><span>Pay now (advance)</span><span>' + rupee(t.adv) + '</span></div><div class="srow"><span>Pay in cash on delivery</span><span>' + rupee(t.due) + '</span></div>' : '') +
       '<div class="paym" aria-label="Payment options"><span class="pm">UPI</span><span class="pm">Credit &amp; debit cards</span><span class="pm">Net banking</span></div>' +
       payOpts(t) +
@@ -81,9 +113,12 @@ function render() {
       '<label for="f_state">State</label><input id="f_state" name="state" autocomplete="address-level1" required>' +
       '<button class="btn full" id="pay" type="submit"' + (CLOSED ? ' disabled' : '') + '>' + (CLOSED ? 'Store closed' : (t.codOn ? 'Pay ' + rupee(t.adv) + ' advance and place order' : 'Pay ' + rupee(t.total) + ' securely')) + '</button>' +
       '<p class="msg" id="msg" role="status">' + (CLOSED ? esc(S.store.closedMessage) : '') + '</p>' +
-      '<p style="font-size:.78rem;color:var(--muted);margin:8px 0 0">' + (MODE === 'cod' ? 'The advance is paid by UPI, card or net banking on the next screen.' : 'Pay by UPI, card or net banking on the next screen.') + ' By paying you agree to our <a href="/terms">Terms</a> and <a href="/returns">Returns policy</a>.</p></form></aside></div>';
+      '<p style="font-size:.78rem;color:var(--muted);margin:8px 0 0">' + (MODE === 'cod' ? 'The advance is paid by UPI, card or net banking on the next screen.' : 'Pay by UPI, card or net banking on the next screen.') + ' By paying you agree to our <a href="/terms">Terms</a> and <a href="/returns">Returns policy</a>.</p></form>' +
+      '<p class="trustnote">🔒 Safe and secure payments. Easy returns if it arrives damaged or wrong. Support: support@winkcasa.com</p></aside></div>' +
+      '<div class="cartbar"><div class="cbt">' + (t.mrpOff + t.disc > 0 ? '<s>' + rupee(t.mrpT) + '</s> ' : '') + '<b>' + rupee(t.total) + '</b>' + (t.codOn ? '<small>Pay ' + rupee(t.adv) + ' now</small>' : '') + '</div><button type="button" class="btn" id="barPay"' + (CLOSED ? ' disabled' : '') + '>Place order</button></div>';
     WC.paint(); var e = root.querySelector('[data-eta]'); if (e) e.innerHTML = WC.etaHtml(new Date());
     $('co').onsubmit = function (ev) { ev.preventDefault(); pay(); };
+    $('barPay').onclick = function () { var f = $('co'); if (f.requestSubmit) f.requestSubmit(); else $('pay').click(); };
   Array.prototype.forEach.call(root.querySelectorAll('input[name=paymode]'), function (r) { r.onchange = function () { if (r.value === MODE) return; MODE = r.value; keepForm(); render(); }; });
     if ($('cpGo')) { $('cpGo').onclick = function () { var v = $('cpIn').value.trim(); if (v) refreshCoupon(v.toUpperCase(), true); }; $('cpIn').onkeydown = function (e) { if (e.key === 'Enter') { e.preventDefault(); $('cpGo').click(); } }; }
     if ($('cpRm')) $('cpRm').onclick = function () { CERR = ''; refreshCoupon('', false); };
@@ -95,6 +130,11 @@ function render() {
     if (b.dataset.inc) WC.set(b.dataset.inc, (c[b.dataset.inc] || 0) + 1);
     else if (b.dataset.dec) WC.set(b.dataset.dec, (c[b.dataset.dec] || 0) - 1);
     else if (b.dataset.rm) WC.set(b.dataset.rm, 0);
+    else if (b.dataset.add) { WC.set(b.dataset.add, 1); try { gtag('event', 'add_to_cart', { currency: 'INR', value: P[b.dataset.add].price, items: [{ item_id: String(b.dataset.add), item_name: P[b.dataset.add].name, price: P[b.dataset.add].price, quantity: 1 }] }); } catch (x) {} }
+    else if (b.dataset.save) { var sv = getSaved(); if (sv.indexOf(b.dataset.save) < 0) sv.push(b.dataset.save); putSaved(sv); WC.set(b.dataset.save, 0); }
+    else if (b.dataset.unsave) { putSaved(getSaved().filter(function (x) { return x !== b.dataset.unsave; })); WC.set(b.dataset.unsave, 1); }
+    else if (b.dataset.rmsaved) { putSaved(getSaved().filter(function (x) { return x !== b.dataset.rmsaved; })); }
+    else if (b.dataset.buy) { var sv2 = getSaved(); Object.keys(c).forEach(function (id) { if (id !== b.dataset.buy) { if (sv2.indexOf(id) < 0) sv2.push(id); WC.set(id, 0); } }); putSaved(sv2); var f0 = $('co'); keepForm(); render(); refreshCoupon(); var f1 = $('co'); if (f1) f1.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
     else return;
     keepForm(); render(); refreshCoupon();
   });

@@ -438,3 +438,34 @@ header.bar{position:relative}
 .nrcats a{border:1px solid var(--line);padding:9px 16px;text-decoration:none;font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--fg)}.nrcats a:hover{border-color:var(--accent);color:var(--accent)}
 
 .payopts{border:0;margin:14px 0 0;padding:0}.payopts legend{font-size:.74rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:0 0 8px}.po{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);padding:11px 12px;margin:0 0 8px;background:var(--surface);cursor:pointer}.po.on{border-color:var(--fg)}.po.off{opacity:.62;cursor:not-allowed}.po input{margin-top:3px}.po b{display:block;font-weight:500;font-size:.9rem}.po small{display:block;color:var(--muted);font-size:.76rem;line-height:1.5;margin-top:2px}.po em{font-style:normal;font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--line);padding:1px 6px;margin-left:6px;vertical-align:1px}
+
+/* Cart redesign: price details, savings, sticky place-order bar */
+.cartsec .cline,.savedbox .cline{grid-template-columns:96px 1fr;margin-bottom:12px}
+.savedbox .cline{grid-template-columns:72px 1fr}.savedbox .cline img{width:72px;height:90px}
+.lbody .dim{color:var(--muted);font-size:.85rem}
+.lp{display:flex;align-items:baseline;gap:10px;margin:6px 0 2px;flex-wrap:wrap}
+.lp b{font-size:1.15rem;font-weight:600}.lp s{color:var(--muted);font-size:.9rem}
+.lp .off{color:#4FBF86;font-weight:600;font-size:.9rem}
+.ldel{color:var(--muted);font-size:.8rem;margin-top:2px}
+.lact{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:12px}
+.lact button{background:none;border:0;padding:0;color:var(--fg);font:inherit;font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+.lact button:hover{color:var(--accent)}
+.missed,.savedbox{margin-top:26px}
+.missed h2,.savedbox h2{font-family:var(--display);font-weight:500;font-size:1.4rem;margin:0 0 12px}
+.mrow{display:flex;gap:12px;overflow-x:auto;padding-bottom:10px;scroll-snap-type:x proximity}
+.mcard{flex:0 0 168px;border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:10px;scroll-snap-align:start;display:flex;flex-direction:column;gap:6px}
+.mcard img{width:100%;height:auto;aspect-ratio:1;object-fit:cover;border-radius:4px}
+.mcard .mn{font-size:.85rem;text-decoration:none;color:var(--fg);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.6em}
+.mcard .lp{margin:0}.mcard .lp b{font-size:1rem}
+.btn.sm{padding:8px 10px;font-size:.7rem;letter-spacing:.12em;margin-top:auto;width:100%;text-align:center}
+.cartgrid.one{grid-template-columns:1fr}
+.summary .srow.disc{color:#4FBF86}.summary .srow s{color:var(--muted)}.summary .free{color:#4FBF86}
+.savebanner{background:rgba(79,191,134,.12);border:1px solid rgba(79,191,134,.35);color:#4FBF86;padding:10px 12px;border-radius:4px;margin:10px 0 4px;font-weight:600;font-size:.9rem}
+.trustnote{margin:14px 0 0;font-size:.8rem;color:var(--muted)}
+.cartbar{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;align-items:center;justify-content:flex-end;gap:22px;padding:12px max(16px,calc((100vw - 1180px)/2));background:var(--bg);border-top:1px solid var(--line);box-shadow:0 -6px 20px rgba(0,0,0,.25)}
+.cartbar .cbt{display:flex;align-items:baseline;gap:10px}.cartbar .cbt b{font-size:1.35rem}.cartbar .cbt s{color:var(--muted)}.cartbar .cbt small{color:var(--muted);font-size:.78rem}
+.cartbar .btn{padding:14px 34px;cursor:pointer}
+#cartPage{padding-bottom:90px}
+@media(max-width:560px){.cartbar{justify-content:space-between;gap:10px}.cartbar .btn{padding:13px 22px}.cartsec .cline{grid-template-columns:80px 1fr}.cartsec .cline img,.cartsec .cline .ph{width:80px;height:100px}.mcard{flex-basis:148px}}
+@media(prefers-color-scheme:light){:root:not([data-theme="dark"]) .lp .off,:root:not([data-theme="dark"]) .summary .srow.disc,:root:not([data-theme="dark"]) .summary .free,:root:not([data-theme="dark"]) .savebanner{color:#1E7A4C}}
+:root[data-theme="light"] .lp .off,:root[data-theme="light"] .summary .srow.disc,:root[data-theme="light"] .summary .free,:root[data-theme="light"] .savebanner{color:#1E7A4C}
