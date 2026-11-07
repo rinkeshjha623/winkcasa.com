@@ -469,3 +469,5 @@ header.bar{position:relative}
 @media(max-width:560px){.cartbar{justify-content:space-between;gap:10px}.cartbar .btn{padding:13px 22px}.cartsec .cline{grid-template-columns:80px 1fr}.cartsec .cline img,.cartsec .cline .ph{width:80px;height:100px}.mcard{flex-basis:148px}}
 @media(prefers-color-scheme:light){:root:not([data-theme="dark"]) .lp .off,:root:not([data-theme="dark"]) .summary .srow.disc,:root:not([data-theme="dark"]) .summary .free,:root:not([data-theme="dark"]) .savebanner{color:#1E7A4C}}
 :root[data-theme="light"] .lp .off,:root[data-theme="light"] .summary .srow.disc,:root[data-theme="light"] .summary .free,:root[data-theme="light"] .savebanner{color:#1E7A4C}
+.cartgrid>*{min-width:0}.lbody{min-width:0}
+.lbody .dim{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
