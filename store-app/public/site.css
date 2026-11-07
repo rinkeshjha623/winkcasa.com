@@ -578,3 +578,11 @@ html:root:root:root[data-theme="dark"] body:has(#cartPage) .qtyc button{backgrou
 html:root:root:root[data-theme="dark"] body:has(#cartPage) .savebanner,html:root:root:root[data-theme="dark"] body:has(#cartPage) .cpn.on{background:rgba(79,191,134,.12);border-color:rgba(79,191,134,.35)}
 html:root:root:root[data-theme="dark"] body:has(#cartPage) .form input,html:root:root:root[data-theme="dark"] body:has(#cartPage) .form textarea,html:root:root:root[data-theme="dark"] body:has(#cartPage) .cprow input{background:#262A31;color:#EDEDED;border-color:#2C313A}
 html:root:root:root[data-theme="dark"] body:has(#cartPage) .po.on{border-color:#5C9DFF}
+
+/* Dropdown above page content; manual day/night button */
+html:root:root:root header.bar{z-index:80}
+html:root:root:root header.bar .themebtn{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:50%;border:1px solid #E0E0E0;background:#fff;color:#212121;cursor:pointer;padding:0}
+html:root:root:root header.bar .themebtn:hover{border-color:#2874F0;color:#2874F0}
+html:root:root:root[data-theme="dark"] header.bar .themebtn{background:#262A31;border-color:#3A404A;color:#EDEDED}
+html:root:root:root[data-theme="dark"] header.bar .themebtn:hover{border-color:#5C9DFF;color:#5C9DFF}
+html:root:root:root header.bar .rt{gap:20px}

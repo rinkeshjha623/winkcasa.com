@@ -138,6 +138,18 @@
   })();
 
   // Theme is automatic: light by day, dark after sunset in Delhi (see the inline script in <head>).
+  // Manual day/night button: picks the other theme; choosing the theme the clock would pick returns to automatic.
+  (function () {
+    function cur() { return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light'; }
+    function label() { var d = cur() === 'dark'; [].forEach.call(document.querySelectorAll('[data-theme-toggle]'), function (b) { b.setAttribute('aria-label', d ? 'Switch to day mode' : 'Switch to night mode'); b.setAttribute('title', d ? 'Night mode (tap for day)' : 'Day mode (tap for night)'); b.setAttribute('data-mode', cur()); }); }
+    document.addEventListener('click', function (e) {
+      var b = e.target.closest && e.target.closest('[data-theme-toggle]'); if (!b || !window.wcTheme) return;
+      var n = cur() === 'dark' ? 'light' : 'dark';
+      try { if (n === window.wcTheme.auto()) localStorage.removeItem('wc_theme'); else localStorage.setItem('wc_theme', n); } catch (x) {}
+      window.wcTheme.apply(); label();
+    });
+    label(); setInterval(label, 60000);
+  })();
 
   // Header search: opens a bar with instant suggestions; Enter goes to /search.
   (function () {
