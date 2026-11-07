@@ -2,6 +2,7 @@
 // Needs "Image transformations" switched on for the domain (Cloudflare dashboard > Images > Transformations). Without it the photo comes back unchanged and we say so.
 import { SITE_ORIGIN, absUrl } from './social.js';
 import { renderText } from './pngtext.js';
+import { claude, hasKey } from './writer.js';
 
 export const KINDS = { social: { w: 1080, h: 1350, frame: '/brand/frame_1080x1350.png' }, blog: { w: 1200, h: 630, frame: '/brand/frame_1200x630.png' } };
 export function dims(b) {
@@ -26,16 +27,28 @@ export async function makeGraphic(env, src, kind = 'social') {
   return '/img/' + id;
 }
 
-// Best real product photo for a piece of text (title, keyword, caption).
+// With an AI key, look at the photo first: no other brand's logo or watermark, no text overlays, a clear product shot.
+async function photoIsClean(env, url) {
+  if (!hasKey(env)) return true;
+  try {
+    const r = await fetch(absUrl(url)); if (!r.ok) return false; const buf = await r.arrayBuffer(); const d = dims(buf); if (!d || buf.byteLength > 5_000_000) return false;
+    const t = await claude(env, { system: 'You are a strict visual editor for an online jewellery and beauty store.', max: 120, image: { mime: d.mime, b64: b64(buf) }, prompt: 'Can this photo be used under our own brand? REJECT if it shows another brand\'s logo, watermark or shop name, large text or price stickers, a collage of many small photos, or is blurry. Reply exactly:\nVERDICT: OK or REJECT\nREASON: short' });
+    return /VERDICT:\s*OK/i.test(t);
+  } catch { return true; }
+}
+
+// Best real product photo for a piece of text (title, keyword, caption). Skips products listed in settings "gfx_block" and, with an AI key, photos with other brands' logos.
 export async function productFor(env, text) {
-  const toks = new Set(String(text).toLowerCase().replace(/[^a-z ]/g, ' ').split(' ').filter((t) => t.length > 3 && !/^(women|womens|girls|with|that|this|from|your|best|how|what|guide|online|india|style|wear|every|face|shape|home|easy|methods?|tips?|best|beginner|which|suit|right|choose|find|your|ideas?|under|gift|gifts|happy|festive|rule|piece)$/.test(t)).map((t) => t.replace(/s$/, '')));
-  const rows = (await env.DB.prepare("SELECT id,name,category,images_json FROM products WHERE active=1 AND noindex=0 AND (stock IS NULL OR stock>0) AND images_json NOT IN ('[]','') ORDER BY id DESC LIMIT 400").all()).results;
-  let best = null, bs = -1;
-  for (const p of rows) { const w = (p.name + ' ' + p.category).toLowerCase().replace(/[^a-z ]/g, ' ').split(' ').map((t) => t.replace(/s$/, '')); const s = w.filter((t) => toks.has(t)).length; if (s > bs) { bs = s; best = p; } }
-  if (bs < 1) best = rows.find((p) => /ewel/i.test(p.category)) || best;
-  if (!best) return null;
-  let imgs = []; try { imgs = JSON.parse(best.images_json) || []; } catch {}
-  const url = imgs.find((u) => typeof u === 'string' && u); return url ? { ...best, url } : null;
+  const toks = new Set(String(text).toLowerCase().replace(/[^a-z ]/g, ' ').split(' ').filter((t) => t.length > 3 && !/^(women|womens|girls|with|that|this|from|your|best|how|what|guide|online|india|style|wear|every|face|shape|home|easy|methods?|tips?|beginner|which|suit|right|choose|find|ideas?|under|gift|gifts|happy|festive|rule|piece)$/.test(t)).map((t) => t.replace(/s$/, '')));
+  let block = []; try { const r = await env.DB.prepare("SELECT value FROM settings WHERE key='gfx_block'").first(); block = r ? JSON.parse(r.value) : []; } catch {}
+  const rows = (await env.DB.prepare("SELECT id,name,category,images_json FROM products WHERE active=1 AND noindex=0 AND (stock IS NULL OR stock>0) AND images_json NOT IN ('[]','') ORDER BY id DESC LIMIT 400").all()).results.filter((p) => !block.includes(p.id));
+  const scored = rows.map((p) => { const w = (p.name + ' ' + p.category).toLowerCase().replace(/[^a-z ]/g, ' ').split(' ').map((t) => t.replace(/s$/, '')); return { p, s: w.filter((t) => toks.has(t)).length + Math.random() * 0.5 }; }).sort((a, b) => b.s - a.s);
+  const order = scored[0] && scored[0].s < 1 ? [...rows.filter((p) => /ewel/i.test(p.category)).sort(() => Math.random() - 0.5), ...scored.map((x) => x.p)] : scored.map((x) => x.p);
+  for (const best of order.slice(0, 4)) {
+    let imgs = []; try { imgs = JSON.parse(best.images_json) || []; } catch {}
+    for (const url of imgs.filter((u) => typeof u === 'string' && u).slice(0, 2)) if (await photoIsClean(env, url)) return { ...best, url };
+  }
+  return null;
 }
 
 // Blog posts with no cover: make one from a matching real product photo.
