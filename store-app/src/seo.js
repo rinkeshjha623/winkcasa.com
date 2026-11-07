@@ -182,7 +182,7 @@ ${verifyMeta(S)}
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Hanken+Grotesk:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="/page.css">
-<link rel="stylesheet" href="/site.css?v=20261114">
+<link rel="stylesheet" href="/site.css?v=20261115">
 ${jsonld.filter(Boolean).map(ld).join('\n')}
 </head><body><div class="wrap">${headerHtml(S, cats)}</div>${main}<div class="wrap">${footerHtml(S, cats)}</div><script src="/site.js" defer></script>${scripts}</body></html>`;
 }
