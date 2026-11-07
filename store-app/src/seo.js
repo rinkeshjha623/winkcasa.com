@@ -17,7 +17,7 @@ export function headTags({ title, description, canonical, image, type = 'website
 <meta name="description" content="${esc(description)}">
 <link rel="canonical" href="${esc(canonical)}">
 <meta name="robots" content="${esc(robots || (noindex ? 'noindex,follow' : 'index,follow,max-image-preview:large,max-snippet:-1'))}">
-<meta name="theme-color" content="#0B1916">
+<meta name="theme-color" content="#2874F0">
 <meta name="color-scheme" content="dark light">
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-PZ5RWZQ9');</script>
 <!-- Google tag (gtag.js) - Google Ads -->
@@ -182,7 +182,7 @@ ${verifyMeta(S)}
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Hanken+Grotesk:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="/page.css">
-<link rel="stylesheet" href="/site.css?v=20261110">
+<link rel="stylesheet" href="/site.css?v=20261111">
 ${jsonld.filter(Boolean).map(ld).join('\n')}
 </head><body><div class="wrap">${headerHtml(S, cats)}</div>${main}<div class="wrap">${footerHtml(S, cats)}</div><script src="/site.js" defer></script>${scripts}</body></html>`;
 }
