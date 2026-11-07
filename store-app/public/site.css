@@ -512,3 +512,31 @@ html:root:root:root .sitefoot .flogo svg{color:#fff;stroke:#fff}
 html:root:root:root button.buy,html:root:root:root .buy{background:#FB641B;color:#fff;border-color:#FB641B;border-radius:2px}
 html:root:root:root button.add,html:root:root:root .add{background:#FF9F00;color:#fff;border-color:#FF9F00;border-radius:2px}
 html:root:root:root .hero .btn:not(.alt){background:#FB641B}
+
+/* ===== Flipkart-style full-width header and footer ===== */
+html{overflow-x:clip}
+html:root:root:root header.bar{position:relative;isolation:isolate;display:grid;grid-template-columns:auto minmax(240px,620px) auto;grid-template-areas:"logo search rt" "nav nav nav";justify-content:space-between;align-items:center;gap:6px 32px;padding-block:12px 0;background:none;box-shadow:none;border:0}
+html:root:root:root header.bar::before{content:"";position:absolute;z-index:-1;top:0;bottom:0;left:-100vmax;right:-100vmax;background:#fff;border-bottom:1px solid #E0E0E0;box-shadow:0 2px 6px rgba(0,0,0,.06)}
+html:root:root:root header.bar .logo{grid-area:logo}
+html:root:root:root header.bar .rt{grid-area:rt;gap:26px;justify-self:end}
+html:root:root:root header.bar .srchbtn,html:root:root:root header.bar .themebtn{display:none}
+html:root:root:root header.bar .srchbar[hidden],html:root:root:root header.bar .srchbar{display:block;grid-area:search;position:relative;left:auto;right:auto;top:auto;padding:0;border:0;background:none;box-shadow:none}
+html:root:root:root header.bar .srchbar form{display:block}
+html:root:root:root header.bar .srchbar input{width:100%;height:44px;border-radius:8px;border:1px solid #E0E0E0;background:#F0F5FF;color:#212121;padding:0 16px;font-size:.95rem}
+html:root:root:root header.bar .srchbar input:focus{border-color:#2874F0;background:#fff}
+html:root:root:root header.bar .srchbar form>button{display:none}
+html:root:root:root header.bar .srchres{position:absolute;top:100%;left:0;right:0;z-index:70;background:#fff;box-shadow:0 8px 24px rgba(0,0,0,.18);border-radius:0 0 8px 8px}
+html:root:root:root header.bar .navwrap{grid-area:nav;justify-content:flex-start;padding:2px 0 8px}
+html:root:root:root header.bar .nav{gap:30px;font-size:.95rem;letter-spacing:0;text-transform:none;font-weight:500}
+html:root:root:root header.bar .nav a{color:#212121}html:root:root:root header.bar .nav a:hover{color:#2874F0}
+html:root:root:root header.bar .ddl{background:#fff;border:0;box-shadow:0 8px 24px rgba(0,0,0,.18);border-radius:4px}
+html:root:root:root header.bar .acctlink,html:root:root:root header.bar .cartbtn{font-size:1rem;letter-spacing:0;text-transform:none;font-weight:500;color:#212121;border:0;padding:0;margin:0;background:none}
+html:root:root:root header.bar .cartbtn b{background:#FF6161;color:#fff;border-radius:10px;padding:1px 7px;font-size:.75rem}
+html:root:root:root header.bar .acctlink:hover,html:root:root:root header.bar .cartbtn:hover{color:#2874F0;background:none}
+@media(max-width:900px){html:root:root:root header.bar{grid-template-columns:1fr auto;grid-template-areas:"logo rt" "search search" "nav nav";gap:8px 12px}html:root:root:root header.bar .navwrap{justify-content:flex-end;padding:0 0 8px}}
+html:root:root:root .sitefoot{position:relative;isolation:isolate;background:none;color:#B0B7C3;margin-top:40px}
+html:root:root:root .sitefoot::before{content:"";position:absolute;z-index:-1;top:0;bottom:0;left:-100vmax;right:-100vmax;background:#212121}
+html:root:root:root .sitefoot a{font-weight:500}
+html:root:root:root .sitefoot .fcols h4{color:#878787;letter-spacing:.06em;font-size:.78rem}
+html:root:root:root .sitefoot .paym .pm{background:#fff;color:#212121;border:0;border-radius:2px}
+html:root:root:root .sitefoot .fbase{border-top-color:#3a3a3a}
