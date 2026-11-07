@@ -636,7 +636,7 @@ html:root:root:root .amzdrawer.drawer .dsec i{font-style:normal;color:#888;font-
 html:root:root:root .amzdrawer.drawer .dclose{position:fixed;left:calc(min(365px,86vw) + 10px);top:10px;background:none;border:0;color:#fff;font-size:2.2rem;line-height:1;cursor:pointer}
 html:root:root:root[data-theme="dark"] .amzdrawer.drawer .dpanel{background:#1B1E24;color:#EDEDED}
 html:root:root:root[data-theme="dark"] .amzdrawer.drawer .dsec{border-bottom-color:#2C313A}
-html:root:root:root[data-theme="dark"] .amzdrawer.drawer .dsec h3,html:root:root:root[data-theme="dark"] header.bar.amz .dsec a{color:#EDEDED}
+html:root:root:root[data-theme="dark"] .amzdrawer.drawer .dsec h3,html:root:root:root[data-theme="dark"] .amzdrawer.drawer .dsec a{color:#EDEDED}
 html:root:root:root[data-theme="dark"] .amzdrawer.drawer .dsec a:hover{background:#262A31}
 html:root:root:root[data-theme="dark"] header.bar.amz::before{background:#0B0F14}
 html:root:root:root[data-theme="dark"] header.bar.amz .themebtn{background:none;border-color:#5b6572;color:#fff}
