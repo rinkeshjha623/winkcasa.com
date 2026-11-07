@@ -550,3 +550,31 @@ html:root:root:root button.buy:hover,html:root:root:root .btn:not(.alt):not(.gho
 html:root:root:root .btn.alt,html:root:root:root .btn.ghost{border-radius:12px}
 html:root:root:root .btn.alt:hover{background:#fff;color:#2874F0}
 html:root:root:root .btn[disabled],html:root:root:root button[disabled].buy,html:root:root:root #pay[disabled]{opacity:.55;filter:none}
+
+/* ===== Night mode (automatic, from Delhi sunset to sunrise) ===== */
+html:root:root:root[data-theme="dark"]{--bg:#0F1115;--surface:#1B1E24;--fg:#EDEDED;--muted:#9AA0AA;--line:#2C313A;--accent:#5C9DFF;--accent-fg:#0F1115;--deep:#1B1E24;--deep-fg:#EDEDED;--tile1:#1B2433;--tile2:#2A2616;--tile3:#17262E;--tile4:#2B1D24;color-scheme:dark}
+html:root:root:root[data-theme="dark"] body{background:#0F1115;color:#EDEDED}
+html:root:root:root[data-theme="dark"] header.bar::before{background:#1B1E24;border-bottom-color:#2C313A;box-shadow:0 2px 6px rgba(0,0,0,.4)}
+html:root:root:root[data-theme="dark"] header.bar .nav a,html:root:root:root[data-theme="dark"] header.bar .acctlink,html:root:root:root[data-theme="dark"] header.bar .cartbtn{color:#EDEDED}
+html:root:root:root[data-theme="dark"] header.bar .nav a:hover,html:root:root:root[data-theme="dark"] header.bar .acctlink:hover,html:root:root:root[data-theme="dark"] header.bar .cartbtn:hover{color:#5C9DFF}
+html:root:root:root[data-theme="dark"] header.bar .srchbar input{background:#262A31;border-color:#2C313A;color:#EDEDED}
+html:root:root:root[data-theme="dark"] header.bar .srchbar input:focus{background:#1B1E24;border-color:#5C9DFF}
+html:root:root:root[data-theme="dark"] header.bar .srchres,html:root:root:root[data-theme="dark"] header.bar .ddl{background:#1B1E24;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+html:root:root:root[data-theme="dark"] .btn.alt,html:root:root:root[data-theme="dark"] .btn.ghost{background:#1B1E24;color:#5C9DFF;border:1px solid #5C9DFF}
+html:root:root:root[data-theme="dark"] .btn.alt:hover{background:#1B1E24;color:#8DBBFF}
+html:root:root:root[data-theme="dark"] button.add,html:root:root:root[data-theme="dark"] .add{background:#1B1E24;color:#EDEDED;border-color:#3A404A}
+html:root:root:root[data-theme="dark"] button.add:hover,html:root:root:root[data-theme="dark"] .add:hover{background:#1B1E24;border-color:#EDEDED}
+html:root:root:root[data-theme="dark"] .hero h1 em{-webkit-text-fill-color:#5C9DFF;color:#5C9DFF}
+html:root:root:root[data-theme="dark"] .stock.in,html:root:root:root[data-theme="dark"] .avail,html:root:root:root[data-theme="dark"] .lp .off,html:root:root:root[data-theme="dark"] .pct{color:#4FBF86}
+html:root:root:root[data-theme="dark"] .sitefoot::before{background:#0A0B0D}
+/* cart page */
+html:root:root:root[data-theme="dark"] body:has(#cartPage){--bg:#0F1115;--surface:#1B1E24;--fg:#EDEDED;--muted:#9AA0AA;--line:#2C313A;--accent:#5C9DFF;background:#0F1115;color:#EDEDED}
+html:root:root:root[data-theme="dark"] body:has(#cartPage) .cline,html:root:root:root[data-theme="dark"] body:has(#cartPage) .summary,html:root:root:root[data-theme="dark"] body:has(#cartPage) .mcard,html:root:root:root[data-theme="dark"] body:has(#cartPage) .savedbox,html:root:root:root[data-theme="dark"] body:has(#cartPage) .assure li{background:#1B1E24;border-color:#2C313A;box-shadow:none}
+html:root:root:root[data-theme="dark"] body:has(#cartPage) .cline h3,html:root:root:root[data-theme="dark"] body:has(#cartPage) .summary h2,html:root:root:root[data-theme="dark"] body:has(#cartPage) .missed h2,html:root:root:root[data-theme="dark"] body:has(#cartPage) .savedbox h2,html:root:root:root[data-theme="dark"] body:has(#cartPage) .cathead h1,html:root:root:root[data-theme="dark"] body:has(#cartPage) .lp b,html:root:root:root[data-theme="dark"] body:has(#cartPage) .srow.t,html:root:root:root[data-theme="dark"] body:has(#cartPage) .lact button{color:#EDEDED}
+html:root:root:root[data-theme="dark"] body:has(#cartPage) .lact button:hover{color:#5C9DFF}
+html:root:root:root[data-theme="dark"] body:has(#cartPage) .cartbar{background:#1B1E24;box-shadow:0 -2px 10px rgba(0,0,0,.5)}
+html:root:root:root[data-theme="dark"] body:has(#cartPage) .cartbar .cbt b{color:#EDEDED}
+html:root:root:root[data-theme="dark"] body:has(#cartPage) .qtyc button{background:#1B1E24;color:#EDEDED}
+html:root:root:root[data-theme="dark"] body:has(#cartPage) .savebanner,html:root:root:root[data-theme="dark"] body:has(#cartPage) .cpn.on{background:rgba(79,191,134,.12);border-color:rgba(79,191,134,.35)}
+html:root:root:root[data-theme="dark"] body:has(#cartPage) .form input,html:root:root:root[data-theme="dark"] body:has(#cartPage) .form textarea,html:root:root:root[data-theme="dark"] body:has(#cartPage) .cprow input{background:#262A31;color:#EDEDED;border-color:#2C313A}
+html:root:root:root[data-theme="dark"] body:has(#cartPage) .po.on{border-color:#5C9DFF}
