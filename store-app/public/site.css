@@ -623,7 +623,7 @@ html:root:root:root header.bar.amz .amz2 a:hover,html:root:root:root header.bar.
 html:root:root:root header.bar.amz .amz2 .amzall{font-weight:700;padding-left:2px}
 /* drawer */
 html:root:root:root .amzdrawer.drawer[hidden]{display:none}
-html:root:root:root .amzdrawer.drawer{position:fixed;left:0;top:0;right:auto;bottom:auto;width:100vw;height:100vh;max-width:none;margin:0;padding:0;display:block;z-index:200}
+html:root:root:root .amzdrawer.drawer{position:fixed;left:0;top:0;right:auto;bottom:auto;width:100vw;height:100vh;max-width:none;margin:0;padding:0;display:block;z-index:200;transform:none !important;opacity:1 !important;visibility:visible !important;pointer-events:auto;box-shadow:none;background:none;border:0;transition:none}
 html:root:root:root .amzdrawer.drawer .dback{position:absolute;inset:0;background:rgba(0,0,0,.7)}
 html:root:root:root .amzdrawer.drawer .dpanel{position:absolute;left:0;top:0;bottom:0;width:min(365px,86vw);overflow-y:auto;background:#fff;color:#0F1111;animation:dslide .2s ease-out}
 @keyframes dslide{from{transform:translateX(-100%)}to{transform:none}}
