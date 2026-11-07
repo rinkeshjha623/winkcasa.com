@@ -649,3 +649,10 @@ html:root:root:root[data-theme="dark"] header.bar.amz .themebtn{background:none;
  html:root:root:root header.bar.amz .srchbar{order:5;flex:1 0 100%}
  html:root:root:root header.bar.amz .ctxt{display:none}
 }
+
+/* Amazon header: true full-width (edge to edge) */
+html:root:root:root header.bar.amz{width:100vw;max-width:none;margin-left:calc(50% - 50vw);margin-right:0;box-sizing:border-box;padding:0}
+html:root:root:root header.bar.amz .amz1{padding:10px 20px}
+html:root:root:root header.bar.amz .amz2{padding:0 20px;background:#232F3E;box-sizing:border-box}
+html:root:root:root header.bar.amz .amz2::before{display:none}
+@media(max-width:900px){html:root:root:root header.bar.amz .amz1{padding:8px 12px}html:root:root:root header.bar.amz .amz2{padding:0 8px}}
