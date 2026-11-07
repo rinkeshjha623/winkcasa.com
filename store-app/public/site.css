@@ -670,3 +670,6 @@ html:root:root:root header.bar.amz .cartbtn b{left:auto;right:-8px;top:-8px;min-
 html:root:root:root header.bar.amz .amz2 a:last-of-type{margin-right:8px}
 html:root:root:root header.bar.amz .amz2 a:focus,html:root:root:root header.bar.amz .amz2 a:focus-visible{outline:0}
 html:root:root:root header.bar.amz .amz2 a:focus:not(:hover){border-color:transparent}
+html:root:root:root header.bar.amz .amz2{gap:0}
+html:root:root:root header.bar.amz .amz2 a,html:root:root:root header.bar.amz .amzall{padding:9px 8px;font-size:.9rem}
+html:root:root:root header.bar.amz .amz2::after{content:"";flex:0 0 14px}
