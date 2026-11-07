@@ -127,7 +127,7 @@ const catLabel = (p) => (p.category && String(p.category).trim()) || (/guide|how
 
 // Every blog post whose cover is missing or is a plain text card gets a real-photo cover. Two per run.
 export async function upgradeBlogCovers(env, n = 2) {
-  const rows = (await env.DB.prepare("SELECT id,title,focus_kw,category,image,og_image FROM posts WHERE image IS NULL OR image='' OR image LIKE '/articles/%' ORDER BY published DESC, id DESC LIMIT ?").bind(n).all()).results;
+  const rows = (await env.DB.prepare("SELECT id,title,focus_kw,category,image,og_image FROM posts WHERE image IS NULL OR image='' OR image LIKE '/articles/%' ORDER BY (published=1 AND (published_at IS NULL OR published_at <= datetime('now'))) DESC, id ASC LIMIT ?").bind(n).all()).results;
   const made = [], fails = [];
   for (const p of rows) {
     try {
