@@ -154,6 +154,9 @@
   // True viewport width (without the scrollbar) for the full-width header.
   (function () { function v() { document.documentElement.style.setProperty('--vw', document.documentElement.clientWidth + 'px'); } v(); window.addEventListener('resize', v); window.addEventListener('load', v); })();
 
+  // Shorter search hint on phones so it is not cut off.
+  (function () { var i = document.getElementById('srchin'); if (i && window.matchMedia('(max-width:700px)').matches) i.placeholder = 'Search WinkCasa'; })();
+
   // Amazon-style header: side menu drawer, and the signed-in name.
   (function () {
     var d = document.getElementById('drawer'); if (!d) return; var hb = d.closest('header'); if (hb) hb.classList.add('amz'); document.body.appendChild(d); d.classList.add('amzdrawer');
