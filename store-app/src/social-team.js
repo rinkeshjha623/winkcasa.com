@@ -95,7 +95,7 @@ export async function writerDesk(env, n = 3) {
         if (m) { caption = m[1].trim(); pinTitle = m[2].trim(); pinDesc = m[3].trim(); }
       } catch (e) { rv.writer = { note: 'AI writer failed, used template: ' + e.message.slice(0, 80) }; }
     }
-    if (!caption) { caption = `${name}\n\nA easy pick for ${brief.topic || 'everyday styling'}.\n${price} · Free delivery above ₹999 · winkcasa.com\n\n${tags}`; pinTitle = `${kws[0] ? kws[0][0].toUpperCase() + kws[0].slice(1) + ': ' : ''}${name}`.slice(0, 90); pinDesc = `${name}. ${kws.slice(0, 2).join(', ')}. ${price}, free delivery above ₹999 at WinkCasa.`; }
+    if (!caption) { caption = `${name}\n\nOur pick for ${brief.topic || 'everyday styling'}.\n${price} · Free delivery above ₹999 · winkcasa.com\n\n${tags}`; pinTitle = `${kws[0] ? kws[0][0].toUpperCase() + kws[0].slice(1) + ': ' : ''}${name}`.slice(0, 90); pinDesc = `${name}. ${kws.slice(0, 2).join(', ')}. ${price}, free delivery above ₹999 at WinkCasa.`; }
     const b = { ...brief, pin_desc: pinDesc.slice(0, 480) };
     await save(env, p.id, { caption: caption.slice(0, 2200), title: (pinTitle || name).slice(0, 100), brief_json: b, review_json: rv, stage: 'review' }); done++;
   }
