@@ -3,7 +3,7 @@
 // Posts made by hand skip all of this. Every desk writes what it decided into the post (review_json) and the agent log.
 import { claude, hasKey } from './writer.js';
 import { topKeywords } from './keywords.js';
-import { SITE_ORIGIN } from './social.js';
+import { dims, b64, makeGraphic, blogCovers, socialNoMedia } from './graphics.js';
 
 const j = (v, d = {}) => { try { return JSON.parse(v) || d; } catch { return d; } };
 const save = (env, id, f) => { const ks = Object.keys(f); return env.DB.prepare(`UPDATE social_posts SET ${ks.map((k) => k + '=?').join(',')} WHERE id=?`).bind(...ks.map((k) => (typeof f[k] === 'object' && f[k] !== null ? JSON.stringify(f[k]) : f[k])), id).run(); };
@@ -31,14 +31,6 @@ export async function researchDesk(env, n = 3) {
 }
 
 // ---------- 2. Visual expert: image / video / graphics ----------
-function dims(b) {
-  const u = new Uint8Array(b);
-  if (u[0] === 0x89 && u[1] === 0x50) return { w: (u[16] << 24) | (u[17] << 16) | (u[18] << 8) | u[19], h: (u[20] << 24) | (u[21] << 16) | (u[22] << 8) | u[23], mime: 'image/png' };
-  if (u[0] === 0xff && u[1] === 0xd8) { let i = 2; while (i < u.length - 9) { if (u[i] !== 0xff) { i++; continue; } const m = u[i + 1]; if (m >= 0xc0 && m <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(m)) return { h: (u[i + 5] << 8) | u[i + 6], w: (u[i + 7] << 8) | u[i + 8], mime: 'image/jpeg' }; i += 2 + ((u[i + 2] << 8) | u[i + 3]); } }
-  if (u[0] === 0x52 && u[1] === 0x49 && u[8] === 0x57) { if (u[12] === 0x56 && u[15] === 0x20) return { w: (u[26] | (u[27] << 8)) & 0x3fff, h: (u[28] | (u[29] << 8)) & 0x3fff, mime: 'image/webp' }; }
-  return null;
-}
-const b64 = (buf) => { let s = ''; const u = new Uint8Array(buf); for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(s); };
 export async function visualDesk(env, n = 3) {
   let done = 0;
   for (const p of await batch(env, 'visual', n)) {
@@ -69,7 +61,13 @@ export async function visualDesk(env, n = 3) {
         }
       }
     }
+    let media2 = media;
+    if (ok && img && !j(p.brief_json).branded) {
+      try { const g = await makeGraphic(env, img.url, 'social'); media2 = [{ url: g, type: 'image' }, ...media.filter((m) => m !== img)]; notes.push('branded WinkCasa graphic created'); await save(env, p.id, { brief_json: { ...j(p.brief_json), branded: true, original: img.url } }); }
+      catch (e) { notes.push('branding skipped: ' + e.message.slice(0, 120)); }
+    }
     const rv = { ...j(p.review_json), visual: { ok, notes } };
+    if (media2 !== media) await save(env, p.id, { media_json: media2 });
     if (ok && plats.length) await save(env, p.id, { review_json: rv, stage: 'writing', platforms: plats.join(',') });
     else await save(env, p.id, { review_json: rv, stage: 'rejected' });
     done++;
@@ -151,3 +149,9 @@ export async function safetyNet(env) {
   return { checked: rows.length, held };
 }
 export const brief = (p) => j(p.brief_json);
+
+// Everything else the visual expert makes: covers for blog posts that have none, pictures for auto posts that have none.
+export async function graphicsDesk(env) {
+  const b = await blogCovers(env, 2), sm = await socialNoMedia(env, 3);
+  return { made: [...b.made.map((x) => 'Blog cover: ' + x), ...sm.made.map((x) => 'Social graphic: ' + x)], fails: [...b.fails, ...sm.fails] };
+}

@@ -6,7 +6,7 @@ import { submitIndexNow } from './indexnow.js';
 import { productPath } from './store.js';
 import { keywordResearch, topKeywords } from './keywords.js';
 import { hasKey, writePost, improveProduct } from './writer.js';
-import { researchDesk, visualDesk, writerDesk, managerDesk, safetyNet } from './social-team.js';
+import { researchDesk, visualDesk, writerDesk, managerDesk, safetyNet, graphicsDesk } from './social-team.js';
 import { SITE_ORIGIN, absUrl } from './social.js';
 
 const sql = (d = new Date()) => d.toISOString().slice(0, 19).replace('T', ' ');
@@ -23,7 +23,7 @@ export const SKILLS = [
   { id: 'product_copy', title: 'Product description writer', about: 'Rewrites thin product descriptions (under 80 characters) from the product facts only. Up to 4 per run, nothing invented.', everyMin: 360, needs: 'GEMINI_API_KEY' },
   { id: 'social_fill', title: 'Social planner', about: 'Picks one product a day for the next 7 days (not posted in 45 days, rotating categories) and hands it to the team below. Nothing is scheduled until the manager approves it.', everyMin: 360, cost: 0 },
   { id: 'social_research', title: 'Research team: keywords and topic', about: 'For each planned post, picks the keywords from our keyword list that match the product and the seasonal topic (festive, wedding season and so on).', everyMin: 15, cost: 0 },
-  { id: 'social_visual', title: 'Visual expert: image, video, graphics', about: 'Checks the image loads, is sharp enough and the right shape (drops Instagram if the shape is not allowed). With an AI key it also looks at the picture and rejects blurry, off-product or watermarked images. Videos are checked to load.', everyMin: 15, cost: 8 },
+  { id: 'social_visual', title: 'Visual expert: checks and graphics', about: 'Puts every real product photo inside the WinkCasa brand frame (logo band, gold border) for social posts, and gives blog posts and auto posts that have no picture a branded one made from a matching real product photo. Also checks the image loads, is sharp enough and the right shape (drops Instagram if the shape is not allowed). With an AI key it also looks at the picture and rejects blurry, off-product or watermarked images. Videos are checked to load.', everyMin: 15, cost: 14 },
   { id: 'social_writer', title: 'Content writer: caption and pin text', about: 'Writes the caption, Pin title and Pin description from the keywords and topic, using only the product facts. Falls back to a plain template if no AI key is set.', everyMin: 15, cost: 4 },
   { id: 'social_manager', title: 'Manager: final review, then schedule', about: 'Checks price, claims, hashtags, links, board and duplicates, and reads the copy. Approved posts are scheduled for publishing. Rejected copy goes back to the writer once, then is dropped. Also safety-checks other auto posts due in 24 hours.', everyMin: 15, cost: 4 },
   { id: 'seo_health', title: 'SEO and indexing', about: 'Sends all pages to Bing/IndexNow once a day and checks products and posts for missing images, thin text or duplicate names.', everyMin: 1440 },
@@ -222,6 +222,15 @@ async function productCopy(env) {
 
 const stageLog = async (env, skill, who, n, extra) => { if (n) await note(env, skill, 'action', `${who}: handled ${n} post(s)`, extra || null); return { summary: `${n} post(s) handled.`, quiet: true }; };
 async function pipe(env, skill, who, fn) { const n = await fn(env, 3); return stageLog(env, skill, who, n); }
+async function visualSkill(env) {
+  const n = await visualDesk(env, 3);
+  const g = await graphicsDesk(env);
+  if (n) await note(env, 'social_visual', 'action', `Visual expert: checked ${n} post(s)`, null);
+  if (g.made.length) await note(env, 'social_visual', 'action', `Visual expert made ${g.made.length} branded graphic(s)`, g.made.join('\n'));
+  if (g.fails.length) { const t = `${g.fails.length} graphic(s) not made`; const dup = await env.DB.prepare("SELECT 1 x FROM agent_log WHERE skill='social_visual' AND level='warn' AND title=? AND at > datetime('now','-6 hours')").bind(t).first(); if (!dup) await note(env, 'social_visual', 'warn', t, [...new Set(g.fails)].join('\n')); }
+  return { summary: `${n} checked, ${g.made.length} graphics made.`, quiet: true };
+}
+
 async function managerSkill(env) {
   const before = (await env.DB.prepare("SELECT COUNT(*) n FROM social_posts WHERE stage='approved'").first()).n;
   const n = await managerDesk(env, 3);
@@ -234,7 +243,7 @@ async function managerSkill(env) {
   return { summary: `${n} reviewed.`, quiet: true };
 }
 
-const RUN = { social_research: (e) => pipe(e, 'social_research', 'Research team', researchDesk), social_visual: (e) => pipe(e, 'social_visual', 'Visual expert', visualDesk), social_writer: (e) => pipe(e, 'social_writer', 'Content writer', writerDesk), social_manager: managerSkill, content_writer: contentWriter, product_copy: productCopy, keyword_research: keywordSkill, cj_orders: cjOrders, order_watch: orderWatch, social_fill: socialFill, seo_health: seoHealth, content_review: contentReview, daily_report: dailyReport };
+const RUN = { social_research: (e) => pipe(e, 'social_research', 'Research team', researchDesk), social_visual: visualSkill, social_writer: (e) => pipe(e, 'social_writer', 'Content writer', writerDesk), social_manager: managerSkill, content_writer: contentWriter, product_copy: productCopy, keyword_research: keywordSkill, cj_orders: cjOrders, order_watch: orderWatch, social_fill: socialFill, seo_health: seoHealth, content_review: contentReview, daily_report: dailyReport };
 
 // Runs every skill that is switched on and due. Safe to call often: each skill has its own interval, and only one run goes at a time.
 export async function runAgent(env, { only, force } = {}) {
