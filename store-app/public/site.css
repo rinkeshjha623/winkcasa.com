@@ -727,3 +727,26 @@ html:root:root:root header.bar.amz .amz2 a.bud{color:#fff;font-weight:500}
 html:root:root:root header.bar.amz .amz2 a.bud:nth-of-type(2){margin-left:6px;border-left:1px solid rgba(255,255,255,.28);border-radius:0;padding-left:14px}
 html:root:root:root header.bar.amz .amz2 a.bud:nth-of-type(5){border-right:1px solid rgba(255,255,255,.28);border-radius:0;padding-right:14px;margin-right:6px}
 html:root:root:root header.bar.amz .amz2 a.bud:hover{border-color:#fff}
+
+/* price filter dropdown (menu row) */
+html:root:root:root header.bar.amz .pricemenu{flex:none;margin:0 6px 0 4px}
+html:root:root:root header.bar.amz .pricemenu summary{list-style:none;display:flex;align-items:center;gap:7px;padding:9px 12px;color:#fff;font-size:.9rem;font-weight:600;cursor:pointer;border:1px solid rgba(255,255,255,.35);border-radius:3px;white-space:nowrap}
+html:root:root:root header.bar.amz .pricemenu summary::-webkit-details-marker{display:none}
+html:root:root:root header.bar.amz .pricemenu[open] summary,html:root:root:root header.bar.amz .pricemenu summary:hover{border-color:#fff;background:rgba(255,255,255,.08)}
+html:root:root:root header.bar.amz .pricemenu[open] summary svg{transform:rotate(180deg)}
+html:root:root:root header.bar.amz .pm{position:fixed;z-index:300;width:228px;background:#fff;color:#0F1111;border-radius:6px;box-shadow:0 8px 28px rgba(0,0,0,.35);padding:8px 0}
+html:root:root:root header.bar.amz .pm p{margin:0;padding:6px 16px 8px;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#878787;border-bottom:1px solid #E0E0E0}
+html:root:root:root header.bar.amz .pm a{display:flex;align-items:center;gap:12px;padding:11px 16px;color:#0F1111;font-size:.92rem;font-weight:500;border:0;white-space:nowrap}
+html:root:root:root header.bar.amz .pm a:hover{background:#F1F3F6;border:0}
+html:root:root:root header.bar.amz .pm a i{width:16px;height:16px;border:2px solid #878787;border-radius:3px;flex:none}
+html:root:root:root header.bar.amz .pm a:hover i{border-color:#2874F0}
+html:root:root:root[data-theme="dark"] header.bar.amz .pm{background:#1B1E24;color:#EDEDED}
+html:root:root:root[data-theme="dark"] header.bar.amz .pm a{color:#EDEDED}
+html:root:root:root[data-theme="dark"] header.bar.amz .pm a:hover{background:#262A31}
+html:root:root:root[data-theme="dark"] header.bar.amz .pm p{border-bottom-color:#2C313A}
+/* price chips on budget pages */
+html:root:root:root .chips{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 22px}
+html:root:root:root .chips span{font-size:.8rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-right:4px}
+html:root:root:root .chips .chip{padding:8px 16px;border:1px solid var(--line);border-radius:20px;background:var(--surface);color:var(--fg);font-size:.9rem;text-decoration:none}
+html:root:root:root .chips .chip:hover{border-color:var(--accent);color:var(--accent)}
+html:root:root:root .chips .chip.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}

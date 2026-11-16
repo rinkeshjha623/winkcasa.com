@@ -119,7 +119,7 @@ export function headerHtml(S, cats = []) {
 <div class="rt"><button class="themebtn" type="button" data-theme-toggle aria-label="Switch colour theme" title="Switch between day and night"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 0 0 16z" fill="currentColor"/></svg></button>
 <a class="acctlink amzl" href="/account" data-acct><small data-hello>Hello, sign in</small><b>Account</b></a><a class="amzl amzret" href="/track"><small>Returns</small><b>&amp; Orders</b></a>
 <a class="cartbtn" href="/cart" aria-label="View cart"><span class="cico"><svg viewBox="0 0 32 28" width="34" height="30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h4l3.500 15h15L28 8H8"/><circle cx="12" cy="24" r="2"/><circle cx="23" cy="24" r="2"/></svg><b data-cartcount>0</b></span><span class="ctxt">Cart</span></a></div></div>
-<nav class="amz2" aria-label="Main"><button class="amzall" type="button" data-drawer-open>${burger}<span>All</span></button><a href="/">Home</a>${BANDS.map((b) => `<a class="bud" href="${bandPath(b)}">Under ₹${b}</a>`).join('')}${catLinks}<a href="/try">Find your look</a><a href="/blog">Blog</a></nav>
+<nav class="amz2" aria-label="Main"><button class="amzall" type="button" data-drawer-open>${burger}<span>All</span></button><a href="/">Home</a><details class="pricemenu" id="pricemenu"><summary>Shop by price<svg viewBox="0 0 10 6" width="10" height="6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></summary><div class="pm" role="menu"><p>Price</p>${BANDS.map((b) => `<a role="menuitem" href="${bandPath(b)}"><i aria-hidden="true"></i>Under ₹${b}</a>`).join('')}</div></details>${catLinks}<a href="/try">Find your look</a><a href="/blog">Blog</a></nav>
 <div class="drawer" id="drawer" hidden><div class="dback" data-drawer-close></div><aside class="dpanel" role="dialog" aria-label="Menu"><a class="dhead" href="/account"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor" aria-hidden="true"><circle cx="12" cy="8" r="4.500"/><path d="M3.500 21c.5-4.500 4-7 8.500-7s8 2.500 8.500 7z"/></svg><b data-hello2>Hello, sign in</b></a>
 <div class="dsec"><h3>Shop by category</h3><a href="/#shop"><span>All products</span><i aria-hidden="true">›</i></a>${drawerCats}</div>
 <div class="dsec"><h3>Shop by budget</h3>${BANDS.map((b) => `<a href="${bandPath(b)}"><span>Under ₹${b}</span><i aria-hidden="true">›</i></a>`).join('')}</div>
@@ -191,7 +191,7 @@ ${verifyMeta(S)}
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Hanken+Grotesk:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="/page.css">
-<link rel="stylesheet" href="/site.css?v=20261135">
+<link rel="stylesheet" href="/site.css?v=20261136">
 ${jsonld.filter(Boolean).map(ld).join('\n')}
 </head><body><div class="wrap">${headerHtml(S, cats)}</div>${main}<div class="wrap">${footerHtml(S, cats)}</div><script src="/site.js" defer></script>${scripts}</body></html>`;
 }

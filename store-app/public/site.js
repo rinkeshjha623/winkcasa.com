@@ -170,6 +170,16 @@
     });
   })();
 
+  // Price filter dropdown in the menu row (fixed panel so the scrolling row cannot clip it).
+  (function () {
+    var d = document.getElementById('pricemenu'); if (!d) return; var pm = d.querySelector('.pm');
+    function place() { var r = d.querySelector('summary').getBoundingClientRect(); pm.style.top = Math.round(r.bottom) + 'px'; pm.style.left = Math.max(8, Math.min(Math.round(r.left), window.innerWidth - 236)) + 'px'; }
+    d.addEventListener('toggle', function () { if (d.open) place(); });
+    document.addEventListener('click', function (e) { if (d.open && !d.contains(e.target)) d.open = false; });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') d.open = false; });
+    window.addEventListener('scroll', function () { if (d.open) d.open = false; }, { passive: true });
+  })();
+
   // Amazon-style header: side menu drawer, and the signed-in name.
   (function () {
     var d = document.getElementById('drawer'); if (!d) return; var hb = d.closest('header'); if (hb) hb.classList.add('amz'); document.body.appendChild(d); d.classList.add('amzdrawer');
