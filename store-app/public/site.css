@@ -724,6 +724,6 @@ html:root:root:root header.bar.amz .tickin b{color:#FEBD69;font-weight:700;margi
 html:root:root:root header.bar.amz .tickin em{font-style:normal;color:#7FD99A;font-weight:600}
 /* budget links in the menu row: same white as the others, grouped by thin dividers */
 html:root:root:root header.bar.amz .amz2 a.bud{color:#fff;font-weight:500}
-html:root:root:root header.bar.amz .amz2 a.bud:first-of-type{margin-left:6px;border-left:1px solid rgba(255,255,255,.28);border-radius:0;padding-left:14px}
-html:root:root:root header.bar.amz .amz2 a.bud:nth-of-type(4){border-right:1px solid rgba(255,255,255,.28);border-radius:0;padding-right:14px;margin-right:6px}
+html:root:root:root header.bar.amz .amz2 a.bud:nth-of-type(2){margin-left:6px;border-left:1px solid rgba(255,255,255,.28);border-radius:0;padding-left:14px}
+html:root:root:root header.bar.amz .amz2 a.bud:nth-of-type(5){border-right:1px solid rgba(255,255,255,.28);border-radius:0;padding-right:14px;margin-right:6px}
 html:root:root:root header.bar.amz .amz2 a.bud:hover{border-color:#fff}
