@@ -690,3 +690,14 @@ html:root:root:root header.bar.amz .amz2::after{content:"";flex:0 0 14px}
 
 /* one menu button only: the "All" button in the second row opens the menu on phones too */
 @media(max-width:900px){html:root:root:root header.bar.amz .amz1 .amzburger{display:none}}
+
+/* Shop by budget */
+html:root:root:root .budget{margin:28px auto}
+html:root:root:root .budget h2{font-size:1.35rem;margin:0 0 14px}
+html:root:root:root .budgetgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+html:root:root:root .budgetcard{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:22px 12px;background:var(--surface);border:1px solid var(--line);border-radius:6px;text-align:center;text-decoration:none;color:var(--fg);transition:box-shadow .15s,transform .15s}
+html:root:root:root .budgetcard:hover{box-shadow:0 4px 16px rgba(0,0,0,.14);transform:translateY(-2px)}
+html:root:root:root .budgetcard small{color:var(--muted);font-size:.85rem;text-transform:uppercase;letter-spacing:.08em}
+html:root:root:root .budgetcard b{font-size:2rem;line-height:1.1;color:var(--accent)}
+html:root:root:root .budgetcard span{color:var(--muted);font-size:.85rem}
+@media(max-width:700px){html:root:root:root .budgetgrid{grid-template-columns:repeat(2,1fr);gap:10px}html:root:root:root .budgetcard{padding:16px 8px}html:root:root:root .budgetcard b{font-size:1.6rem}}

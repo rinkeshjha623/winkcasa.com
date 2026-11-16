@@ -1,4 +1,5 @@
 import { getSettings, activeProducts, categoriesOf, productPath } from '../src/store.js';
+import { BANDS, bandPath } from '../src/budget.js';
 import { SITE, esc } from '../src/seo.js';
 import { publishedPosts } from '../src/blog.js';
 import { JTYPES, JTYPE_ORDER } from '../src/jtypes.js';
@@ -13,6 +14,7 @@ export async function onRequestGet({ env }) {
     ...categoriesOf(rows, S).map((c) => u(c.path, latest, '0.8', 'daily')),
     ...JTYPE_ORDER.filter((k) => rows.filter((r) => r.category === (JTYPES[k].cat || 'Jewellery') && JTYPES[k].match(r.name)).length >= 3).map((k) => u('/' + k, latest, '0.9', 'daily')),
     ...rows.filter((r) => !r.noindex).map((r) => u(productPath(r), r.updated_at, '0.9', 'weekly')),
+    ...BANDS.map((b) => u(bandPath(b), latest, '0.7', 'daily')),
     u('/links', latest, '0.5', 'daily'),
     u('/press', '', '0.4', 'monthly'),
     u('/try', null, '0.7', 'monthly'),
