@@ -765,3 +765,12 @@ html:root:root:root .rstop:hover b{color:var(--accent)}
 html:root:root:root .rstop span{color:var(--muted);font-size:.85rem}
 @media(max-width:700px){html:root:root:root .rstop small{font-size:.6rem;letter-spacing:.04em}html:root:root:root .rstop b{font-size:1.05rem}html:root:root:root .rstop span{font-size:.7rem}html:root:root:root .rdot{width:14px;height:14px;margin-bottom:8px}html:root:root:root .ruler::before{top:6px}}
 html:root:root:root .recent{margin:8px 0 24px}
+
+/* Cookie notice */
+#cookiebar{position:fixed;left:12px;right:12px;bottom:12px;z-index:9999;max-width:760px;margin:0 auto;display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:12px 16px;border-radius:12px;background:#131921;color:#e8edf3;box-shadow:0 8px 28px rgba(0,0,0,.28);font-size:.88rem;line-height:1.45}
+#cookiebar p{margin:0;flex:1 1 260px}
+#cookiebar a{color:#FEBD69;text-decoration:underline}
+#cookiebar div{display:flex;gap:8px}
+#cookiebar button{font:inherit;font-weight:600;padding:8px 18px;border-radius:8px;cursor:pointer;border:1px solid #5b6b7d;background:transparent;color:#e8edf3}
+#cookiebar button.ok{background:#FEBD69;border-color:#FEBD69;color:#131921}
+@media(max-width:560px){#cookiebar{left:8px;right:8px;bottom:8px;padding:10px 12px;font-size:.82rem}#cookiebar div{width:100%}#cookiebar button{flex:1}}

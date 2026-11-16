@@ -249,3 +249,21 @@
     });
   })();
 })();
+
+// Cookie notice: asks once, remembers the answer in this browser, and can be reopened from the footer ("Cookie settings").
+(function () {
+  var KEY = 'wc_consent';
+  function get() { try { return localStorage.getItem(KEY) || ''; } catch (e) { return ''; } }
+  function put(v) { try { localStorage.setItem(KEY, v); } catch (e) {} }
+  function apply(v) { try { var s = v === 'granted' ? 'granted' : 'denied'; gtag('consent', 'update', { ad_storage: s, analytics_storage: s, ad_user_data: s, ad_personalization: s }); } catch (e) {} }
+  function close() { var b = document.getElementById('cookiebar'); if (b) b.remove(); }
+  function open() {
+    if (document.getElementById('cookiebar')) return;
+    var b = document.createElement('div'); b.id = 'cookiebar'; b.setAttribute('role', 'dialog'); b.setAttribute('aria-label', 'Cookie notice');
+    b.innerHTML = '<p>We use essential cookies to run the store, and with your OK, analytics and advertising cookies to improve it. <a href="/privacy#cookies">Read how</a></p><div><button type="button" data-cc="denied">Decline</button><button type="button" data-cc="granted" class="ok">Accept</button></div>';
+    b.addEventListener('click', function (e) { var v = e.target && e.target.getAttribute && e.target.getAttribute('data-cc'); if (!v) return; put(v); apply(v); close(); });
+    document.body.appendChild(b);
+  }
+  document.addEventListener('click', function (e) { var a = e.target && e.target.closest && e.target.closest('[data-cookie-settings]'); if (a) { e.preventDefault(); open(); } });
+  if (!get()) open();
+})();

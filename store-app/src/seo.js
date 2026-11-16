@@ -1,3 +1,4 @@
+import { CONSENT_HEAD } from './consent.js';
 import { productPath, categoryPath, slugify } from './store.js';
 
 export const SITE = 'https://www.winkcasa.com';
@@ -19,7 +20,8 @@ export function headTags({ title, description, canonical, image, type = 'website
 <meta name="robots" content="${esc(robots || (noindex ? 'noindex,follow' : 'index,follow,max-image-preview:large,max-snippet:-1'))}">
 <meta name="theme-color" content="#2874F0">
 <meta name="color-scheme" content="dark light">
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-PZ5RWZQ9');</script>
+${CONSENT_HEAD}
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-PZ5RWZQ9');</script>
 <!-- Google tag (gtag.js) - Google Ads -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18551578709"></script>
 <script>
@@ -154,7 +156,7 @@ export function footerHtml(S, cats) {
 <div><h4>Shop</h4><ul>${L('/#shop', 'All products')}${cats.map((c) => L(c.path, c.name)).join('')}</ul></div>
 <div><h4>Customer care</h4><ul>${care.map(([h, t]) => L(h, t)).join('')}</ul></div>
 <div><h4>Company</h4><ul>${company.map(([h, t]) => L(h, t)).join('')}</ul></div>
-<div><h4>Legal</h4><ul>${legal.map(([h, t]) => L(okHref(h), t)).join('')}</ul>${social.length ? `<h4 class="h4b">Follow us</h4><ul>${social.map(([n, u]) => `<li><a href="${esc(u)}" rel="noopener me">${n}</a></li>`).join('')}</ul>` : ''}</div>
+<div><h4>Legal</h4><ul>${legal.map(([h, t]) => L(okHref(h), t)).join('')}<li><a href="#" data-cookie-settings>Cookie settings</a></li></ul>${social.length ? `<h4 class="h4b">Follow us</h4><ul>${social.map(([n, u]) => `<li><a href="${esc(u)}" rel="noopener me">${n}</a></li>`).join('')}</ul>` : ''}</div>
 </div>${payMethodsHtml()}<div class="fbase"><span>${esc(f.copyright)}</span><span>${esc(f.note)}${f.showUnsplash ? ' Photos from <a href="https://unsplash.com" rel="noopener">Unsplash</a>.' : ''}</span></div></footer>`;
 }
 
@@ -191,7 +193,7 @@ ${verifyMeta(S)}
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Hanken+Grotesk:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="/page.css">
-<link rel="stylesheet" href="/site.css?v=20261138">
+<link rel="stylesheet" href="/site.css?v=20261139">
 ${jsonld.filter(Boolean).map(ld).join('\n')}
 </head><body><div class="wrap">${headerHtml(S, cats)}</div>${main}<div class="wrap">${footerHtml(S, cats)}</div><script src="/site.js" defer></script>${scripts}</body></html>`;
 }
