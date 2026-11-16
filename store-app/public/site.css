@@ -684,3 +684,6 @@ html:root:root:root header.bar.amz .amz2::after{content:"";flex:0 0 14px}
  html:root:root:root header.bar.amz .amzl small{font-size:.68rem}
  html:root:root:root header.bar.amz .amzl{font-size:.85rem}
 }
+
+/* phones: never size the header from JS; overlay scrollbars make 100vw exact there */
+@media(max-width:900px){html:root:root:root header.bar.amz{width:100vw;max-width:100vw;margin-left:calc(50% - 50vw);margin-right:0}html:root:root:root body{overflow-x:clip}}

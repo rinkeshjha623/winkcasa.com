@@ -152,7 +152,7 @@
   })();
 
   // True viewport width (without the scrollbar) for the full-width header.
-  (function () { function v() { document.documentElement.style.setProperty('--vw', document.documentElement.clientWidth + 'px'); } v(); window.addEventListener('resize', v); window.addEventListener('load', v); })();
+  (function () { function v() { if (window.innerWidth > 900) document.documentElement.style.setProperty('--vw', document.documentElement.clientWidth + 'px'); else document.documentElement.style.removeProperty('--vw'); } v(); window.addEventListener('resize', v); window.addEventListener('load', v); })();
 
   // Shorter search hint on phones so it is not cut off.
   (function () { var i = document.getElementById('srchin'); if (i && window.matchMedia('(max-width:700px)').matches) i.placeholder = 'Search WinkCasa'; })();
