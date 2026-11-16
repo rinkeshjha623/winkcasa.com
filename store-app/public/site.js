@@ -157,6 +157,19 @@
   // Shorter search hint on phones so it is not cut off.
   (function () { var i = document.getElementById('srchin'); if (i && window.matchMedia('(max-width:700px)').matches) i.placeholder = 'Search WinkCasa'; })();
 
+  // Running offers strip: fixed offers from the markup plus today's best-discount products.
+  (function () {
+    var t = document.getElementById('tickin'); if (!t) return;
+    fetch('/api/catalog').then(function (r) { return r.json(); }).then(function (j) {
+      var a = (j.products || j).filter(function (p) { return p && !p.soldOut && p.mrp > p.price && p.price; })
+        .map(function (p) { return { p: p, d: Math.round((1 - p.price / p.mrp) * 100) }; })
+        .sort(function (x, y) { return y.d - x.d; }).slice(0, 6);
+      a.forEach(function (o) { var e = document.createElement('a'); var n = String(o.p.name || '').replace(/\s+/g, ' ').slice(0, 30); e.href = o.p.url; e.textContent = n + ' ₹' + o.p.price + ' (' + o.d + '% off)'; t.appendChild(e); });
+    }).catch(function () {}).then(function () {
+      t.innerHTML += t.innerHTML; t.parentNode.classList.add('run');
+    });
+  })();
+
   // Amazon-style header: side menu drawer, and the signed-in name.
   (function () {
     var d = document.getElementById('drawer'); if (!d) return; var hb = d.closest('header'); if (hb) hb.classList.add('amz'); document.body.appendChild(d); d.classList.add('amzdrawer');

@@ -701,3 +701,16 @@ html:root:root:root .budgetcard small{color:var(--muted);font-size:.85rem;text-t
 html:root:root:root .budgetcard b{font-size:2rem;line-height:1.1;color:var(--accent)}
 html:root:root:root .budgetcard span{color:var(--muted);font-size:.85rem}
 @media(max-width:700px){html:root:root:root .budgetgrid{grid-template-columns:repeat(2,1fr);gap:10px}html:root:root:root .budgetcard{padding:16px 8px}html:root:root:root .budgetcard b{font-size:1.6rem}}
+
+/* running offers strip above the header */
+html:root:root:root header.bar.amz .ticker{position:relative;z-index:1;overflow:hidden;white-space:nowrap;background:#FFE500;color:#212121;font-size:.84rem;font-weight:600;line-height:30px;height:30px}
+html:root:root:root header.bar.amz .tickin{display:inline-flex;gap:0;padding-left:0}
+html:root:root:root header.bar.amz .tickin>*{display:inline-block;padding:0 28px;color:#212121;text-decoration:none;position:relative}
+html:root:root:root header.bar.amz .tickin>*::after{content:"";position:absolute;right:0;top:11px;width:5px;height:5px;border-radius:50%;background:#212121;opacity:.55}
+html:root:root:root header.bar.amz .tickin a:hover{text-decoration:underline}
+html:root:root:root header.bar.amz .ticker.run .tickin{animation:tickmove 60s linear infinite}
+html:root:root:root header.bar.amz .ticker:hover .tickin{animation-play-state:paused}
+@keyframes tickmove{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media(prefers-reduced-motion:reduce){html:root:root:root header.bar.amz .ticker.run .tickin{animation:none}html:root:root:root header.bar.amz .ticker{overflow-x:auto}}
+html:root:root:root header.bar.amz .amz2 a.bud{color:#FFE500;font-weight:700}
+@media(max-width:700px){html:root:root:root header.bar.amz .ticker{font-size:.78rem}}
