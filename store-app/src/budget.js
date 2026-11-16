@@ -14,5 +14,5 @@ export const inBand = (prods, b) => prods.filter((p) => p.price && p.price >= b.
 export function budgetStripHtml(prods) {
   const t = BANDS.map((b) => ({ b, c: inBand(prods, b).length })).filter((x) => x.c >= 3);
   if (!t.length) return '';
-  return `<section class="budget wrap" aria-label="Shop by price"><h2>Shop by price</h2><div class="budgetgrid">${t.map((x) => `<a class="budgetcard" href="${bandPath(x.b)}"><small>${x.b.small}</small><b>${x.b.big}</b><span>${x.c} styles</span></a>`).join('')}</div></section>`;
+  return `<section class="budget wrap" aria-label="Shop by price"><h2>Shop by price</h2><nav class="ruler" aria-label="Price ranges">${t.map((x) => `<a class="rstop" href="${bandPath(x.b)}"><i class="rdot" aria-hidden="true"></i><small>${x.b.small}</small><b>${x.b.big}</b><span>${x.c} styles</span></a>`).join('')}</nav></section>`;
 }

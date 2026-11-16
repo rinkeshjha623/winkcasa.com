@@ -180,6 +180,35 @@
     window.addEventListener('scroll', function () { if (d.open) d.open = false; }, { passive: true });
   })();
 
+  // Interest memory (this browser only) and a home page that follows it.
+  (function () {
+    var KEY = 'wc_interest';
+    function load() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } }
+    function save() { try { localStorage.setItem(KEY, JSON.stringify(I)); } catch (e) {} }
+    var I = load(); I.cats = I.cats || {}; I.v = I.v || [];
+    var path = location.pathname, m = path.match(/^\/p\/(\d+)-/);
+    if (m) {
+      var id = +m[1]; I.v = [id].concat(I.v.filter(function (x) { return x !== id; })).slice(0, 12); save();
+      fetch('/api/catalog').then(function (r) { return r.json(); }).then(function (j) { var p = (j.products || j).filter(function (x) { return x.id === id; })[0]; if (p && p.room) { I.cats[p.room] = (I.cats[p.room] || 0) + 1; save(); } }).catch(function () {});
+    } else if (/^\/c\/[^\/]+/.test(path)) {
+      var h1 = document.querySelector('h1'); if (h1) { var n = h1.textContent.trim(); I.cats[n] = (I.cats[n] || 0) + 2; save(); }
+    }
+    var art = document.getElementById('heroArt'), grid = document.getElementById('grid'); if (!art || !grid) return;
+    var top = Object.keys(I.cats).sort(function (a, b) { return I.cats[b] - I.cats[a]; }).slice(0, 2);
+    if (!top.length && !I.v.length) return;
+    fetch('/api/picks?c=' + encodeURIComponent(top.join('|')) + '&v=' + I.v.join(',')).then(function (r) { return r.json(); }).then(function (d) {
+      if (d.collage && d.collage.length === 3) [].forEach.call(art.querySelectorAll('a'), function (a, i) { var c = d.collage[i], im = a.querySelector('img'); if (!c || !im) return; a.href = c.url; a.setAttribute('aria-label', c.name); im.src = c.image; im.removeAttribute('srcset'); });
+      if (d.forYou) {
+        var lab = document.getElementById('shopLabel'), tit = document.getElementById('shopTitle');
+        if (lab) lab.textContent = 'Picked for you'; if (tit) tit.textContent = d.top ? 'More from ' + d.top : 'Based on what you viewed';
+        grid.innerHTML = d.forYou;
+      }
+      if (d.viewed) {
+        var shop = document.getElementById('shop'); if (shop) { var s = document.createElement('section'); s.className = 'recent'; s.innerHTML = '<div class="shophead"><div><p class="label">Recently viewed</p><h2>Pick up where you left off</h2></div></div><div class="grid">' + d.viewed + '</div>'; shop.parentNode.insertBefore(s, shop); }
+      }
+    }).catch(function () {});
+  })();
+
   // Amazon-style header: side menu drawer, and the signed-in name.
   (function () {
     var d = document.getElementById('drawer'); if (!d) return; var hb = d.closest('header'); if (hb) hb.classList.add('amz'); document.body.appendChild(d); d.classList.add('amzdrawer');

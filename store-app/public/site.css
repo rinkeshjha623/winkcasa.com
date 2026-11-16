@@ -750,3 +750,18 @@ html:root:root:root .chips span{font-size:.8rem;font-weight:700;letter-spacing:.
 html:root:root:root .chips .chip{padding:8px 16px;border:1px solid var(--line);border-radius:20px;background:var(--surface);color:var(--fg);font-size:.9rem;text-decoration:none}
 html:root:root:root .chips .chip:hover{border-color:var(--accent);color:var(--accent)}
 html:root:root:root .chips .chip.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+
+/* Shop by price: a price ruler instead of boxes */
+html:root:root:root .budget{margin:36px auto 28px}
+html:root:root:root .budget h2{font-size:1.35rem;margin:0 0 22px}
+html:root:root:root .ruler{display:grid;grid-template-columns:repeat(5,1fr);position:relative}
+html:root:root:root .ruler::before{content:"";position:absolute;left:10%;right:10%;top:8px;height:2px;background:var(--line)}
+html:root:root:root .rstop{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;padding:0 4px 6px;text-align:center;text-decoration:none;color:var(--fg)}
+html:root:root:root .rdot{width:18px;height:18px;border-radius:50%;background:var(--bg);border:2px solid var(--accent);margin-bottom:10px;position:relative;z-index:1;transition:background .15s,transform .15s}
+html:root:root:root .rstop:hover .rdot{background:var(--accent);transform:scale(1.15)}
+html:root:root:root .rstop small{color:var(--muted);font-size:.8rem;text-transform:uppercase;letter-spacing:.08em}
+html:root:root:root .rstop b{font-size:1.9rem;line-height:1.1;font-weight:600}
+html:root:root:root .rstop:hover b{color:var(--accent)}
+html:root:root:root .rstop span{color:var(--muted);font-size:.85rem}
+@media(max-width:700px){html:root:root:root .rstop small{font-size:.6rem;letter-spacing:.04em}html:root:root:root .rstop b{font-size:1.05rem}html:root:root:root .rstop span{font-size:.7rem}html:root:root:root .rdot{width:14px;height:14px;margin-bottom:8px}html:root:root:root .ruler::before{top:6px}}
+html:root:root:root .recent{margin:8px 0 24px}
