@@ -164,7 +164,7 @@
       var a = (j.products || j).filter(function (p) { return p && !p.soldOut && p.mrp > p.price && p.price; })
         .map(function (p) { return { p: p, d: Math.round((1 - p.price / p.mrp) * 100) }; })
         .sort(function (x, y) { return y.d - x.d; }).slice(0, 6);
-      a.forEach(function (o) { var e = document.createElement('a'); var n = String(o.p.name || '').replace(/\s+/g, ' ').slice(0, 30); e.href = o.p.url; e.textContent = n + ' ₹' + o.p.price + ' (' + o.d + '% off)'; t.appendChild(e); });
+      a.forEach(function (o) { var e = document.createElement('a'); var n = String(o.p.name || '').replace(/\s+/g, ' ').slice(0, 30); e.href = o.p.url; e.innerHTML = '<span class="tn"></span> <b>₹' + o.p.price + '</b> <em>' + o.d + '% off</em>'; e.firstChild.textContent = n; t.appendChild(e); });
     }).catch(function () {}).then(function () {
       t.innerHTML += t.innerHTML; t.parentNode.classList.add('run');
     });

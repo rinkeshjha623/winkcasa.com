@@ -714,3 +714,16 @@ html:root:root:root header.bar.amz .ticker:hover .tickin{animation-play-state:pa
 @media(prefers-reduced-motion:reduce){html:root:root:root header.bar.amz .ticker.run .tickin{animation:none}html:root:root:root header.bar.amz .ticker{overflow-x:auto}}
 html:root:root:root header.bar.amz .amz2 a.bud{color:#FFE500;font-weight:700}
 @media(max-width:700px){html:root:root:root header.bar.amz .ticker{font-size:.78rem}}
+
+/* offers strip, refined: slim, dark, quiet; price in accent */
+html:root:root:root header.bar.amz .ticker{background:#1F2A3A;color:#D5DBE5;font-size:.8rem;font-weight:500;letter-spacing:.02em;line-height:32px;height:32px;border-bottom:1px solid rgba(255,255,255,.08)}
+html:root:root:root header.bar.amz .tickin>*{color:#D5DBE5;padding:0 26px}
+html:root:root:root header.bar.amz .tickin>*::after{top:9px;width:1px;height:14px;border-radius:0;background:rgba(255,255,255,.22);opacity:1}
+html:root:root:root header.bar.amz .tickin a:hover{text-decoration:none;color:#fff}
+html:root:root:root header.bar.amz .tickin b{color:#FEBD69;font-weight:700;margin:0 2px}
+html:root:root:root header.bar.amz .tickin em{font-style:normal;color:#7FD99A;font-weight:600}
+/* budget links in the menu row: same white as the others, grouped by thin dividers */
+html:root:root:root header.bar.amz .amz2 a.bud{color:#fff;font-weight:500}
+html:root:root:root header.bar.amz .amz2 a.bud:first-of-type{margin-left:6px;border-left:1px solid rgba(255,255,255,.28);border-radius:0;padding-left:14px}
+html:root:root:root header.bar.amz .amz2 a.bud:nth-of-type(4){border-right:1px solid rgba(255,255,255,.28);border-radius:0;padding-right:14px;margin-right:6px}
+html:root:root:root header.bar.amz .amz2 a.bud:hover{border-color:#fff}
