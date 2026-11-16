@@ -1,10 +1,18 @@
-// Shop-by-budget bands, chosen from the real price spread (cheapest item is about Rs 289, median about Rs 640).
-export const BANDS = [399, 499, 699, 999];
-export const bandPath = (n) => '/under/' + n;
-export const inBand = (prods, n) => prods.filter((p) => p.price && p.price <= n);
+// Shop-by-price ranges, chosen from the real price spread (cheapest about Rs 289, median about Rs 640).
+// Ranges do not overlap, so every page shows different products.
+export const BANDS = [
+  { id: 'under-399', min: 0, max: 399, label: 'Under ₹399', small: 'Under', big: '₹399' },
+  { id: '400-499', min: 400, max: 499, label: '₹400 to ₹499', small: '₹400 to', big: '₹499' },
+  { id: '500-699', min: 500, max: 699, label: '₹500 to ₹699', small: '₹500 to', big: '₹699' },
+  { id: '700-999', min: 700, max: 999, label: '₹700 to ₹999', small: '₹700 to', big: '₹999' },
+  { id: '1000-and-above', min: 1000, max: Infinity, label: '₹1,000 and above', small: 'Above', big: '₹1,000' },
+];
+export const bandPath = (b) => '/price/' + b.id;
+export const bandById = (id) => BANDS.find((b) => b.id === id);
+export const inBand = (prods, b) => prods.filter((p) => p.price && p.price >= b.min && p.price <= b.max);
 
 export function budgetStripHtml(prods) {
-  const t = BANDS.map((n) => ({ n, c: inBand(prods, n).length })).filter((b) => b.c >= 3);
+  const t = BANDS.map((b) => ({ b, c: inBand(prods, b).length })).filter((x) => x.c >= 3);
   if (!t.length) return '';
-  return `<section class="budget wrap" aria-label="Shop by budget"><h2>Shop by budget</h2><div class="budgetgrid">${t.map((b) => `<a class="budgetcard" href="${bandPath(b.n)}"><small>Under</small><b>₹${b.n}</b><span>${b.c} styles</span></a>`).join('')}</div></section>`;
+  return `<section class="budget wrap" aria-label="Shop by price"><h2>Shop by price</h2><div class="budgetgrid">${t.map((x) => `<a class="budgetcard" href="${bandPath(x.b)}"><small>${x.b.small}</small><b>${x.b.big}</b><span>${x.c} styles</span></a>`).join('')}</div></section>`;
 }
