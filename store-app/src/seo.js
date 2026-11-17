@@ -65,13 +65,29 @@ export function organizationLd(S) {
   };
 }
 
+
+// Shipping and return details that Google's merchant listings expect on every Offer.
+export const offerExtras = (S) => ({
+  validFrom: new Date().toISOString().slice(0, 10),
+  shippingDetails: {
+    '@type': 'OfferShippingDetails',
+    shippingRate: { '@type': 'MonetaryAmount', value: String((S && S.shipping && S.shipping.charge) ?? 79), currency: 'INR' },
+    shippingDestination: { '@type': 'DefinedRegion', addressCountry: 'IN' },
+    deliveryTime: { '@type': 'ShippingDeliveryTime',
+      handlingTime: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 2, unitCode: 'DAY' },
+      transitTime: { '@type': 'QuantitativeValue', minValue: 2, maxValue: 5, unitCode: 'DAY' } },
+  },
+  hasMerchantReturnPolicy: { '@type': 'MerchantReturnPolicy', applicableCountry: 'IN', returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow', merchantReturnDays: 7,
+    returnMethod: 'https://schema.org/ReturnByMail', returnFees: 'https://schema.org/FreeReturn', url: SITE + '/returns' },
+});
+
 // The home page itself, tied to the organisation and website, with a product list that carries images and prices.
 export const homePageLd = (S, prods) => ({ '@context': 'https://schema.org', '@type': ['WebPage', 'CollectionPage'], '@id': SITE + '/#webpage', url: SITE + '/', name: S.seo.title, description: S.seo.description,
   inLanguage: 'en-IN', isPartOf: { '@id': SITE + '/#website' }, about: { '@id': SITE + '/#organization' }, publisher: { '@id': SITE + '/#organization' },
   primaryImageOfPage: abs(S.seo.ogImage || prods.find((p) => p.image)?.image) || undefined,
   mainEntity: { '@type': 'ItemList', numberOfItems: prods.length, itemListElement: prods.slice(0, 24).map((p, i) => ({ '@type': 'ListItem', position: i + 1, url: abs(p.url),
-    item: { '@type': 'Product', name: p.name, url: abs(p.url), image: p.image ? abs(p.image) : undefined, brand: { '@type': 'Brand', name: 'WinkCasa' },
-      offers: { '@type': 'Offer', priceCurrency: 'INR', price: String(p.price), availability: 'https://schema.org/InStock', url: abs(p.url) } } })) } });
+    item: { '@type': 'Product', name: p.name, description: p.ai_answer || p.seo_description || p.dim || p.description || p.name, sku: p.sku || String(p.id), url: abs(p.url), image: p.image ? abs(p.image) : undefined, brand: { '@type': 'Brand', name: 'WinkCasa' },
+      offers: { '@type': 'Offer', priceCurrency: 'INR', price: String(p.price), availability: 'https://schema.org/InStock', url: abs(p.url), ...offerExtras(S) } } })) } });
 export const websiteLd = (S) => ({ '@context': 'https://schema.org', '@type': 'WebSite', '@id': SITE + '/#website', url: SITE + '/', name: 'WinkCasa', inLanguage: 'en-IN', publisher: { '@id': SITE + '/#organization' } });
 
 export const faqLd = (list) => list.length ? ({ '@context': 'https://schema.org', '@type': 'FAQPage',
@@ -96,15 +112,7 @@ export function productLd(p, S) {
       '@type': 'Offer', url: SITE + productPath(p), priceCurrency: 'INR', price: String(p.price), priceValidUntil: until,
       availability: inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock', itemCondition: 'https://schema.org/NewCondition',
       seller: { '@id': SITE + '/#organization' },
-      shippingDetails: {
-        '@type': 'OfferShippingDetails',
-        shippingRate: { '@type': 'MonetaryAmount', value: String(S.shipping.charge), currency: 'INR' },
-        shippingDestination: { '@type': 'DefinedRegion', addressCountry: 'IN' },
-        deliveryTime: { '@type': 'ShippingDeliveryTime',
-          handlingTime: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 2, unitCode: 'DAY' },
-          transitTime: { '@type': 'QuantitativeValue', minValue: 2, maxValue: 5, unitCode: 'DAY' } },
-      },
-      hasMerchantReturnPolicy: { '@type': 'MerchantReturnPolicy', applicableCountry: 'IN', returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow', merchantReturnDays: 7, url: SITE + '/returns' },
+      ...offerExtras(S),
     },
   };
 }
