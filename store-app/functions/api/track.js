@@ -1,4 +1,5 @@
 import { json } from '../../src/lib.js';
+import { ensureReviews } from '../../src/reviews.js';
 
 const last10 = (v) => String(v || '').replace(/\D/g, '').slice(-10);
 
@@ -10,10 +11,12 @@ export async function onRequestPost({ request, env }) {
   const o = await env.DB.prepare('SELECT * FROM orders WHERE order_ref=?').bind(ref).first();
   if (!o || last10(o.phone) !== phone) return json({ error: 'We could not find an order with those details.' }, 404);
   let items = []; try { items = JSON.parse(o.items_json); } catch {}
+  let reviewed = [];
+  try { await ensureReviews(env); reviewed = (await env.DB.prepare('SELECT product_id FROM reviews WHERE order_ref=?').bind(ref).all()).results.map((x) => x.product_id); } catch {}
   return json({
     ref: o.order_ref, name: o.customer_name.split(' ')[0], placedAt: o.created_at, paidAt: o.paid_at, paid: o.status === 'paid',
     status: o.fulfilment_status, deliveryMinAt: o.delivery_min_at, deliveryMaxAt: o.delivery_max_at,
     courier: o.courier, tracking: o.tracking_number, shippedAt: o.shipped_at, deliveredAt: o.delivered_at,
-    refund: o.refund_status, total: o.total_paise, items: items.map((i) => ({ name: i.name, qty: i.qty })), city: o.city, pincode: o.pincode,
+    refund: o.refund_status, total: o.total_paise, items: items.map((i) => ({ id: i.id, name: i.name, qty: i.qty })), reviewed, city: o.city, pincode: o.pincode,
   });
 }

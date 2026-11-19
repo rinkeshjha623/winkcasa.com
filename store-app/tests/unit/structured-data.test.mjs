@@ -30,3 +30,13 @@ test('every offer states priceValidUntil (home list and product page)', () => {
   assert.match(productLd(prod, DEFAULTS).offers.priceValidUntil, /^\d{4}-\d{2}-\d{2}$/);
   assert.ok(new Date(item.offers.priceValidUntil) > new Date(), 'must be in the future');
 });
+test('product data has NO rating when there are no real reviews', () => {
+  assert.equal(productLd(prod, DEFAULTS).aggregateRating, undefined);
+  assert.equal(productLd(prod, DEFAULTS, { n: 0, avg: null, list: [] }).aggregateRating, undefined);
+});
+test('product data carries the real rating and reviews once they exist', () => {
+  const ld = productLd(prod, DEFAULTS, { n: 2, avg: 4.5, list: [{ name: 'Asha', rating: 5, text: 'Lovely', created_at: '2026-11-10 10:00:00' }, { name: 'Meera', rating: 4, text: '', created_at: '2026-11-11 10:00:00' }] });
+  assert.deepEqual([ld.aggregateRating.ratingValue, ld.aggregateRating.reviewCount, ld.aggregateRating.bestRating], ['4.5', '2', '5']);
+  assert.equal(ld.review.length, 2);
+  assert.equal(ld.review[0].author.name, 'Asha'); assert.equal(ld.review[0].reviewRating.ratingValue, '5');
+});

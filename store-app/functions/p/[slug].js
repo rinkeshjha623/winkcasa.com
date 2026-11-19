@@ -1,4 +1,6 @@
 import { getSettings, activeProducts, parseProduct, publicProduct, categoriesOf, productPath, slugify } from '../../src/store.js';
+import { ensureReviews, summarize } from '../../src/reviews.js';
+import { starsHtml, reviewsSectionHtml } from '../../src/reviews-ui.js';
 import { SITE, esc, abs, trim, headTags, pageShell, breadcrumbLd, productLd, faqLd, cardHtml, etaHtml, payMethodsHtml, shareHtml, askHtml } from '../../src/seo.js';
 
 const money = (n) => '₹' + Number(n).toLocaleString('en-IN');
@@ -22,6 +24,12 @@ export async function onRequestGet({ params, env }) {
   const off = p.mrp && p.mrp > p.price ? Math.round((1 - p.price / p.mrp) * 100) : 0;
   const title = trim(p.seo_title || `${p.name} | ${p.category} | WinkCasa`, 70);
   const desc = trim(p.seo_description || `${p.name}${p.description ? ' – ' + p.description : ''}. ${money(p.price)}. ${S.shipping.freeShippingAbove ? `Free delivery above ${money(S.shipping.freeShippingAbove)} across India.` : 'Delivery across India.'}`, 160);
+  let rv = { n: 0, avg: null, list: [] };
+  try {
+    await ensureReviews(env);
+    const { results } = await env.DB.prepare("SELECT * FROM reviews WHERE product_id=? AND status='approved' ORDER BY pinned DESC, id DESC LIMIT 100").bind(p.id).all();
+    rv = { ...summarize(results), list: results };
+  } catch {}
   const faqs = [...p.faq, ...S.faq.slice(0, 3)];
   const related = rows.filter((r) => r.category === p.category && r.id !== p.id).slice(0, 4).map(publicProduct);
   const imgs = p.images;
@@ -41,7 +49,7 @@ export async function onRequestGet({ params, env }) {
 <div class="pp">
 <div class="gal2">${imgs.length > 1 ? `<div class="rail" role="list">${imgs.map((u, i) => `<button type="button" class="rt${i === 0 ? ' on' : ''}" data-src="${esc(u)}" aria-label="Show photo ${i + 1}"><img src="${esc(u)}" alt="" width="64" height="80" loading="${i < 4 ? 'eager' : 'lazy'}"></button>`).join('')}</div>` : ''}
 <div class="zoom" id="zoom">${imgs[0] ? `<img id="zimg" src="${esc(imgs[0])}" alt="${esc(p.img_alt || p.name)}" width="800" height="1000" fetchpriority="high">` : ''}${off ? `<span class="ribbon">${off}% off</span>` : ''}<span class="zhint">Hover to zoom</span></div></div>
-<div class="info"><p class="label"><a href="${esc(cat.path)}" style="text-decoration:none">${esc(p.category)}</a></p><h1>${esc(p.name)}</h1>
+<div class="info"><p class="label"><a href="${esc(cat.path)}" style="text-decoration:none">${esc(p.category)}</a></p><h1>${esc(p.name)}</h1>${rv.n ? `<a class="rline" href="#reviews">${starsHtml(rv.avg)}<b>${rv.avg}</b> <span>(${rv.n})</span></a>` : ''}
 <p class="skul">SKU <b>${esc(p.sku || p.id)}</b>${p.brand ? ` · Brand <b>${esc(p.brand)}</b>` : ''}</p><div class="prow">${off ? `<span class="pct">−${off}%</span>` : ''}<span class="pbig">${money(p.price)}</span></div>
 ${p.mrp > p.price ? `<p class="mrp">M.R.P.: <s>${money(p.mrp)}</s></p>` : ''}
 <p class="tax">Inclusive of all taxes · ${S.shipping.freeShippingAbove ? `Free delivery above ${free}, otherwise ${fee}` : 'Delivery across India'}</p>
@@ -58,6 +66,7 @@ ${shareHtml({ url, title: p.name, image: imgs[0], text: p.name + ' on WinkCasa' 
 </div>
 <div class="pdesc"><div>
 ${paras.length ? `<section class="sec"><h2>Product description</h2>${paras.map((t) => `<p>${esc(t)}</p>`).join('')}</section>` : ''}
+${reviewsSectionHtml(rv)}
 <section class="sec"><h2>Delivery &amp; returns</h2><p>Delivered within <b>10 to 20 days</b> of your order, across India. Your expected dates are shown at checkout and in your order email. Delivery is free above ${free} and ${fee} below that.</p><p>If an item arrives damaged, defective or wrong, tell us within 7 days and we will replace it or refund you. See our <a href="/returns">Returns page</a> and <a href="/shipping">Shipping page</a>.</p></section></div>
 <aside class="why"><h3>Why buy from WinkCasa</h3><ul><li>Prices include GST and are shown in rupees</li><li>Secure payment by UPI, card or net banking through Razorpay</li><li>7-day replace or refund for damaged, defective or wrong items</li><li>A real New Delhi business that answers every message within one working day</li></ul><a class="btn alt" href="/contact">Contact us</a></aside></div>
 <section class="faq" id="faq"><h2>Questions about ${esc(p.name)}</h2>${faqs.map((f) => `<details><summary>${esc(f.q)}</summary><p>${esc(f.a)}</p></details>`).join('')}</section>
@@ -68,7 +77,7 @@ ${inStock && S.store.open ? `<div class="stickybuy" id="sbuy"><div><b>${money(p.
   const html = pageShell({
     head: headTags({ title, description: desc, canonical: url, image: imgs[0] || S.seo.ogImage, type: 'product', noindex: !!p.noindex }),
     S, cats, main,
-    jsonld: [productLd(p, S), breadcrumbLd([{ name: 'Home', url: SITE + '/' }, { name: p.category, url: SITE + cat.path }, { name: p.name, url }]), faqLd(faqs)],
+    jsonld: [productLd(p, S, rv), breadcrumbLd([{ name: 'Home', url: SITE + '/' }, { name: p.category, url: SITE + cat.path }, { name: p.name, url }]), faqLd(faqs)],
   });
   return new Response(html, { headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'public, max-age=60' } });
 }

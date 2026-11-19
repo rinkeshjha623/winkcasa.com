@@ -1,0 +1,2 @@
+CREATE TABLE IF NOT EXISTS reviews (id INTEGER PRIMARY KEY AUTOINCREMENT, product_id INTEGER NOT NULL, order_ref TEXT, name TEXT NOT NULL, rating INTEGER NOT NULL, text TEXT, verified INTEGER NOT NULL DEFAULT 0, source TEXT NOT NULL DEFAULT 'buyer', source_note TEXT, status TEXT NOT NULL DEFAULT 'approved', pinned INTEGER NOT NULL DEFAULT 0, reply TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')));
+CREATE INDEX IF NOT EXISTS idx_reviews_product ON reviews(product_id, status);

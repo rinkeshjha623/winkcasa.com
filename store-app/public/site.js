@@ -267,3 +267,27 @@
   document.addEventListener('click', function (e) { var a = e.target && e.target.closest && e.target.closest('[data-cookie-settings]'); if (a) { e.preventDefault(); open(); } });
   if (!get()) open();
 })();
+
+// Product cards: show the real customer rating (from approved reviews) and true demand notes (from real orders and stock).
+(function () {
+  var data = null, busy = false;
+  function stars(avg) { return '<span class="stars" role="img" aria-label="Rated ' + avg + ' out of 5"><i style="width:' + Math.round(avg / 5 * 100) + '%"></i></span>'; }
+  function esc(t) { return String(t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function paint(root) {
+    if (!data) return;
+    (root || document).querySelectorAll('.card:not([data-rated])').forEach(function (c) {
+      var w = c.querySelector('[data-wish]'); if (!w) return;
+      c.setAttribute('data-rated', '1');
+      var d = data[w.getAttribute('data-wish')] || {}, meta = c.querySelector('.meta'); if (!meta) return;
+      var h = d.r ? '<div class="crate">' + stars(d.r) + '<span>' + d.r + '</span><span class="cn">| ' + d.n + '</span></div>' : '<div class="crate"><span class="newtag">No reviews yet</span></div>';
+      if (d.b) h += '<div class="cdemand">' + esc(d.b) + '</div>';
+      meta.insertAdjacentHTML('afterend', h);
+    });
+  }
+  function load() {
+    if (busy) return; busy = true;
+    fetch('/api/social').then(function (r) { return r.json(); }).then(function (j) { data = j.p || {}; paint(); }).catch(function () {});
+  }
+  new MutationObserver(function () { if (data) paint(); }).observe(document.documentElement, { childList: true, subtree: true });
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', load); else load();
+})();

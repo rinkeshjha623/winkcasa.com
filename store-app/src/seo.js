@@ -100,7 +100,7 @@ export const breadcrumbLd = (items) => ({ '@context': 'https://schema.org', '@ty
 export const itemListLd = (products) => ({ '@context': 'https://schema.org', '@type': 'ItemList',
   itemListElement: products.map((p, i) => ({ '@type': 'ListItem', position: i + 1, url: SITE + productPath(p), name: p.name })) });
 
-export function productLd(p, S) {
+export function productLd(p, S, rv = null) {
   const imgs = p.images.map(abs);
   const inStock = p.stock === null || p.stock > 0;
   const until = new Date(Date.now() + 365 * 86400000).toISOString().slice(0, 10);
@@ -109,6 +109,10 @@ export function productLd(p, S) {
     name: p.name, description: p.ai_answer || p.seo_description || p.description || p.name, material: p.material || undefined, keywords: p.focus_keyword || undefined, sku: p.sku || String(p.id),
     category: p.category, image: imgs.length ? imgs : undefined,
     brand: { '@type': 'Brand', name: p.brand || 'WinkCasa' },
+    ...(rv && rv.n > 0 ? {
+      aggregateRating: { '@type': 'AggregateRating', ratingValue: String(rv.avg), reviewCount: String(rv.n), bestRating: '5', worstRating: '1' },
+      review: rv.list.slice(0, 10).map((r) => ({ '@type': 'Review', author: { '@type': 'Person', name: r.name }, datePublished: String(r.created_at).slice(0, 10), reviewRating: { '@type': 'Rating', ratingValue: String(r.rating), bestRating: '5', worstRating: '1' }, ...(r.text ? { reviewBody: r.text } : {}) })),
+    } : {}),
     offers: {
       '@type': 'Offer', url: SITE + productPath(p), priceCurrency: 'INR', price: String(p.price), priceValidUntil: until,
       availability: inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock', itemCondition: 'https://schema.org/NewCondition',
@@ -202,7 +206,7 @@ ${verifyMeta(S)}
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Hanken+Grotesk:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="/page.css">
-<link rel="stylesheet" href="/site.css?v=20261139">
+<link rel="stylesheet" href="/site.css?v=2026114A">
 ${jsonld.filter(Boolean).map(ld).join('\n')}
 </head><body><div class="wrap">${headerHtml(S, cats)}</div>${main}<div class="wrap">${footerHtml(S, cats)}</div><script src="/site.js" defer></script>${scripts}</body></html>`;
 }

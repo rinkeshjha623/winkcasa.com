@@ -774,3 +774,25 @@ html:root:root:root .recent{margin:8px 0 24px}
 #cookiebar button{font:inherit;font-weight:600;padding:8px 18px;border-radius:8px;cursor:pointer;border:1px solid #5b6b7d;background:transparent;color:#e8edf3}
 #cookiebar button.ok{background:#FEBD69;border-color:#FEBD69;color:#131921}
 @media(max-width:560px){#cookiebar{left:8px;right:8px;bottom:8px;padding:10px 12px;font-size:.82rem}#cookiebar div{width:100%}#cookiebar button{flex:1}}
+
+/* Ratings, reviews and demand strip */
+.stars{position:relative;display:inline-block;width:5.4em;height:1em;line-height:1;font-size:15px;vertical-align:-2px;background:linear-gradient(90deg,#ddd 0 100%);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='54' height='10' viewBox='0 0 54 10'%3E%3Cg fill='%23000'%3E%3Cpath id='s' d='M5 0l1.5 3.4 3.5.4-2.6 2.4.7 3.5L5 7.9 1.9 9.7l.7-3.5L0 3.8l3.5-.4z'/%3E%3Cuse href='%23s' x='10.8'/%3E%3Cuse href='%23s' x='21.6'/%3E%3Cuse href='%23s' x='32.4'/%3E%3Cuse href='%23s' x='43.2'/%3E%3C/g%3E%3C/svg%3E") 0 0/100% 100% no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='54' height='10' viewBox='0 0 54 10'%3E%3Cg fill='%23000'%3E%3Cpath id='s' d='M5 0l1.5 3.4 3.5.4-2.6 2.4.7 3.5L5 7.9 1.9 9.7l.7-3.5L0 3.8l3.5-.4z'/%3E%3Cuse href='%23s' x='10.8'/%3E%3Cuse href='%23s' x='21.6'/%3E%3Cuse href='%23s' x='32.4'/%3E%3Cuse href='%23s' x='43.2'/%3E%3C/g%3E%3C/svg%3E") 0 0/100% 100% no-repeat}
+.stars i{position:absolute;left:0;top:0;bottom:0;background:#F5A524}
+.card .crate{display:flex;align-items:center;gap:8px;margin:8px 0 2px;font-size:.86rem;font-weight:600;color:var(--ink,#1a1a1a)}
+.card .crate .cn{color:var(--muted,#667);font-weight:500}
+.card .crate .newtag{font-size:.74rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted,#667);border:1px solid currentColor;border-radius:999px;padding:1px 8px;opacity:.8}
+.card .cdemand{margin-top:6px;padding:6px 10px;border-radius:6px;background:#FFF1CC;color:#5a4300;font-size:.8rem;font-weight:600}
+html:root:root:root[data-theme="dark"] .card .cdemand{background:#3a3115;color:#f6d98a}
+.rline{display:inline-flex;align-items:center;gap:6px;margin:6px 0 2px;font-size:.92rem;text-decoration:none;color:inherit}
+.reviews .rsum{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0 16px;font-size:1rem}
+.reviews .rev{padding:14px 0;border-top:1px solid var(--line,rgba(128,128,128,.25))}
+.reviews .rh{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.reviews .rev p{margin:6px 0 0}
+.reviews .vb{font-style:normal;font-size:.74rem;font-weight:600;color:#1a7f4b;background:rgba(26,127,75,.12);border-radius:999px;padding:2px 8px}
+.reviews .vb.m{color:var(--muted,#667);background:rgba(128,128,128,.14)}
+.reviews .rrep{padding:8px 12px;border-radius:8px;background:rgba(128,128,128,.12);font-size:.92rem}
+.revform{margin-top:10px;padding:12px;border:1px solid var(--line,rgba(128,128,128,.3));border-radius:10px}
+.revform .pick{display:flex;gap:4px;margin:6px 0}
+.revform .pick button{font-size:1.6rem;line-height:1;background:none;border:0;cursor:pointer;color:#bbb;padding:0 2px}
+.revform .pick button.on{color:#F5A524}
+.revform textarea{width:100%;min-height:70px}
