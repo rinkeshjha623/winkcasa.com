@@ -24,3 +24,9 @@ test('home list uses the short description field the store actually provides (di
   const item = homePageLd(DEFAULTS, [{ ...noDesc, dim: 'Hydrating rose mist, 100 ml.' }]).mainEntity.itemListElement[0].item;
   assert.equal(item.description, 'Hydrating rose mist, 100 ml.');
 });
+test('every offer states priceValidUntil (home list and product page)', () => {
+  const item = homePageLd(DEFAULTS, [prod]).mainEntity.itemListElement[0].item;
+  assert.match(item.offers.priceValidUntil, /^\d{4}-\d{2}-\d{2}$/);
+  assert.match(productLd(prod, DEFAULTS).offers.priceValidUntil, /^\d{4}-\d{2}-\d{2}$/);
+  assert.ok(new Date(item.offers.priceValidUntil) > new Date(), 'must be in the future');
+});

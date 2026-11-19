@@ -69,6 +69,7 @@ export function organizationLd(S) {
 // Shipping and return details that Google's merchant listings expect on every Offer.
 export const offerExtras = (S) => ({
   validFrom: new Date().toISOString().slice(0, 10),
+  priceValidUntil: new Date(Date.now() + 365 * 86400000).toISOString().slice(0, 10),
   shippingDetails: {
     '@type': 'OfferShippingDetails',
     shippingRate: { '@type': 'MonetaryAmount', value: String((S && S.shipping && S.shipping.charge) ?? 79), currency: 'INR' },
