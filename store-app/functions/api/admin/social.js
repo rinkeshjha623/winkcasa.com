@@ -8,13 +8,13 @@ const when = (v) => { const t = s(v, 25).replace('T', ' '); return /^\d{4}-\d\d-
 const LIB_DEFAULT = { hashtags: [], ideas: [] };
 
 export async function onRequestGet({ request, env }) {
-  const denied = requireAdmin(request, env); if (denied) return denied;
+  const denied = await requireAdmin(request, env); if (denied) return denied;
   const { results } = await env.DB.prepare('SELECT * FROM social_posts ORDER BY COALESCE(scheduled_at, created_at) DESC LIMIT 400').all();
   return json({ posts: results, conn: await connectionInfo(env), library: await kvGet(env, 'library', LIB_DEFAULT) });
 }
 
 export async function onRequestPost({ request, env }) {
-  const denied = requireAdmin(request, env); if (denied) return denied;
+  const denied = await requireAdmin(request, env); if (denied) return denied;
   let b; try { b = await request.json(); } catch { return json({ error: 'Invalid request.' }, 400); }
   const id = Number(b.id);
   try {

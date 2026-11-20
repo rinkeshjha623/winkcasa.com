@@ -7,7 +7,7 @@ const s = (v, n) => String(v ?? '').trim().slice(0, n);
 const okImg = (u) => !u || (/^(https:\/\/|\/img\/)/.test(u) && u.length <= 600);
 
 export async function onRequestGet({ request, env }) {
-  const denied = requireAdmin(request, env);
+  const denied = await requireAdmin(request, env);
   if (denied) return denied;
   await ensurePosts(env);
   const { results } = await env.DB.prepare('SELECT * FROM posts ORDER BY COALESCE(published_at, created_at) DESC, id DESC').all();
@@ -20,7 +20,7 @@ const SCHEMAS = ['BlogPosting', 'Article', 'NewsArticle', 'TechArticle'];
 const when = (v) => { const t = s(v, 25).replace('T', ' '); return /^\d{4}-\d\d-\d\d \d\d:\d\d(:\d\d)?$/.test(t) ? t.slice(0, 19).padEnd(19, ':00') : ''; };
 
 export async function onRequestPost({ request, env }) {
-  const denied = requireAdmin(request, env);
+  const denied = await requireAdmin(request, env);
   if (denied) return denied;
   let b; try { b = await request.json(); } catch { return json({ error: 'Invalid request.' }, 400); }
   const title = s(b.title, 120);
@@ -67,7 +67,7 @@ export async function onRequestPost({ request, env }) {
 }
 
 export async function onRequestDelete({ request, env }) {
-  const denied = requireAdmin(request, env);
+  const denied = await requireAdmin(request, env);
   if (denied) return denied;
   const id = Number(new URL(request.url).searchParams.get('id'));
   if (!id) return json({ error: 'Missing id.' }, 400);

@@ -4,7 +4,7 @@ import { ensureReviews, cleanReview } from '../../../src/reviews.js';
 import { activeProducts } from '../../../src/store.js';
 
 export async function onRequestGet({ request, env }) {
-  const denied = requireAdmin(request, env); if (denied) return denied;
+  const denied = await requireAdmin(request, env); if (denied) return denied;
   await ensureReviews(env);
   const [{ results }, prods] = await Promise.all([
     env.DB.prepare('SELECT * FROM reviews ORDER BY id DESC LIMIT 300').all(), activeProducts(env)]);
@@ -14,7 +14,7 @@ export async function onRequestGet({ request, env }) {
 
 // There is deliberately no action that sets a rating or a count. The numbers are always worked out from the reviews stored here.
 export async function onRequestPost({ request, env }) {
-  const denied = requireAdmin(request, env); if (denied) return denied;
+  const denied = await requireAdmin(request, env); if (denied) return denied;
   let b; try { b = await request.json(); } catch { return json({ error: 'Invalid request.' }, 400); }
   await ensureReviews(env);
   const id = Number(b.id), run = (sql, ...a) => env.DB.prepare(sql).bind(...a).run();

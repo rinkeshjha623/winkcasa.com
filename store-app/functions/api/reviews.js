@@ -1,10 +1,12 @@
 import { json } from '../../src/lib.js';
+import { rateLimit } from '../../src/guard.js';
 import { ensureReviews, cleanReview, canReview } from '../../src/reviews.js';
 
 const last10 = (v) => String(v || '').replace(/\D/g, '').slice(-10);
 
 // POST { ref, phone, product_id, rating, text, name } -> a verified-buyer review (order must be paid and delivered, item must be in it).
 export async function onRequestPost({ request, env }) {
+  const limited = await rateLimit(env, request, 'review', 10, 3600); if (limited) return limited;
   let b; try { b = await request.json(); } catch { return json({ error: 'Invalid request.' }, 400); }
   const ref = String(b.ref || '').trim().toUpperCase().slice(0, 20), phone = last10(b.phone), pid = Number(b.product_id);
   const rv = cleanReview(b); if (rv.error) return json({ error: rv.error }, 400);

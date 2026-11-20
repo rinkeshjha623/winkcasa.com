@@ -1,8 +1,10 @@
 import { json } from '../../src/lib.js';
+import { rateLimit } from '../../src/guard.js';
 
 const t = (v, n) => String(v ?? '').trim().slice(0, n);
 
 export async function onRequestPost({ request, env }) {
+  const limited = await rateLimit(env, request, 'contact', 5, 3600, 'You have sent several messages already. Please wait a little before sending another.'); if (limited) return limited;
   let b; try { b = await request.json(); } catch { return json({ error: 'Invalid request.' }, 400); }
   if (b.website) return json({ ok: true }); // honeypot: bots fill this in
   const name = t(b.name, 80), email = t(b.email, 120), message = t(b.message, 2000);

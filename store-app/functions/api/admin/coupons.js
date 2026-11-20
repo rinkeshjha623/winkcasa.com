@@ -6,7 +6,7 @@ const int = (v) => { const n = Math.round(Number(v)); return Number.isFinite(n) 
 const when = (v) => { const t = s(v, 25).replace('T', ' '); return /^\d{4}-\d\d-\d\d \d\d:\d\d/.test(t) ? t.slice(0, 16) + ':00' : null; };
 
 export async function onRequestGet({ request, env }) {
-  const denied = requireAdmin(request, env); if (denied) return denied;
+  const denied = await requireAdmin(request, env); if (denied) return denied;
   const { results } = await env.DB.prepare(`SELECT c.*,
     (SELECT COUNT(*) FROM orders o WHERE o.coupon_code=c.code AND o.status NOT IN ('created','cancelled')) uses,
     (SELECT COALESCE(SUM(o.discount_paise),0) FROM orders o WHERE o.coupon_code=c.code AND o.status NOT IN ('created','cancelled')) saved_paise
@@ -15,7 +15,7 @@ export async function onRequestGet({ request, env }) {
 }
 
 export async function onRequestPost({ request, env }) {
-  const denied = requireAdmin(request, env); if (denied) return denied;
+  const denied = await requireAdmin(request, env); if (denied) return denied;
   let b; try { b = await request.json(); } catch { return json({ error: 'Invalid request.' }, 400); }
   if (b.action === 'delete') { await env.DB.prepare('DELETE FROM coupons WHERE id=?').bind(Number(b.id)).run(); return json({ ok: true }); }
   if (b.action === 'toggle') { await env.DB.prepare('UPDATE coupons SET active=? WHERE id=?').bind(b.active ? 1 : 0, Number(b.id)).run(); return json({ ok: true }); }

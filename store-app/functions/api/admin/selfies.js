@@ -3,7 +3,7 @@ import { requireAdmin } from '../../../src/admin.js';
 
 // Admin-only: list, view and delete the selfies customers chose to save.
 export async function onRequestGet({ request, env }) {
-  const denied = requireAdmin(request, env); if (denied) return denied;
+  const denied = await requireAdmin(request, env); if (denied) return denied;
   const u = new URL(request.url), id = Number(u.searchParams.get('id'));
   if (id) {
     const r = await env.DB.prepare('SELECT image FROM selfies WHERE id=?').bind(id).first();
@@ -15,7 +15,7 @@ export async function onRequestGet({ request, env }) {
   return json({ list: results, total });
 }
 export async function onRequestPost({ request, env }) {
-  const denied = requireAdmin(request, env); if (denied) return denied;
+  const denied = await requireAdmin(request, env); if (denied) return denied;
   let b; try { b = await request.json(); } catch { return json({ error: 'Invalid request.' }, 400); }
   if (b.action === 'delete') { await env.DB.prepare('DELETE FROM selfies WHERE id=?').bind(Number(b.id)).run(); return json({ ok: true }); }
   if (b.action === 'delete_all') { await env.DB.prepare('DELETE FROM selfies').run(); return json({ ok: true }); }

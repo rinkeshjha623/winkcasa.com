@@ -2,6 +2,7 @@ import { json } from '../../src/lib.js';
 import { hashPassword, checkPassword, startSession, endSession, clearCookies, getCustomer, jsonCookies } from '../../src/auth.js';
 import { activeProducts, productPath } from '../../src/store.js';
 import { sendMail, mailReady } from '../../src/mail.js';
+import { rateLimit, countHits, addHit, tooMany, clientIp } from '../../src/guard.js';
 
 const sha256 = async (x) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(x)))].map((n) => n.toString(16).padStart(2, '0')).join('');
 const RESET_SQL = 'CREATE TABLE IF NOT EXISTS password_resets (token_hash TEXT PRIMARY KEY, customer_id INTEGER NOT NULL, expires_at TEXT NOT NULL, created_at TEXT NOT NULL DEFAULT (datetime(\'now\')))';
@@ -53,6 +54,7 @@ export async function onRequestPost({ request, env }) {
   const act = b.action;
 
   if (act === 'signup') {
+    const rl = await rateLimit(env, request, 'signup', 8, 3600, 'Too many accounts created from this connection. Please try again later.'); if (rl) return rl;
     const name = t(b.name, 80), email = t(b.email, 120).toLowerCase(), phone = t(b.phone, 15).replace(/[\s-]/g, '');
     if (name.length < 2) return json({ error: 'Enter your name.' }, 400);
     if (!okEmail(email)) return json({ error: 'Enter a valid email address.' }, 400);
@@ -68,6 +70,7 @@ export async function onRequestPost({ request, env }) {
 
   if (act === 'forgot') {
     if (b.website) return json({ ok: true });
+    const rl = await rateLimit(env, request, 'forgot', 5, 3600); if (rl) return rl;
     if (!mailReady(env)) return json({ error: 'Password reset by email is not switched on yet. Please write to us from the Contact page.' }, 503);
     const email = t(b.email, 120).toLowerCase();
     if (!okEmail(email)) return json({ error: 'Enter a valid email address.' }, 400);
@@ -104,13 +107,15 @@ export async function onRequestPost({ request, env }) {
 
   if (act === 'login') {
     const email = t(b.email, 120).toLowerCase();
+    const lk = 'loginfail:' + clientIp(request) + ':' + email;
+    try { if ((await countHits(env, lk, 900)) >= 5) return tooMany('Too many attempts. Please try again in 15 minutes.'); } catch {}
     const c = await env.DB.prepare('SELECT * FROM customers WHERE email=?').bind(email).first();
-    const bad = () => json({ error: 'Email or password is not correct.' }, 401);
+    const bad = async () => { try { await addHit(env, lk); } catch {} return json({ error: 'Email or password is not correct.' }, 401); };
     if (!c) { await hashPassword(String(b.password || '')); return bad(); }
     if (c.locked_until && c.locked_until > nowS()) return json({ error: 'Too many attempts. Please try again in 15 minutes.' }, 429);
     if (!(await checkPassword(String(b.password || ''), c.pass_hash, c.pass_salt))) {
       const f = c.fails + 1;
-      await env.DB.prepare('UPDATE customers SET fails=?, locked_until=? WHERE id=?').bind(f >= 5 ? 0 : f, f >= 5 ? new Date(Date.now() + 900000).toISOString().slice(0, 19).replace('T', ' ') : null, c.id).run();
+      await env.DB.prepare('UPDATE customers SET fails=?, locked_until=? WHERE id=?').bind(f >= 30 ? 0 : f, f >= 30 ? new Date(Date.now() + 900000).toISOString().slice(0, 19).replace('T', ' ') : null, c.id).run();
       return bad();
     }
     await env.DB.prepare('UPDATE customers SET fails=0, locked_until=NULL WHERE id=?').bind(c.id).run();

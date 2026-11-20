@@ -9,7 +9,7 @@ const log = (env, ref, text) => env.DB.prepare('INSERT INTO order_events (order_
 const nowStr = () => new Date().toISOString().slice(0, 19).replace('T', ' ');
 
 export async function onRequestGet({ request, env }) {
-  const denied = requireAdmin(request, env); if (denied) return denied;
+  const denied = await requireAdmin(request, env); if (denied) return denied;
   const u = new URL(request.url); const action = u.searchParams.get('action') || 'status';
   try {
     const cfg = await getCjConfig(env);
@@ -31,7 +31,7 @@ export async function onRequestGet({ request, env }) {
 }
 
 export async function onRequestPost({ request, env }) {
-  const denied = requireAdmin(request, env); if (denied) return denied;
+  const denied = await requireAdmin(request, env); if (denied) return denied;
   let b; try { b = await request.json(); } catch { return json({ error: 'Invalid request.' }, 400); }
   try {
     const cfg = await getCjConfig(env);

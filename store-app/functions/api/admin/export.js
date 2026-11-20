@@ -8,7 +8,7 @@ const esc = (v) => {
 
 // GET /api/admin/export  -> CSV of all orders (for accounting / GST filing)
 export async function onRequestGet({ request, env }) {
-  const denied = requireAdmin(request, env);
+  const denied = await requireAdmin(request, env);
   if (denied) return denied;
   const { results } = await env.DB.prepare('SELECT * FROM orders ORDER BY id DESC LIMIT 5000').all();
   const head = ['Order', 'Created (UTC)', 'Paid (UTC)', 'Payment', 'Fulfilment', 'Customer', 'Phone', 'Email', 'Address', 'City', 'State',

@@ -3,13 +3,13 @@ import { requireAdmin } from '../../../src/admin.js';
 import { getSettings, cleanSettings } from '../../../src/store.js';
 
 export async function onRequestGet({ request, env }) {
-  const denied = requireAdmin(request, env);
+  const denied = await requireAdmin(request, env);
   if (denied) return denied;
   return json(await getSettings(env));
 }
 
 export async function onRequestPost({ request, env }) {
-  const denied = requireAdmin(request, env);
+  const denied = await requireAdmin(request, env);
   if (denied) return denied;
   let b; try { b = await request.json(); } catch { return json({ error: 'Invalid request.' }, 400); }
   const clean = cleanSettings(b);

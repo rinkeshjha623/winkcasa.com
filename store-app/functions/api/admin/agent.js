@@ -4,7 +4,7 @@ import { keywordSummary } from '../../../src/keywords.js';
 import { SKILLS, agentState, setAgent, runAgent } from '../../../src/agent.js';
 
 export async function onRequestGet({ request, env }) {
-  const denied = requireAdmin(request, env); if (denied) return denied;
+  const denied = await requireAdmin(request, env); if (denied) return denied;
   const st = await agentState(env);
   const { results } = await env.DB.prepare("SELECT * FROM agent_log ORDER BY id DESC LIMIT 120").all();
   const report = await env.DB.prepare("SELECT * FROM agent_log WHERE level='report' ORDER BY id DESC LIMIT 1").first();
@@ -12,7 +12,7 @@ export async function onRequestGet({ request, env }) {
 }
 
 export async function onRequestPost({ request, env }) {
-  const denied = requireAdmin(request, env); if (denied) return denied;
+  const denied = await requireAdmin(request, env); if (denied) return denied;
   let b; try { b = await request.json(); } catch { return json({ error: 'Invalid request.' }, 400); }
   try {
     if (b.action === 'toggle') { await setAgent(env, { skill: b.skill, enabled: b.enabled }); return json({ ok: true }); }

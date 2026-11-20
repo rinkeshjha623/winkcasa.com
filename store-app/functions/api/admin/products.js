@@ -7,7 +7,7 @@ const int = (v) => { const n = Math.round(Number(v)); return Number.isFinite(n) 
 const okImg = (u) => /^(https:\/\/|\/img\/)/.test(u) && u.length <= 600;
 
 export async function onRequestGet({ request, env }) {
-  const denied = requireAdmin(request, env);
+  const denied = await requireAdmin(request, env);
   if (denied) return denied;
   await ensureSeeded(env);
   const { results } = await env.DB.prepare('SELECT * FROM products ORDER BY sort, id').all();
@@ -17,7 +17,7 @@ export async function onRequestGet({ request, env }) {
 // POST: create (no id) or update (id). Body fields: name, category, price, mrp, description, tag,
 // images[], stock (null = unlimited), active, sort, supplier, cost
 export async function onRequestPost({ request, env }) {
-  const denied = requireAdmin(request, env);
+  const denied = await requireAdmin(request, env);
   if (denied) return denied;
   let b; try { b = await request.json(); } catch { return json({ error: 'Invalid request.' }, 400); }
 
@@ -52,7 +52,7 @@ export async function onRequestPost({ request, env }) {
 }
 
 export async function onRequestDelete({ request, env }) {
-  const denied = requireAdmin(request, env);
+  const denied = await requireAdmin(request, env);
   if (denied) return denied;
   const id = Number(new URL(request.url).searchParams.get('id'));
   if (!id) return json({ error: 'Missing id.' }, 400);

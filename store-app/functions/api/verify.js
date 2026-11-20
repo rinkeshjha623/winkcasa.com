@@ -8,7 +8,9 @@ export async function onRequestPost({ request, env }) {
   const { razorpay_order_id: oid, razorpay_payment_id: pid, razorpay_signature: sig } = b;
   if (!oid || !pid || !sig) return json({ error: 'Missing payment details.' }, 400);
 
-  const expected = await hmacHex(env.RAZORPAY_KEY_SECRET || env.key_secret, oid + '|' + pid);
+  const secret = env.RAZORPAY_KEY_SECRET || env.key_secret;
+  if (!secret) return json({ error: 'Payments are not configured.' }, 503);
+  const expected = await hmacHex(secret, oid + '|' + pid);
   if (!safeEqual(expected, sig)) return json({ error: 'Payment could not be verified.' }, 400);
 
   const upd = await env.DB.prepare(

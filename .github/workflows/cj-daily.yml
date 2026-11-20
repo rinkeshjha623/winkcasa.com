@@ -8,9 +8,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Publish today's products (a few passes, each does a handful)
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
         run: |
           for i in 1 2 3 4 5; do
-            curl -fsS --retry 3 --max-time 120 https://www.winkcasa.com/api/cj-daily || true
+            curl -fsS -H "Authorization: Bearer $CRON_SECRET" --retry 3 --max-time 120 https://www.winkcasa.com/api/cj-daily || true
             echo
             sleep 20
           done

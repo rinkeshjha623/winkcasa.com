@@ -3,7 +3,7 @@ import { requireAdmin } from '../../../src/admin.js';
 
 // POST { data: "data:image/jpeg;base64,...." } -> { url: "/img/<id>" }
 export async function onRequestPost({ request, env }) {
-  const denied = requireAdmin(request, env);
+  const denied = await requireAdmin(request, env);
   if (denied) return denied;
   let b; try { b = await request.json(); } catch { return json({ error: 'Invalid request.' }, 400); }
   const m = /^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/.exec(b.data || '');

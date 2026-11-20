@@ -1,10 +1,12 @@
 import { json } from '../../src/lib.js';
 import { ensureReviews } from '../../src/reviews.js';
+import { rateLimit } from '../../src/guard.js';
 
 const last10 = (v) => String(v || '').replace(/\D/g, '').slice(-10);
 
 // POST { ref, phone } -> status of that order (the phone number must match the one used at checkout).
 export async function onRequestPost({ request, env }) {
+  const limited = await rateLimit(env, request, 'track', 15, 600); if (limited) return limited;
   let b; try { b = await request.json(); } catch { return json({ error: 'Invalid request.' }, 400); }
   const ref = String(b.ref || '').trim().toUpperCase().slice(0, 20), phone = last10(b.phone);
   if (!ref || phone.length < 10) return json({ error: 'Enter your order number and mobile number.' }, 400);

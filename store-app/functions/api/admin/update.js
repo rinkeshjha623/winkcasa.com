@@ -7,7 +7,7 @@ const paise = (v) => Math.max(0, Math.round(Number(v || 0) * 100));
 // POST /api/admin/update  { ref, fulfilment_status?, courier?, tracking_number?, supplier_name?,
 //   supplier_order_ref?, supplier_cost?, notes?, refund_status?, refunded_amount?, note? }
 export async function onRequestPost({ request, env }) {
-  const denied = requireAdmin(request, env);
+  const denied = await requireAdmin(request, env);
   if (denied) return denied;
   let b; try { b = await request.json(); } catch { return json({ error: 'Invalid request.' }, 400); }
   const o = await env.DB.prepare('SELECT * FROM orders WHERE order_ref=?').bind(b.ref).first();

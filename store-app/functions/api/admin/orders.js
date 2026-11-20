@@ -4,7 +4,7 @@ import { requireAdmin, parseRow } from '../../../src/admin.js';
 // GET /api/admin/orders?status=paid&fulfilment=new&q=text&limit=300
 // GET /api/admin/orders?ref=WC-XXXX   (single order with timeline)
 export async function onRequestGet({ request, env }) {
-  const denied = requireAdmin(request, env);
+  const denied = await requireAdmin(request, env);
   if (denied) return denied;
   const u = new URL(request.url);
 

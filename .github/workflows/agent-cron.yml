@@ -8,4 +8,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Run the agent skills that are due
-        run: curl -fsS --retry 3 --max-time 120 https://www.winkcasa.com/api/agent-cron
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: curl -fsS -H "Authorization: Bearer $CRON_SECRET" --retry 3 --max-time 120 https://www.winkcasa.com/api/agent-cron

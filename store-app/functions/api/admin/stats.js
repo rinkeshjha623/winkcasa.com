@@ -6,7 +6,7 @@ const istDay = (utcStr) => new Date(new Date(utcStr.replace(' ', 'T') + 'Z').get
 
 // GET /api/admin/stats?days=30
 export async function onRequestGet({ request, env }) {
-  const denied = requireAdmin(request, env);
+  const denied = await requireAdmin(request, env);
   if (denied) return denied;
   const days = Math.min(Math.max(Number(new URL(request.url).searchParams.get('days')) || 30, 1), 365);
   const since = new Date(Date.now() - days * 86400000).toISOString().slice(0, 19).replace('T', ' ');

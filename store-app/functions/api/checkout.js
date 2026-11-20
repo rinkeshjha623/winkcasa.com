@@ -1,7 +1,9 @@
 import { activeProducts, getSettings, deliveryWindow } from '../../src/store.js';
 import { json, priceCart, cleanCustomer } from '../../src/lib.js';
 import { getCustomer } from '../../src/auth.js';
-import { resolveCoupon } from '../../src/coupons.js';
+import { resolveCoupon, withinCouponLimit } from '../../src/coupons.js';
+import { rateLimit } from '../../src/guard.js';
+import { heldQty } from '../../src/holds.js';
 
 export async function onRequestPost({ request, env }) {
   const keyId = env.RAZORPAY_KEY_ID || env.key_id;
@@ -10,6 +12,8 @@ export async function onRequestPost({ request, env }) {
     const missing = [!keyId && 'key id', !keySecret && 'key secret', !env.DB && 'database'].filter(Boolean).join(', ');
     return json({ error: 'Checkout is not set up yet.', missing }, 503);
   }
+  const limited = await rateLimit(env, request, 'checkout', 10, 600, 'Too many checkout attempts. Please wait a few minutes and try again.');
+  if (limited) return limited;
   let body;
   try { body = await request.json(); } catch { return json({ error: 'Invalid request.' }, 400); }
 
@@ -21,17 +25,19 @@ export async function onRequestPost({ request, env }) {
   };
   const priced = priceCart(catalog, body.items);
   if (priced.error) return json({ error: priced.error }, 400);
+  const held = await heldQty(env);
   for (const l of priced.lines) {
     const p = catalog.products.find((x) => x.id === l.id);
-    if (p.stock !== null && p.stock < l.qty) {
-      return json({ error: p.stock > 0 ? `Only ${p.stock} of "${p.name}" left.` : `"${p.name}" is sold out.` }, 409);
+    const free = p.stock === null ? null : Math.max(0, p.stock - (held[l.id] || 0));
+    if (free !== null && free < l.qty) {
+      return json({ error: free > 0 ? `Only ${free} of "${p.name}" left.` : `"${p.name}" is sold out or being bought by other shoppers right now. Please try again in a few minutes.` }, 409);
     }
   }
   const cust = cleanCustomer(body.customer);
   if (cust.error) return json({ error: cust.error }, 400);
 
   let discount = 0, shipOff = 0, couponCode = null;
-  const cp = await resolveCoupon(env, body.coupon, priced.subtotal, priced.shipping, cust.value.email);
+  const cp = await resolveCoupon(env, body.coupon, priced.subtotal, priced.shipping, cust.value.email, cust.value.phone);
   if (cp.error) return json({ error: cp.error }, 400);
   if (cp.ok && !cp.none) { discount = cp.discount; shipOff = cp.shippingOff; couponCode = cp.code; }
   priced.discount = discount; priced.shipping -= shipOff; priced.total = priced.subtotal - discount + priced.shipping;
@@ -68,6 +74,10 @@ export async function onRequestPost({ request, env }) {
     cust.value.name, cust.value.phone, cust.value.email, cust.value.address,
     cust.value.city, cust.value.state, cust.value.pincode, JSON.stringify(priced.lines), placedAt, win.min, win.max, me ? me.id : null, discount, couponCode, wantCod ? 'cod' : 'online', codFee, advance
   ).run();
+  if (couponCode && !(await withinCouponLimit(env, couponCode, orderRef))) {
+    await env.DB.prepare('DELETE FROM orders WHERE order_ref=?').bind(orderRef).run();
+    return json({ error: 'This offer has just been fully claimed.' }, 409);
+  }
   if (wantCod) await env.DB.prepare('INSERT INTO order_events (order_ref, text) VALUES (?, ?)').bind(orderRef, `CASH ON DELIVERY order. Advance Rs ${advance / 100} is paid online. Collect Rs ${(priced.total - advance) / 100} in cash at delivery (includes Rs ${codFee / 100} COD fee). The advance is kept if the customer refuses delivery.`).run();
 
   return json({ orderRef, razorpayOrderId: rzOrder.id, amount: payNow, orderTotal: priced.total, mode: wantCod ? 'cod' : 'online', keyId, placedAt, deliveryMinAt: win.min, deliveryMaxAt: win.max });
