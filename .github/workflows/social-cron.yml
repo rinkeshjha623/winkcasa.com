@@ -10,4 +10,5 @@ jobs:
       - name: Ask the store to publish anything that is due
         env:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
-        run: curl -fsS -H "Authorization: Bearer $CRON_SECRET" --retry 3 --max-time 60 https://www.winkcasa.com/api/social-cron
+        run: |
+          curl -fsS -H "Authorization: Bearer $CRON_SECRET" --retry 3 --max-time 60 https://www.winkcasa.com/api/social-cron

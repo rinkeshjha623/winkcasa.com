@@ -10,4 +10,5 @@ jobs:
       - name: Run the agent skills that are due
         env:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
-        run: curl -fsS -H "Authorization: Bearer $CRON_SECRET" --retry 3 --max-time 120 https://www.winkcasa.com/api/agent-cron
+        run: |
+          curl -fsS -H "Authorization: Bearer $CRON_SECRET" --retry 3 --max-time 120 https://www.winkcasa.com/api/agent-cron
