@@ -35,9 +35,14 @@ async function ga4Summary(env) {
 }
 const timedFetch = (u, o = {}) => fetch(u, { ...o, signal: AbortSignal.timeout(8000) });
 async function bingQueries(env) {
-  const r = await timedFetch(`https://ssl.bing.com/webmaster/api.svc/json/GetQueryStats?apikey=${encodeURIComponent(env.BING_WEBMASTER_KEY)}&siteUrl=${encodeURIComponent('https://www.winkcasa.com/')}`);
-  const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error('Bing Webmaster: ' + r.status);
-  return (j.d || []).slice(0, 100).map((x) => ({ kw: String(x.Query || '').toLowerCase(), clicks: x.Clicks, impressions: x.Impressions, position: x.AvgImpressionPosition }));
+  let last = 'no reply';
+  for (const site of ['https://www.winkcasa.com/', 'https://www.winkcasa.com']) {
+    const r = await timedFetch(`https://ssl.bing.com/webmaster/api.svc/json/GetQueryStats?apikey=${encodeURIComponent(String(env.BING_WEBMASTER_KEY).trim())}&siteUrl=${encodeURIComponent(site)}`);
+    const j = await r.json().catch(() => ({}));
+    if (r.ok) return (j.d || []).slice(0, 100).map((x) => ({ kw: String(x.Query || '').toLowerCase(), clicks: x.Clicks, impressions: x.Impressions, position: x.AvgImpressionPosition }));
+    last = `${r.status} ${String(j.Message || j.message || '').slice(0, 120)} (site ${site})`;
+  }
+  throw new Error('Bing Webmaster: ' + last);
 }
 
 const tokens = (s) => String(s).toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter((w) => w.length > 2 && !['the', 'for', 'and', 'what', 'how', 'best', 'are', 'can', 'you', 'with', 'which', 'why', 'does'].includes(w));
