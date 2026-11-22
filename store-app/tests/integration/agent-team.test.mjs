@@ -52,8 +52,8 @@ test('topic planner queues topics using imported Keyword Planner data; the write
   assert.equal((await up.json()).imported, 2);
   await runAgent(env, { only: 'topic_planner', force: true });
   const q = env.DB.raw.prepare("SELECT kw,why FROM topic_queue WHERE status='pending' ORDER BY id").all();
-  assert.deepEqual(q.map((x) => x.kw), ['oxidised earrings']);
-  assert.match(q[0].why, /10,?000/);
+  assert.deepEqual(q.map((x) => x.kw), ['jhumka', 'oxidised earrings']);
+  assert.match(q[0].why, /At least 1,00,000/);
   const brief = JSON.parse(env.DB.raw.prepare("SELECT brief FROM topic_queue WHERE kw='oxidised earrings'").get().brief);
   assert.equal(brief.topic, 'oxidised earrings'); assert.ok(brief.title.toLowerCase().includes('oxidised earrings')); assert.ok(brief.keywords.length >= 1); assert.ok(brief.question);
 });

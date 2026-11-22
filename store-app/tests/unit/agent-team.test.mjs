@@ -60,14 +60,16 @@ test('Keyword Planner CSV import: finds columns, reads volume ranges and competi
   assert.deepEqual(parsePlannerCsv('nothing useful'), []);
 });
 
-test('topic picker prefers high volume with low or medium competition, never high', () => {
+test('topic picker takes the highest volume, allows high competition, lower competition breaks ties', () => {
   const cands = [
     { kw: 'jhumka', score: 50, volume: 100000, competition: 'high' },
     { kw: 'oxidised earrings', score: 30, volume: 10000, competition: 'low' },
     { kw: 'layered necklace', score: 40, volume: 1000, competition: 'medium' },
     { kw: 'no data keyword', score: 99, volume: null, competition: null },
   ];
-  assert.deepEqual(pickTopics(cands, 2).map((t) => t.kw), ['oxidised earrings', 'layered necklace']);
+  assert.deepEqual(pickTopics(cands, 2).map((t) => t.kw), ['jhumka', 'oxidised earrings']);
+  const tie = pickTopics([{ kw: 'h', volume: 5000, competition: 'high', score: 1 }, { kw: 'l', volume: 5000, competition: 'low', score: 1 }], 1);
+  assert.equal(tie[0].kw, 'l');
   const noData = pickTopics([{ kw: 'a', score: 5, volume: null }, { kw: 'b', score: 9, volume: null }], 1);
   assert.equal(noData[0].kw, 'b'); assert.match(noData[0].why, /no volume data/i);
 });

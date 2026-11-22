@@ -54,10 +54,10 @@ export async function importPlanner(env, csv) {
 }
 
 const fmt = (n) => Number(n).toLocaleString('en-IN');
-// Highest searches with Low or Medium competition first. Known-High competition is never chosen. Without data, falls back to suggestion score and says so.
+// Highest searches first; at equal volume, lower competition wins. High competition is allowed (it is paid-ad competition, not ranking difficulty). Without data, falls back to suggestion score and says so.
 export function pickTopics(cands, n) {
-  const withData = cands.filter((c) => c.volume != null && (c.competition === 'low' || c.competition === 'medium'))
-    .sort((a, b) => b.volume - a.volume || (b.competitor ? 1 : 0) - (a.competitor ? 1 : 0) || (a.competition === 'low' ? -1 : 1) - (b.competition === 'low' ? -1 : 1));
+  const withData = cands.filter((c) => c.volume != null && (c.competition === 'low' || c.competition === 'medium' || c.competition === 'high'))
+    .sort((a, b) => b.volume - a.volume || (b.competitor ? 1 : 0) - (a.competitor ? 1 : 0) || ({ low: 0, medium: 1, high: 2 }[a.competition]) - ({ low: 0, medium: 1, high: 2 }[b.competition]));
   const picks = withData.slice(0, n).map((c) => ({ kw: c.kw, why: (c.approx ? `At least ${fmt(c.volume)} searches a month (Keyword Planner shows a range), ${c.competition} competition` : `About ${fmt(c.volume)} searches a month, ${c.competition} competition (Keyword Planner)`) + (c.competitor ? '. Competitors already publish on this' : '') }));
   if (picks.length < n) {
     const rest = cands.filter((c) => c.volume == null && !c.competition).sort((a, b) => (b.competitor ? 1 : 0) - (a.competitor ? 1 : 0) || b.score - a.score).slice(0, n - picks.length);

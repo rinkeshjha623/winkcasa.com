@@ -93,7 +93,7 @@
       <p class="ag-sub">Think of it as a small marketing department that works every day. Each agent does one job, hands the result to the next, and only the final review can publish. You can switch any agent off, and nothing goes live that has not passed the checks.</p>
       <div class="ag-flow">
         <div class="ag-step"><h4>Research</h4><p>Watches rivals and the market, reads what shoppers ask, and checks your search data.</p><small>${[d.market_watch, d.social_listening, d.insights].filter(Boolean).map((x) => esc(x.name)).join('<br>')}</small></div>
-        <div class="ag-step"><h4>Plan</h4><p>Picks what to write: high searches, low or medium competition, with a brief for the writer.</p><small>${esc((d.topic_planner || {}).name || '')}</small></div>
+        <div class="ag-step"><h4>Plan</h4><p>Picks what to write: the highest searches, lower competition first on a tie, with a brief for the writer.</p><small>${esc((d.topic_planner || {}).name || '')}</small></div>
         <div class="ag-step"><h4>Create</h4><p>Writes the blog article and the social post, then makes branded graphics from your real photos.</p><small>${esc((d.content_writer || {}).name || '')}<br>${esc((d.social_visual || {}).name || '')}</small></div>
         <div class="ag-step"><h4>Check and publish</h4><p>Checks facts, claims, links and the SEO list. Only a post that passes goes live.</p><small>${esc((d.content_review || {}).name || '')}<br>${esc((d.social_manager || {}).name || '')}</small></div>
         <div class="ag-step"><h4>Learn</h4><p>The next morning the research reads results and rivals again, and the plan improves.</p><small>Every day</small></div>
@@ -149,7 +149,7 @@
       ${row(s.bing, 'Bing Webmaster', s.bing ? 'Reading Bing searches.' : 'Add the secret <code>BING_WEBMASTER_KEY</code> (Bing Webmaster Tools, Settings, API access).')}
       ${row(s.keywordPlanner, 'Google Keyword Planner volumes', s.keywordPlanner ? 'Volumes imported. Upload a fresh file about once a month.' : 'In Google Ads open Tools, Keyword Planner, enter your product keywords, download the CSV, and paste it below. The Google Ads API is not connected.')}
       </div></div>
-    <div class="ag-sec"><h3>Import Keyword Planner volumes</h3><p class="ag-sub">Paste the whole CSV. The topic planner then picks high-volume keywords with low or medium competition.</p>
+    <div class="ag-sec"><h3>Import Keyword Planner volumes</h3><p class="ag-sub">Paste the whole CSV. The topic planner then picks the highest-volume keywords (lower competition wins a tie).</p>
       <div class="ag-card"><textarea id="kwCsv" placeholder="Keyword,Currency,Avg. monthly searches,Competition ..."></textarea><div class="acts"><button class="btn" id="kwImp">Import volumes</button></div></div></div>`;
   }
 
