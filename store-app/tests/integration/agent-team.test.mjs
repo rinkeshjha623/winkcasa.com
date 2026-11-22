@@ -79,3 +79,22 @@ test('final review now blocks a post that fails the SEO checklist and lists why'
   const probs = reviewPost(p);
   assert.ok(probs.some((x) => /focus keyword|title/.test(x)));
 });
+
+// Cloudflare allows only 50 database + network calls per request on the free plan. "Run everything now" must stay under it.
+const counting = (db) => { let n = 0; const wrap = (st) => ({ bind: (...a) => wrap(st.bind(...a)), run: () => { n++; return st.run(); }, first: () => { n++; return st.first(); }, all: () => { n++; return st.all(); }, _inner: st });
+  return { raw: db.raw, prepare: (s) => wrap(db.prepare(s)), batch: async (list) => { n++; return db.batch(list.map((x) => x._inner || x)); }, exec: (s) => db.exec(s), get count() { return n; }, reset() { n = 0; } }; };
+test('one agent run (even "run everything now") stays under 45 database + network calls', async () => {
+  const many = (host) => `<rss><channel>${Array.from({ length: 25 }, (_, i) => `<item><title>${host} post ${i} oxidised earrings</title><link>https://${host}/p${i}</link></item>`).join('')}</channel></rss>`;
+  const cdb = counting(makeDB()); const e2 = { DB: cdb, ADMIN_TOKEN: 'adm' };
+  let fetches = 0;
+  globalThis.fetch = async (u) => { fetches++; const host = new URL(String(u)).hostname; return new Response(many(host + Math.random()), { status: 200 }); };
+  for (let i = 0; i < 3; i++) { // pressing the button repeatedly must eventually cover everything, each press within the limit
+    cdb.reset(); fetches = 0;
+    await runAgent(e2, { force: true });
+    assert.ok(cdb.count + fetches <= 49, `press ${i + 1}: ${cdb.count} db + ${fetches} network = ${cdb.count + fetches}`);
+  }
+  for (const id of ['market_watch', 'topic_planner', 'insights']) {
+    cdb.reset(); fetches = 0; await runAgent(e2, { only: id, force: true });
+    assert.ok(cdb.count + fetches <= 49, `${id} alone: ${cdb.count} db + ${fetches} network`);
+  }
+});

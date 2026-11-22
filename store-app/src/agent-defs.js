@@ -76,7 +76,7 @@ export const DEFS = {
 
 // The day, in India time. Used for the timeline in Admin > Agent.
 export const PLAYBOOK = [
-  { time: '07:00', agent: 'market_watch', what: 'Round 1: competitor blogs, news, WinkCasa mentions' },
+  { time: '07:00', agent: 'market_watch', what: 'Round 1: rival blogs, rival news, trend headlines' },
   { time: '08:00', agent: 'social_listening', what: 'Round 1: public questions on Reddit' },
   { time: '09:00', agent: 'insights', what: 'Search Console, Analytics, Bing, AEO and AI-answer gaps' },
   { time: '10:00', agent: 'topic_planner', what: 'Pick the best low-competition topics' },

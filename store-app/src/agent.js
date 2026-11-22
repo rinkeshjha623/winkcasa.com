@@ -20,11 +20,11 @@ const istHour = () => new Date(Date.now() + IST).getUTCHours();
 const rupees = (p) => '₹' + Math.round((p || 0) / 100).toLocaleString('en-IN');
 
 export const SKILLS = [
-  { id: 'market_watch', title: 'Competitor watcher: blogs, news and trends', about: 'Twice a day (7 AM and 5 PM): reads the blogs of your closest rivals (Yellow Chimes, Priyaasi, Sukkhi, Voylla, Zariin, Palmonas, Giva, Jewelmaze, editable), news about them, and jewellery trend headlines. Shows what topics they write about and feeds the topic planner.', slots: [7, 17], cost: 12 },
-  { id: 'social_listening', title: 'Research agent: public questions (Reddit)', about: 'Twice a day (8 AM and 6 PM): finds public threads where people ask for what we sell. It only reads. You decide what to answer. Quora and Pinterest cannot be read automatically.', slots: [8, 18], cost: 8 },
-  { id: 'insights', title: 'Insights: Search Console, GA4, Bing, AEO and AI answers', about: 'Every morning (9 AM): reads Search Console, Analytics and Bing (when connected), finds searches close to page 1 and shopper questions no page answers, and queues them as topics. Read-only.', slots: [9], cost: 6 },
-  { id: 'topic_planner', title: 'Topic planner: high volume, low or medium competition', about: 'Every morning (10 AM): picks the best 2 topics from keywords with no page yet, using Keyword Planner volumes you upload (never High competition). Feeds the content writer.', slots: [10], cost: 2 },
-  { id: 'keyword_research', title: 'Keyword research (runs first)', about: 'Reads Google and Amazon.in search suggestions for every product type, keeps what shoppers in India really type, scores it, and marks which keywords already have a page and which are gaps. The social, blog, SEO and report skills all use this list.', everyMin: 240, cost: 22 },
+  { id: 'market_watch', title: 'Competitor watcher: blogs, news and trends', about: 'Twice a day (7 AM and 5 PM): reads the blogs of your closest rivals (Yellow Chimes, Priyaasi, Sukkhi, Voylla, Zariin, Palmonas, Giva, Jewelmaze, editable), news about them, and jewellery trend headlines. Shows what topics they write about and feeds the topic planner.', slots: [7, 17], cost: 36 },
+  { id: 'social_listening', title: 'Research agent: public questions (Reddit)', about: 'Twice a day (8 AM and 6 PM): finds public threads where people ask for what we sell. It only reads. You decide what to answer. Quora and Pinterest cannot be read automatically.', slots: [8, 18], cost: 10 },
+  { id: 'insights', title: 'Insights: Search Console, GA4, Bing, AEO and AI answers', about: 'Every morning (9 AM): reads Search Console, Analytics and Bing (when connected), finds searches close to page 1 and shopper questions no page answers, and queues them as topics. Read-only.', slots: [9], cost: 20 },
+  { id: 'topic_planner', title: 'Topic planner: high volume, low or medium competition', about: 'Every morning (10 AM): picks the best 2 topics from keywords with no page yet, using Keyword Planner volumes you upload (never High competition). Feeds the content writer.', slots: [10], cost: 28 },
+  { id: 'keyword_research', title: 'Keyword research (runs first)', about: 'Reads Google and Amazon.in search suggestions for every product type, keeps what shoppers in India really type, scores it, and marks which keywords already have a page and which are gaps. The social, blog, SEO and report skills all use this list.', everyMin: 240, cost: 34 },
   { id: 'cj_orders', title: 'Orders to CJ and tracking', about: 'Sends paid CJ orders to CJ (you still pay them inside CJ) and pulls tracking and delivery status back. Up to 5 orders per run.', everyMin: 30, needs: 'CJ_API_KEY', cost: 10 },
   { id: 'order_watch', title: 'Order watch', about: 'Flags paid orders not sent to CJ, orders with no tracking after 4 days, parcels not delivered after 21 days, and refund requests.', everyMin: 120 },
   { id: 'content_writer', title: 'Blog writer (from keywords)', about: 'Twice a day (11 AM and 3 PM): takes the next topic from the planner queue and writes one blog draft with Claude (up to 2 a day). The final review then checks it and publishes it if it passes.', slots: [11, 15], needs: 'GEMINI_API_KEY' },
@@ -296,22 +296,23 @@ export async function runAgent(env, { only, force } = {}) {
   const now = Date.now();
   const got = await env.DB.prepare("INSERT INTO settings (key,value) VALUES ('agent_lock',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value WHERE CAST(settings.value AS INTEGER) < ?").bind(String(now), now - 240000).run();
   if (!got.meta || got.meta.changes < 1) return { ran: [], note: 'busy' };
-  const ran = []; let budget = 45;
+  const st = await agentState(env); const agentLast = st.last;
+  const ran = []; let budget = 45, left = 0; // Cloudflare allows about 50 database + network calls per request: each skill's cost is its real number of calls
+  const order = force && !only ? [...SKILLS].sort((x, y) => ((agentLast[x.id] || 0) - (agentLast[y.id] || 0))) : SKILLS;
   try {
-    const st = await agentState(env);
-    for (const sk of SKILLS) {
+    for (const sk of order) {
       if (sk.locked || !RUN[sk.id] || (only && only !== sk.id) || (!only && !st.on[sk.id])) continue;
       const last = st.last[sk.id] || 0;
       if (!force && (sk.slots ? !dueBySlots(now, last, sk.slots) : now - last < sk.everyMin * 60000)) continue;
       if (!force && sk.hourIst !== undefined && istHour() < sk.hourIst) continue;
-      const cost = sk.cost ?? 3; if (!force && cost > budget) continue; budget -= cost;
+      const cost = sk.cost ?? 3; if (!only && cost > budget) { left++; continue; } budget -= cost;
       st.last[sk.id] = now;
       try { const r = await RUN[sk.id](env, st); ran.push({ skill: sk.id, ...r }); if (!r.quiet) await note(env, sk.id, 'info', r.summary, null).catch(() => {}); }
       catch (e) { ran.push({ skill: sk.id, error: String(e.message || e) }); await note(env, sk.id, 'alert', `${sk.title} failed`, String(e.message || e)).catch(() => {}); }
     }
     await saveState(env, st);
   } finally { await env.DB.prepare("UPDATE settings SET value='0' WHERE key='agent_lock'").run().catch(() => {}); }
-  return { ran };
+  return { ran, left };
 }
 
 // Cheap check used by site visits and the schedule: at most every 5 minutes, run what is due.

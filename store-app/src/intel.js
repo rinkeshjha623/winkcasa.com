@@ -68,7 +68,7 @@ export function pickTopics(cands, n) {
 
 // "People also ask"-style questions. Google's real People Also Ask box cannot be read automatically, so this uses
 // Google's own question suggestions for the keyword (what / why / how / which / can / is ...), which are the same kind of questions.
-const Q_PREFIX = ['what is', 'how to', 'which', 'why', 'can', 'is', 'are'];
+const Q_PREFIX = ['what is', 'how to', 'which', 'why', 'are'];
 export async function paaQuestions(kw, fetchFn = suggestGoogle) {
   const seen = new Set(), out = [];
   for (const p of Q_PREFIX) {
@@ -116,13 +116,11 @@ const UA = { 'user-agent': 'Mozilla/5.0 (compatible; WinkCasaBot/1.0; +https://w
 async function getFeed(url) {
   try { const r = await fetch(url, { headers: UA, signal: AbortSignal.timeout(8000) }); if (!r.ok) return []; return parseFeed(await r.text()); } catch { return []; }
 }
+// One database round trip for the whole list (Cloudflare limits calls per request).
 async function keep(env, kind, source, items) {
-  const fresh = [];
-  for (const it of items.slice(0, 25)) {
-    const r = await env.DB.prepare('INSERT OR IGNORE INTO intel (kind,source,title,url,published) VALUES (?,?,?,?,?)').bind(kind, source, it.title, it.url, it.published).run();
-    if (r.meta && r.meta.changes) fresh.push(it);
-  }
-  return fresh;
+  const list = items.slice(0, 25); if (!list.length) return [];
+  const res = await env.DB.batch(list.map((it) => env.DB.prepare('INSERT OR IGNORE INTO intel (kind,source,title,url,published) VALUES (?,?,?,?,?)').bind(kind, source, it.title, it.url, it.published)));
+  return list.filter((_, i) => res[i] && res[i].meta && res[i].meta.changes);
 }
 const gnews = (q) => `https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=en-IN&gl=IN&ceid=IN:en`;
 // Closest rivals: Indian fashion / artificial / demi-fine jewellery and accessories sold online. Editable in Admin > Agent.
@@ -142,10 +140,11 @@ export async function marketWatch(env) {
   await ensureAgentTables(env);
   const out = { comp: [], compNews: [], news: [] };
   out.compNews = await keep(env, 'competitor-news', 'Google News', await getFeed(gnews(RIVAL_NEWS)));
-  for (const q of ['fashion jewellery trend India', 'hair accessories trend India']) out.news.push(...await keep(env, 'news', 'Google News', await getFeed(gnews(q))));
+  const trend = []; for (const q of ['fashion jewellery trend India', 'hair accessories trend India']) trend.push(...await getFeed(gnews(q)));
+  out.news = await keep(env, 'news', 'Google News', trend);
   for (const d of (await getCompetitors(env)).slice(0, 8)) {
     let items = [];
-    for (const path of ['/blogs/news.atom', '/blog/feed', '/feed']) { items = await getFeed(`https://${d}${path}`); if (items.length) break; }
+    for (const path of ['/blogs/news.atom', '/feed']) { items = await getFeed(`https://${d}${path}`); if (items.length) break; }
     out.comp.push(...await keep(env, 'competitor', d, items.map((i) => ({ ...i, title: d + ': ' + i.title }))));
   }
   return out;
@@ -159,11 +158,9 @@ export function themeDigest(titles) {
 }
 export async function listenSocial(env) {
   await ensureAgentTables(env);
-  const found = [];
-  for (const q of ['oxidised earrings india', 'where to buy jewellery online india', 'claw clip hair india']) {
-    found.push(...await keep(env, 'reddit', 'Reddit', await getFeed(`https://www.reddit.com/search.rss?q=${encodeURIComponent(q)}&sort=new&t=week`)));
-  }
-  return found;
+  const all = [];
+  for (const q of ['oxidised earrings india', 'where to buy jewellery online india', 'claw clip hair india']) all.push(...await getFeed(`https://www.reddit.com/search.rss?q=${encodeURIComponent(q)}&sort=new&t=week`));
+  return keep(env, 'reddit', 'Reddit', all);
 }
 export async function recentIntel(env, n = 40) {
   await ensureAgentTables(env);
