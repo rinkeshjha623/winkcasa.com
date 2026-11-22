@@ -136,8 +136,8 @@ async function seoHealth(env) {
   const gk = (await q("SELECT kw FROM keywords WHERE covered=0 AND intent='buy' ORDER BY score DESC LIMIT 8")).map((x) => x.kw);
   if (gk.length) issues.push('Buying keywords with no page yet: ' + gk.join(' | '));
   if (!idx.ok) issues.push('IndexNow submission failed: ' + idx.status);
-  await note(env, 'seo_health', issues.length ? 'warn' : 'info', `IndexNow ${idx.ok ? 'accepted ' + idx.submitted + ' URLs' : 'failed'}; ${issues.length} issue type(s)`, issues.join('\n') || 'No issues found.');
-  return { summary: `${idx.submitted || 0} URLs sent, ${issues.length} issue type(s).`, quiet: true };
+  await note(env, 'seo_health', issues.length ? 'warn' : 'info', `IndexNow ${idx.skipped ? 'not needed now (' + idx.reason + ')' : idx.ok ? 'accepted ' + idx.submitted + ' URLs' : 'failed (' + idx.status + ')'}; ${issues.length} issue type(s) on the site`, issues.join('\n') || 'No issues found.');
+  return { summary: `${idx.skipped ? 'IndexNow skipped (' + idx.reason + ')' : (idx.submitted || 0) + ' URLs sent'}, ${issues.length} issue type(s).`, quiet: true };
 }
 
 const RISKY = /\b(cure[sd]?|guarantee[sd]?|100% (safe|natural|genuine)|miracle|heals?|treats? (acne|eczema|disease)|anti-?cancer|lose weight fast|doctor recommended|clinically proven)\b/i;
