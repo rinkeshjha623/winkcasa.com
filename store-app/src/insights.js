@@ -15,7 +15,7 @@ async function googleToken(env, scope) {
   const pem = sa.private_key.replace(/-----[^-]+-----|\s/g, '');
   const key = await crypto.subtle.importKey('pkcs8', Uint8Array.from(atob(pem), (c) => c.charCodeAt(0)), { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['sign']);
   const sig = b64u(await crypto.subtle.sign('RSASSA-PKCS1-v1_5', key, new TextEncoder().encode(head + '.' + claim)));
-  const r = await fetch('https://oauth2.googleapis.com/token', { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: 'grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=' + head + '.' + claim + '.' + sig });
+  const r = await timedFetch('https://oauth2.googleapis.com/token', { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: 'grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=' + head + '.' + claim + '.' + sig });
   const j = await r.json(); if (!j.access_token) throw new Error('Google sign-in failed: ' + (j.error_description || j.error || r.status));
   return j.access_token;
 }
@@ -23,18 +23,19 @@ const day = (d) => new Date(Date.now() - d * 86400000).toISOString().slice(0, 10
 async function gscQueries(env) {
   const tok = await googleToken(env, 'https://www.googleapis.com/auth/webmasters.readonly');
   const site = encodeURIComponent(env.GSC_SITE || 'sc-domain:winkcasa.com');
-  const r = await fetch(`https://searchconsole.googleapis.com/webmasters/v3/sites/${site}/searchAnalytics/query`, { method: 'POST', headers: { authorization: 'Bearer ' + tok, 'content-type': 'application/json' }, body: JSON.stringify({ startDate: day(28), endDate: day(2), dimensions: ['query'], rowLimit: 200 }) });
+  const r = await timedFetch(`https://searchconsole.googleapis.com/webmasters/v3/sites/${site}/searchAnalytics/query`, { method: 'POST', headers: { authorization: 'Bearer ' + tok, 'content-type': 'application/json' }, body: JSON.stringify({ startDate: day(28), endDate: day(2), dimensions: ['query'], rowLimit: 200 }) });
   const j = await r.json(); if (!r.ok) throw new Error('Search Console: ' + (j.error?.message || r.status));
   return (j.rows || []).map((x) => ({ kw: x.keys[0], clicks: x.clicks, impressions: x.impressions, ctr: x.ctr, position: x.position }));
 }
 async function ga4Summary(env) {
   const tok = await googleToken(env, 'https://www.googleapis.com/auth/analytics.readonly');
-  const r = await fetch(`https://analyticsdata.googleapis.com/v1beta/properties/${env.GA4_PROPERTY_ID}:runReport`, { method: 'POST', headers: { authorization: 'Bearer ' + tok, 'content-type': 'application/json' }, body: JSON.stringify({ dateRanges: [{ startDate: '7daysAgo', endDate: 'yesterday' }], dimensions: [{ name: 'sessionDefaultChannelGroup' }], metrics: [{ name: 'sessions' }, { name: 'totalUsers' }] }) });
+  const r = await timedFetch(`https://analyticsdata.googleapis.com/v1beta/properties/${env.GA4_PROPERTY_ID}:runReport`, { method: 'POST', headers: { authorization: 'Bearer ' + tok, 'content-type': 'application/json' }, body: JSON.stringify({ dateRanges: [{ startDate: '7daysAgo', endDate: 'yesterday' }], dimensions: [{ name: 'sessionDefaultChannelGroup' }], metrics: [{ name: 'sessions' }, { name: 'totalUsers' }] }) });
   const j = await r.json(); if (!r.ok) throw new Error('Analytics: ' + (j.error?.message || r.status));
   return (j.rows || []).map((x) => `${x.dimensionValues[0].value}: ${x.metricValues[0].value} sessions, ${x.metricValues[1].value} users`);
 }
+const timedFetch = (u, o = {}) => fetch(u, { ...o, signal: AbortSignal.timeout(8000) });
 async function bingQueries(env) {
-  const r = await fetch(`https://ssl.bing.com/webmaster/api.svc/json/GetQueryStats?apikey=${encodeURIComponent(env.BING_WEBMASTER_KEY)}&siteUrl=${encodeURIComponent('https://www.winkcasa.com/')}`);
+  const r = await timedFetch(`https://ssl.bing.com/webmaster/api.svc/json/GetQueryStats?apikey=${encodeURIComponent(env.BING_WEBMASTER_KEY)}&siteUrl=${encodeURIComponent('https://www.winkcasa.com/')}`);
   const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error('Bing Webmaster: ' + r.status);
   return (j.d || []).slice(0, 100).map((x) => ({ kw: String(x.Query || '').toLowerCase(), clicks: x.Clicks, impressions: x.Impressions, position: x.AvgImpressionPosition }));
 }
