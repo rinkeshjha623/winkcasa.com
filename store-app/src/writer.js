@@ -14,13 +14,22 @@ export async function claude(env, { system, prompt, max = 3500, image }) {
     return (j.content || []).map((c) => c.text || '').join('').trim();
   }
   if (!env.GEMINI_API_KEY) throw new Error('No AI key is set on the server (GEMINI_API_KEY or ANTHROPIC_API_KEY).');
-  const model = env.GEMINI_MODEL || 'gemini-2.5-flash';
-  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
-    method: 'POST', headers: { 'content-type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY },
-    body: JSON.stringify({ systemInstruction: { parts: [{ text: system }] }, contents: [{ role: 'user', parts: [...(image ? [{ inlineData: { mimeType: image.mime, data: image.b64 } }] : []), { text: prompt }] }], generationConfig: { maxOutputTokens: max + 2000, temperature: 0.7, thinkingConfig: { thinkingBudget: 0 } } }),
-  });
-  const j = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error('Gemini API: ' + (j.error?.message || r.status));
+  // Google retires models for new keys from time to time: try the owner's choice, then the current model, then the "latest" alias.
+  const models = [...new Set([env.GEMINI_MODEL, 'gemini-3.8-flash', 'gemini-flash-latest'].filter(Boolean))];
+  const gone = (r, j) => r.status === 404 || /no longer available|not found|is not supported|deprecated/i.test(j.error?.message || '');
+  let j = {}, last = '';
+  for (const model of models) {
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+      method: 'POST', headers: { 'content-type': 'application/json', 'x-goog-api-key': env.GEMINI_API_KEY },
+      body: JSON.stringify({ systemInstruction: { parts: [{ text: system }] }, contents: [{ role: 'user', parts: [...(image ? [{ inlineData: { mimeType: image.mime, data: image.b64 } }] : []), { text: prompt }] }], generationConfig: { maxOutputTokens: max + 2000, temperature: 0.7 } }),
+    });
+    j = await r.json().catch(() => ({}));
+    if (r.ok) break;
+    last = 'Gemini API: ' + (j.error?.message || r.status);
+    if (!gone(r, j)) throw new Error(last);
+    j = {};
+  }
+  if (!Object.keys(j).length) throw new Error(last || 'Gemini API: no model available');
   const t = (j.candidates?.[0]?.content?.parts || []).map((x) => x.text || '').join('').trim();
   if (!t) throw new Error('Gemini returned no text.');
   return t;
