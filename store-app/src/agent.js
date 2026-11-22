@@ -1,5 +1,6 @@
 // The WinkCasa agent: a fixed set of skills, each with its own guard rails. It never does anything outside these skills.
 // Every run is written to agent_log (Admin > Agent). Turn a skill off there and the agent stops doing it.
+import { checkPrompts } from './aicite.js';
 import { kvGet } from './social.js';
 import { syncOrders, pushOrder } from './cj-orders.js';
 import { submitIndexNow } from './indexnow.js';
@@ -22,6 +23,7 @@ const rupees = (p) => '₹' + Math.round((p || 0) / 100).toLocaleString('en-IN')
 export const SKILLS = [
   { id: 'market_watch', title: 'Competitor watcher: blogs, news and trends', about: 'Twice a day (7 AM and 5 PM): reads the blogs of your closest rivals (Yellow Chimes, Priyaasi, Sukkhi, Voylla, Zariin, Palmonas, Giva, Jewelmaze, editable), news about them, and jewellery trend headlines. Shows what topics they write about and feeds the topic planner.', slots: [7, 17], cost: 36 },
   { id: 'social_listening', title: 'Research agent: public questions (Reddit)', about: 'Twice a day (8 AM and 6 PM): finds public threads where people ask for what we sell. It only reads. You decide what to answer. Quora and Pinterest cannot be read automatically.', slots: [8, 18], cost: 10 },
+  { id: 'ai_citations', title: 'AI citation checker (Gemini)', about: 'Daily at 12 noon: asks Gemini with Google Search a few of the questions shoppers are likely to ask an AI (built from your categories and real shopper questions) and records whether WinkCasa is cited, and which sites are cited instead. Read-only.', slots: [12], cost: 14, needs: 'GEMINI_API_KEY' },
   { id: 'insights', title: 'Insights: Search Console, GA4, Bing, AEO and AI answers', about: 'Every morning (9 AM): reads Search Console, Analytics and Bing (when connected), finds searches close to page 1 and shopper questions no page answers, and queues them as topics. Read-only.', slots: [9], cost: 20 },
   { id: 'topic_planner', title: 'Topic planner: high volume, low or medium competition', about: 'Every morning (10 AM): picks the best 2 topics from keywords with no page yet, using Keyword Planner volumes you upload (never High competition). Feeds the content writer.', slots: [10], cost: 28 },
   { id: 'keyword_research', title: 'Keyword research (runs first)', about: 'Reads Google and Amazon.in search suggestions for every product type, keeps what shoppers in India really type, scores it, and marks which keywords already have a page and which are gaps. The social, blog, SEO and report skills all use this list.', everyMin: 240, cost: 34 },
@@ -283,13 +285,19 @@ async function insightsSkill(env) {
   await note(env, 'insights', r.missing.length ? 'warn' : 'report', r.missing.length ? `Insights: ${r.connected} source(s) connected, ${r.missing.length} to connect` : 'Daily insights', r.lines.join('\n') || 'Nothing new today.');
   return { summary: `${r.connected} source(s), ${r.gaps} answer gap(s) queued.`, quiet: true };
 }
+async function aiCitationsSkill(env) {
+  const r = await checkPrompts(env, 4);
+  if (r.note) return { summary: r.note, quiet: true };
+  await note(env, 'ai_citations', r.checked && !r.cited ? 'warn' : 'report', `AI citation check: ${r.cited} of ${r.checked} prompts cite WinkCasa`, r.lines.join('\n') || 'Nothing to check yet.');
+  return { summary: `${r.checked} prompt(s) tested, ${r.cited} cite WinkCasa.`, quiet: true };
+}
 async function topicPlannerSkill(env) {
   const r = await planTopics(env, 2);
   if (r.queued) await note(env, 'topic_planner', 'action', `Queued ${r.queued} topic(s) for the writer`, r.picks.map((p) => `${p.kw}: ${p.why}\n  Title: ${p.brief.title}\n  Question: ${p.brief.question}\n  Keywords: ${p.brief.keywords.join(', ')}\n  Also answers: ${p.brief.questions.join(' | ') || 'n/a'}`).join('\n\n'));
   return { summary: `${r.queued} topic(s) queued, ${r.pending} waiting.`, quiet: true };
 }
 
-const RUN = { market_watch: marketWatchSkill, social_listening: socialListeningSkill, insights: insightsSkill, topic_planner: topicPlannerSkill,  social_research: (e) => pipe(e, 'social_research', 'Research team', researchDesk), social_visual: visualSkill, social_writer: (e) => pipe(e, 'social_writer', 'Content writer', writerDesk), social_manager: managerSkill, content_writer: contentWriter, product_copy: productCopy, keyword_research: keywordSkill, cj_orders: cjOrders, order_watch: orderWatch, social_fill: socialFill, seo_health: seoHealth, content_review: contentReview, daily_report: dailyReport };
+const RUN = { market_watch: marketWatchSkill, social_listening: socialListeningSkill, insights: insightsSkill, ai_citations: aiCitationsSkill, topic_planner: topicPlannerSkill,  social_research: (e) => pipe(e, 'social_research', 'Research team', researchDesk), social_visual: visualSkill, social_writer: (e) => pipe(e, 'social_writer', 'Content writer', writerDesk), social_manager: managerSkill, content_writer: contentWriter, product_copy: productCopy, keyword_research: keywordSkill, cj_orders: cjOrders, order_watch: orderWatch, social_fill: socialFill, seo_health: seoHealth, content_review: contentReview, daily_report: dailyReport };
 
 // Runs every skill that is switched on and due. Safe to call often: each skill has its own interval, and only one run goes at a time.
 export async function runAgent(env, { only, force } = {}) {

@@ -114,3 +114,19 @@ test('range volumes are marked approximate and worded as "at least"', () => {
   const p = _pick([{ kw: 'bangles set', volume: 10000, competition: 'medium', approx: true, score: 1 }], 1);
   assert.match(p[0].why, /At least 10,000/);
 });
+
+import { promptsFor, parseGrounded } from '../../src/aicite.js';
+test('AI prompts come from real categories and shopper questions, labelled by source', () => {
+  const p = promptsFor(['anklet'], ['what is a potli bag?']);
+  assert.equal(p.filter((x) => x.source === 'category').length, 3);
+  assert.ok(p.some((x) => x.prompt === 'Best anklet to buy online in India'));
+  assert.deepEqual(p.filter((x) => x.source === 'shopper question').map((x) => x.prompt), ['What is a potli bag?']);
+});
+test('citation check reads cited sites and detects WinkCasa by name or by source', () => {
+  const g = (text, titles) => ({ candidates: [{ content: { parts: [{ text }] }, groundingMetadata: { groundingChunks: titles.map((t) => ({ web: { title: t, uri: 'https://vertexaisearch.cloud.google.com/x' } })) } }] });
+  const a = parseGrounded(g('Try Sukkhi or Giva.', ['sukkhi.com', 'giva.co']));
+  assert.equal(a.mentioned, false); assert.deepEqual(a.domains, ['sukkhi.com', 'giva.co']);
+  assert.equal(parseGrounded(g('Shops like WinkCasa have these.', [])).mentioned, true);
+  assert.equal(parseGrounded(g('x', ['winkcasa.com'])).mentioned, true);
+  assert.equal(parseGrounded({}).mentioned, false);
+});

@@ -18,6 +18,15 @@ export const DEFS = {
     handsTo: 'Topic planner and content writer (real questions become blog topics).',
     limits: ['It never posts or comments anywhere. Replying to people is your call.', 'Quora and Pinterest have no public search feed and block automated reading, so they are not scraped. Pinterest posting uses your Pinterest account; questions from Quora-style searches come through the keyword research.', 'Reddit sometimes blocks servers; the run is then skipped and tried next time.'],
   },
+  ai_citations: {
+    name: 'AI citation checker', role: 'Finds out whether AI assistants name WinkCasa when shoppers ask for what we sell, and which sites they name instead.',
+    when: 'Daily at 12:00 noon India time, 4 prompts a run, oldest-checked first.',
+    inputs: ['Your product categories and the real shopper questions the keyword agents found', 'Gemini with Google Search (your GEMINI_API_KEY)'],
+    steps: ['Builds a list of likely AI prompts: "Best [category] to buy online in India", "Where can I buy affordable [category]...", plus real shopper questions.', 'Asks Gemini each prompt with Google Search switched on.', 'Records whether WinkCasa is named or cited, and the sites it cites instead.', 'Shows the list under Content and research, so you can see where you are missing and who gets cited.'],
+    gives: 'The AI prompt list with a cited / not cited result and the competing sites, and a report in the activity list.',
+    handsTo: 'You, and the topic team: prompts where rivals are cited and we are not are the pages to write.',
+    limits: ['Nobody can read what people type into ChatGPT, Claude or Perplexity. The prompts are likely ones, not real logs.', 'Only Gemini can be tested automatically. To check ChatGPT, Claude or Perplexity, paste a prompt from the list into them yourself.', 'AI answers change from day to day, so one result is a sample, not a ranking.'],
+  },
   insights: {
     name: 'Insights agent (SEO, AEO, AI answers)', role: 'Reads your search data and finds what to fix or write next.',
     when: 'Every morning at 9:00 AM India time.',
@@ -82,6 +91,7 @@ export const PLAYBOOK = [
   { time: '10:00', agent: 'topic_planner', what: 'Pick the best low-competition topics' },
   { time: '11:00', agent: 'content_writer', what: 'Write blog draft 1' },
   { time: '11:30', agent: 'social_visual', what: 'Branded graphics for the draft and the day\'s post' },
+  { time: '12:00', agent: 'ai_citations', what: 'Check which AI prompts cite WinkCasa' },
   { time: '13:00', agent: 'content_review', what: 'Final check; publish if it passes' },
   { time: '15:00', agent: 'content_writer', what: 'Write blog draft 2' },
   { time: '17:00', agent: 'market_watch', what: 'Round 2: competitors and news' },
