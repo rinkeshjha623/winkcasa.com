@@ -42,14 +42,14 @@ export function parsePlannerCsv(text) {
     const c = splitCsv(line, d); const kw = (c[ik] || '').toLowerCase(); const volume = toNum(c[iv]);
     if (!kw || volume == null) continue;
     const comp = ic >= 0 ? (c[ic] || '').toLowerCase() : '';
-    rows.push({ kw, volume, competition: /^(low|medium|high)$/.test(comp) ? comp : null });
+    rows.push({ kw, volume, approx: /\d\s*[KkMm]?\s*[–—-]\s*\d/.test(String(c[iv] || '')), competition: /^(low|medium|high)$/.test(comp) ? comp : null });
   }
   return rows;
 }
 export async function importPlanner(env, csv) {
   await ensureAgentTables(env);
   const rows = parsePlannerCsv(csv).slice(0, 3000);
-  for (let i = 0; i < rows.length; i += 40) await env.DB.batch(rows.slice(i, i + 40).map((r) => env.DB.prepare("INSERT INTO keyword_metrics (kw,volume,competition,source,at) VALUES (?,?,?,'planner',datetime('now')) ON CONFLICT(kw) DO UPDATE SET volume=excluded.volume, competition=excluded.competition, source='planner', at=datetime('now')").bind(r.kw, r.volume, r.competition)));
+  for (let i = 0; i < rows.length; i += 40) await env.DB.batch(rows.slice(i, i + 40).map((r) => env.DB.prepare("INSERT INTO keyword_metrics (kw,volume,competition,source,at) VALUES (?,?,?,?,datetime('now')) ON CONFLICT(kw) DO UPDATE SET volume=excluded.volume, competition=excluded.competition, source=excluded.source, at=datetime('now')").bind(r.kw, r.volume, r.competition, r.approx ? 'planner-range' : 'planner')));
   return rows.length;
 }
 
@@ -58,7 +58,7 @@ const fmt = (n) => Number(n).toLocaleString('en-IN');
 export function pickTopics(cands, n) {
   const withData = cands.filter((c) => c.volume != null && (c.competition === 'low' || c.competition === 'medium'))
     .sort((a, b) => b.volume - a.volume || (b.competitor ? 1 : 0) - (a.competitor ? 1 : 0) || (a.competition === 'low' ? -1 : 1) - (b.competition === 'low' ? -1 : 1));
-  const picks = withData.slice(0, n).map((c) => ({ kw: c.kw, why: `About ${fmt(c.volume)} searches a month, ${c.competition} competition (Keyword Planner)` + (c.competitor ? '. Competitors already publish on this' : '') }));
+  const picks = withData.slice(0, n).map((c) => ({ kw: c.kw, why: (c.approx ? `At least ${fmt(c.volume)} searches a month (Keyword Planner shows a range), ${c.competition} competition` : `About ${fmt(c.volume)} searches a month, ${c.competition} competition (Keyword Planner)`) + (c.competitor ? '. Competitors already publish on this' : '') }));
   if (picks.length < n) {
     const rest = cands.filter((c) => c.volume == null && !c.competition).sort((a, b) => (b.competitor ? 1 : 0) - (a.competitor ? 1 : 0) || b.score - a.score).slice(0, n - picks.length);
     for (const c of rest) picks.push({ kw: c.kw, why: `No volume data yet (upload a Keyword Planner CSV); chosen on suggestion score ${c.score}` + (c.competitor ? '. Competitors already publish on this' : '') });
@@ -102,7 +102,7 @@ export async function planTopics(env, n = 2) {
   await ensureAgentTables(env);
   const pending = (await env.DB.prepare("SELECT COUNT(*) n FROM topic_queue WHERE status='pending'").first()).n;
   if (pending >= 4) return { queued: 0, pending };
-  const cands = (await env.DB.prepare(`SELECT k.kw, k.score, m.volume, m.competition, m.impressions FROM keywords k LEFT JOIN keyword_metrics m ON m.kw=k.kw
+  const cands = (await env.DB.prepare(`SELECT k.kw, k.score, m.volume, m.competition, m.impressions, (m.source='planner-range') approx FROM keywords k LEFT JOIN keyword_metrics m ON m.kw=k.kw
     WHERE k.covered=0 AND k.status='new' AND k.kw NOT IN (SELECT kw FROM topic_queue) ORDER BY k.score DESC LIMIT 400`).all()).results;
   const titles = (await env.DB.prepare("SELECT LOWER(title) t FROM intel WHERE kind='competitor' AND seen_at > datetime('now','-45 days')").all()).results.map((r) => r.t);
   for (const c of cands) c.competitor = titles.some((t) => c.kw.split(' ').filter((w) => w.length > 3).every((w) => t.includes(w.replace(/s$/, ''))));

@@ -104,3 +104,11 @@ test('topic picker lifts topics competitors already write about when volumes tie
   const r = pickTopics([{ kw: 'a b', score: 1, volume: 1000, competition: 'low', competitor: false }, { kw: 'c d', score: 1, volume: 1000, competition: 'low', competitor: true }], 1);
   assert.equal(r[0].kw, 'c d'); assert.match(r[0].why, /competitors/i);
 });
+
+import { parsePlannerCsv as _ppc, pickTopics as _pick } from '../../src/intel.js';
+test('range volumes are marked approximate and worded as "at least"', () => {
+  const rows = _ppc('Keyword,Avg. monthly searches,Competition\nbangles set,10K – 100K,Medium\npotli bag,1K,Low\n');
+  assert.equal(rows[0].volume, 10000); assert.equal(rows[0].approx, true); assert.equal(rows[1].approx, false);
+  const p = _pick([{ kw: 'bangles set', volume: 10000, competition: 'medium', approx: true, score: 1 }], 1);
+  assert.match(p[0].why, /At least 10,000/);
+});
