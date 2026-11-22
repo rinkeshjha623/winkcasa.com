@@ -48,9 +48,10 @@ async function ask(env, prompt) {
 
 export async function refreshPrompts(env) {
   await ensureAiTable(env);
-  const cats = (await env.DB.prepare("SELECT category FROM keywords WHERE category IS NOT NULL AND category<>'' GROUP BY category ORDER BY SUM(score) DESC LIMIT 10").all()).results.map((r) => r.category);
+  const cats = (await env.DB.prepare("SELECT category FROM products WHERE active=1 AND category<>'' AND category<>'General' GROUP BY category ORDER BY COUNT(*) DESC LIMIT 10").all()).results.map((r) => r.category);
   const qs = (await env.DB.prepare("SELECT kw FROM keywords WHERE intent='question' ORDER BY score DESC LIMIT 15").all()).results.map((r) => r.kw);
   const list = promptsFor(cats, qs);
+  await env.DB.prepare("DELETE FROM ai_prompts WHERE source='category' AND checked_at IS NULL").run(); // categories come from real products only
   if (list.length) await env.DB.batch(list.map((p) => env.DB.prepare('INSERT OR IGNORE INTO ai_prompts (prompt,source) VALUES (?,?)').bind(p.prompt, p.source)));
   return list.length;
 }

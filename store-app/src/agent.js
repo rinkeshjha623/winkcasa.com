@@ -288,6 +288,7 @@ async function insightsSkill(env) {
 async function aiCitationsSkill(env) {
   const r = await checkPrompts(env, 4);
   if (r.note) return { summary: r.note, quiet: true };
+  if (!r.checked && r.lines.length) { await note(env, 'ai_citations', 'warn', 'AI citation check could not run', r.lines[0] + '\nGemini Google Search answers need quota on your Gemini key (the free tier often has none). Enable billing in Google AI Studio, or this stays off.'); return { summary: 'Gemini refused the request.', quiet: true }; }
   await note(env, 'ai_citations', r.checked && !r.cited ? 'warn' : 'report', `AI citation check: ${r.cited} of ${r.checked} prompts cite WinkCasa`, r.lines.join('\n') || 'Nothing to check yet.');
   return { summary: `${r.checked} prompt(s) tested, ${r.cited} cite WinkCasa.`, quiet: true };
 }

@@ -101,7 +101,8 @@ test('one agent run (even "run everything now") stays under 45 database + networ
 
 test('AI citation checker builds prompts, tests them with Gemini + Google Search, records who is cited, and the admin API lists them', async () => {
   env.GEMINI_API_KEY = 'k';
-  env.DB.raw.prepare("INSERT OR IGNORE INTO keywords (kw,category,intent,score,sources) VALUES ('what is a potli bag','potli bag','question',30,'google'),('anklet for girls','anklet','buy',20,'google')").run();
+  env.DB.raw.prepare("INSERT INTO products (name,category,price,active) VALUES ('Test Anklet','anklet',99,1),('Rangoli-free',  'General',99,1)").run();
+  env.DB.raw.prepare("INSERT OR IGNORE INTO keywords (kw,category,intent,score,sources) VALUES ('rangoli for diwali','rangoli','buy',99,'google'),('what is a potli bag','potli bag','question',30,'google'),('anklet for girls','anklet','buy',20,'google')").run();
   const calls = []; const orig = globalThis.fetch;
   globalThis.fetch = async (u, o) => { const url = String(u); if (!url.includes('generativelanguage')) return orig(u, o); const body = JSON.parse(o.body); calls.push(body); assert.ok(body.tools[0].google_search, 'Google Search grounding is on'); const first = calls.length === 1;
     return new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: first ? 'Try WinkCasa.' : 'Try Giva.' }] }, groundingMetadata: { groundingChunks: [{ web: { title: first ? 'winkcasa.com' : 'giva.co', uri: 'https://v/x' } }] } }] }), { status: 200 }); };
@@ -111,7 +112,18 @@ test('AI citation checker builds prompts, tests them with Gemini + Google Search
   const rows = env.DB.raw.prepare('SELECT prompt,cited,domains FROM ai_prompts WHERE checked_at IS NOT NULL ORDER BY id').all();
   assert.equal(rows.length, 4); assert.equal(rows.filter((x) => x.cited === 1).length, 1);
   assert.ok(env.DB.raw.prepare("SELECT 1 FROM ai_prompts WHERE prompt='What is a potli bag?'").get(), 'real shopper question became a prompt');
+  assert.ok(!env.DB.raw.prepare("SELECT 1 FROM ai_prompts WHERE prompt LIKE '%rangoli%'").get(), 'only categories we really sell');
   assert.ok(env.DB.raw.prepare("SELECT 1 FROM agent_log WHERE skill='ai_citations' AND title LIKE 'AI citation check: 1 of 4%'").get());
   const j = await (await adminAgent.onRequestGet({ env, request: new Request('https://x/api/admin/agent', { headers: adm }) })).json();
   assert.ok(j.aiprompts.length >= 4); assert.ok(j.defs.ai_citations.limits.length >= 2);
+});
+
+test('AI citation checker says plainly when Gemini has no quota, instead of failing silently', async () => {
+  env.DB.raw.prepare('UPDATE ai_prompts SET checked_at=NULL, cited=NULL').run();
+  const orig = globalThis.fetch;
+  globalThis.fetch = async (u, o) => String(u).includes('generativelanguage') ? new Response(JSON.stringify({ error: { message: 'You exceeded your current quota' } }), { status: 429 }) : orig(u, o);
+  await runAgent(env, { only: 'ai_citations', force: true });
+  globalThis.fetch = orig;
+  const l = env.DB.raw.prepare("SELECT level,title,detail FROM agent_log WHERE skill='ai_citations' ORDER BY id DESC LIMIT 1").get();
+  assert.equal(l.level, 'warn'); assert.match(l.title, /could not run/); assert.match(l.detail, /quota/i);
 });
