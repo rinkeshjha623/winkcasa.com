@@ -33,16 +33,18 @@ const field = (t, name) => { const m = new RegExp('^' + name + ':\\s*(.+)$', 'mi
 
 // One blog draft for one keyword. Saved unpublished: the review skill decides whether it can go live.
 export async function writePost(env, kw) {
+  const b = kw.brief;
+  const briefText = b ? `\nResearch brief from our research team (follow it):\n- Main question to answer: ${b.question}\n- Suggested title: ${b.title} (you may improve it; keep the main keyword)\n- Secondary keywords to use naturally: ${b.keywords.slice(1).join(', ') || 'none'}\n- Real questions shoppers ask; answer each briefly under its own "## " heading where it fits: ${b.questions.join(' | ') || 'none'}\n` : '';
   const links = (await env.DB.prepare("SELECT id,name,category FROM products WHERE active=1 AND noindex=0 ORDER BY (LOWER(name||' '||category) LIKE ?) DESC, id DESC LIMIT 8").bind('%' + kw.kw.split(' ')[0] + '%').all()).results;
   const cats = (await env.DB.prepare('SELECT DISTINCT category FROM products WHERE active=1 LIMIT 12').all()).results.map((c) => `/c/${slugify(c.category)} (${c.category})`);
-  const prompt = `Write a helpful blog article for the search keyword: "${kw.kw}" (${kw.intent} intent).
-Length: 750 to 1000 words. Use 4 to 6 "## " section headings, short paragraphs and one bullet list. Put the keyword naturally in the title and the first paragraph.
-Link to our pages with markdown links where they fit (at least 2 links), using only these real pages:
+  const prompt = `Write a helpful blog article for the search keyword: "${kw.kw}" (${kw.intent} intent).${briefText}
+Length: 750 to 1000 words. Use 4 to 6 "## " section headings, short paragraphs and one bullet list. Put the exact keyword naturally in the title, in the first sentence of the first paragraph, and in at least one "## " heading, but do not repeat it more than about 6 times in total.
+Link to our pages with markdown links where they fit (at least 3 links), using only these real pages:
 Products: ${links.map((p) => `[${p.name.slice(0, 60)}](/p/${p.id}-${slugify(p.name)})`).join('; ') || 'none'}
 Categories: ${cats.join('; ')}
 Return exactly this format and nothing else:
 TITLE: (30 to 65 characters)
-EXCERPT: (110 to 160 characters)
+EXCERPT: (110 to 160 characters, this is the meta description, include the keyword)
 ---BODY---
 (the article in markdown, without repeating the title)`;
   const out = await claude(env, { system: RULES, prompt, max: 3500 });

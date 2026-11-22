@@ -8,6 +8,10 @@ import { keywordResearch, topKeywords } from './keywords.js';
 import { hasKey, writePost, improveProduct } from './writer.js';
 import { researchDesk, visualDesk, writerDesk, managerDesk, safetyNet, graphicsDesk } from './social-team.js';
 import { SITE_ORIGIN, absUrl } from './social.js';
+import { dueBySlots } from './slots.js';
+import { seoCheck } from './blogqa.js';
+import { marketWatch, listenSocial, planTopics, ensureAgentTables } from './intel.js';
+import { runInsights } from './insights.js';
 
 const sql = (d = new Date()) => d.toISOString().slice(0, 19).replace('T', ' ');
 const IST = 330 * 60000;
@@ -16,10 +20,14 @@ const istHour = () => new Date(Date.now() + IST).getUTCHours();
 const rupees = (p) => '₹' + Math.round((p || 0) / 100).toLocaleString('en-IN');
 
 export const SKILLS = [
+  { id: 'market_watch', title: 'Market watcher: competitors, news, brand mentions', about: 'Twice a day (7 AM and 5 PM): reads competitor blog feeds and Google News for jewellery trends and any mention of WinkCasa, and keeps what is new in the market feed. Alerts you on a WinkCasa mention.', slots: [7, 17], cost: 12 },
+  { id: 'social_listening', title: 'Research agent: public questions (Reddit)', about: 'Twice a day (8 AM and 6 PM): finds public threads where people ask for what we sell. It only reads. You decide what to answer. Quora and Pinterest cannot be read automatically.', slots: [8, 18], cost: 8 },
+  { id: 'insights', title: 'Insights: Search Console, GA4, Bing, AEO and AI answers', about: 'Every morning (9 AM): reads Search Console, Analytics and Bing (when connected), finds searches close to page 1 and shopper questions no page answers, and queues them as topics. Read-only.', slots: [9], cost: 6 },
+  { id: 'topic_planner', title: 'Topic planner: high volume, low or medium competition', about: 'Every morning (10 AM): picks the best 2 topics from keywords with no page yet, using Keyword Planner volumes you upload (never High competition). Feeds the content writer.', slots: [10], cost: 2 },
   { id: 'keyword_research', title: 'Keyword research (runs first)', about: 'Reads Google and Amazon.in search suggestions for every product type, keeps what shoppers in India really type, scores it, and marks which keywords already have a page and which are gaps. The social, blog, SEO and report skills all use this list.', everyMin: 240, cost: 22 },
   { id: 'cj_orders', title: 'Orders to CJ and tracking', about: 'Sends paid CJ orders to CJ (you still pay them inside CJ) and pulls tracking and delivery status back. Up to 5 orders per run.', everyMin: 30, needs: 'CJ_API_KEY', cost: 10 },
   { id: 'order_watch', title: 'Order watch', about: 'Flags paid orders not sent to CJ, orders with no tracking after 4 days, parcels not delivered after 21 days, and refund requests.', everyMin: 120 },
-  { id: 'content_writer', title: 'Blog writer (from keywords)', about: 'Takes the best keyword gap and writes one blog draft with Claude (up to 2 a day). The review skill below then checks it and publishes it if it passes.', everyMin: 360, needs: 'GEMINI_API_KEY' },
+  { id: 'content_writer', title: 'Blog writer (from keywords)', about: 'Twice a day (11 AM and 3 PM): takes the next topic from the planner queue and writes one blog draft with Claude (up to 2 a day). The final review then checks it and publishes it if it passes.', slots: [11, 15], needs: 'GEMINI_API_KEY' },
   { id: 'product_copy', title: 'Product description writer', about: 'Rewrites thin product descriptions (under 80 characters) from the product facts only. Up to 4 per run, nothing invented.', everyMin: 360, needs: 'GEMINI_API_KEY' },
   { id: 'social_fill', title: 'Social planner', about: 'Picks one product a day for the next 7 days (not posted in 45 days, rotating categories) and hands it to the team below. Nothing is scheduled until the manager approves it.', everyMin: 360, cost: 0 },
   { id: 'social_research', title: 'Research team: keywords and topic', about: 'For each planned post, picks the keywords from our keyword list that match the product and the seasonal topic (festive, wedding season and so on).', everyMin: 15, cost: 0 },
@@ -27,11 +35,11 @@ export const SKILLS = [
   { id: 'social_writer', title: 'Content writer: caption and pin text', about: 'Writes the caption, Pin title and Pin description from the keywords and topic, using only the product facts. Falls back to a plain template if no AI key is set.', everyMin: 15, cost: 4 },
   { id: 'social_manager', title: 'Manager: final review, then schedule', about: 'Checks price, claims, hashtags, links, board and duplicates, and reads the copy. Approved posts are scheduled for publishing. Rejected copy goes back to the writer once, then is dropped. Also safety-checks other auto posts due in 24 hours.', everyMin: 15, cost: 4 },
   { id: 'seo_health', title: 'SEO and indexing', about: 'Sends all pages to Bing/IndexNow once a day and checks products and posts for missing images, thin text or duplicate names.', everyMin: 1440 },
-  { id: 'content_review', title: 'Blog and comment review', about: 'Checks blog drafts (length, headings, links, risky claims) and publishes one that passes per day. Approves clean comments and holds the rest.', everyMin: 360 },
+  { id: 'content_review', title: 'Final review: SEO checklist, then publish', about: 'Twice a day (1 PM and 8 PM): checks blog drafts (length, headings, links, risky claims) and the Rank Math-style SEO list (keyword in title, first paragraph and a heading, no stuffing, internal links, meta description, image alt). Publishes one that passes a day. Approves clean comments and holds the rest.', slots: [13, 20] },
   { id: 'daily_report', title: 'Daily business report', about: 'At 8 AM India time: yesterday and 7-day sales, what needs attention, and the social queue.', everyMin: 1440, hourIst: 8 },
   { id: 'ads', title: 'Google Ads', about: 'Needs Google Ads API access before it can read or change a campaign. Not active: ads are reviewed with you in Claude for now.', everyMin: 0, locked: true },
 ];
-const DEFAULT_ON = { social_research: true, social_visual: true, social_writer: true, social_manager: true, keyword_research: true, content_writer: true, product_copy: true, cj_orders: true, order_watch: true, social_fill: true, seo_health: true, content_review: true, daily_report: true };
+const DEFAULT_ON = { market_watch: true, social_listening: true, insights: true, topic_planner: true, social_research: true, social_visual: true, social_writer: true, social_manager: true, keyword_research: true, content_writer: true, product_copy: true, cj_orders: true, order_watch: true, social_fill: true, seo_health: true, content_review: true, daily_report: true };
 
 export async function agentState(env) {
   const row = await env.DB.prepare("SELECT value FROM settings WHERE key='agent'").first();
@@ -141,6 +149,7 @@ export function reviewPost(p) {
   if (String(p.title || '').length < 20 || String(p.title).length > 70) probs.push('title should be 20 to 70 characters');
   if (String(p.excerpt || '').length < 60) probs.push('excerpt too short');
   const m = RISKY.exec(p.body + ' ' + p.title); if (m) probs.push(`risky claim: "${m[0]}"`);
+  for (const b of seoCheck(p).blocking) probs.push('SEO: ' + b);
   return probs;
 }
 async function contentReview(env, st) {
@@ -201,6 +210,16 @@ async function contentWriter(env) {
   const queued = (await env.DB.prepare('SELECT COUNT(*) n FROM posts WHERE published=0').first()).n;
   if (today >= 2) return { summary: 'Daily limit of 2 drafts reached.', quiet: true };
   if (queued >= 5) return { summary: 'Five drafts are already waiting for review.', quiet: true };
+  await ensureAgentTables(env);
+  const topic = await env.DB.prepare("SELECT id,kw,brief FROM topic_queue WHERE status='pending' ORDER BY id LIMIT 1").first();
+  if (topic) {
+    const meta = await env.DB.prepare('SELECT intent FROM keywords WHERE kw=?').bind(topic.kw).first();
+    let brief = null; try { brief = JSON.parse(topic.brief); } catch {}
+    const r = await writePost(env, { kw: topic.kw, intent: meta ? meta.intent : 'browse', brief });
+    await env.DB.prepare("UPDATE topic_queue SET status='written' WHERE id=?").bind(topic.id).run();
+    await note(env, 'content_writer', 'action', `Drafted: ${r.title}`, `Topic from the research team: "${topic.kw}" · ${r.words} words · /blog/${r.slug} (draft, goes through the graphics agent and final review)`);
+    return { summary: `Drafted "${r.title}".`, quiet: true };
+  }
   const kw = await env.DB.prepare("SELECT kw,intent,score FROM keywords WHERE covered=0 AND status='new' AND (intent='question' OR kw LIKE '%for women%' OR kw LIKE '%design%' OR kw LIKE '%set%' OR kw LIKE '%under%') ORDER BY (intent='question') DESC, score DESC LIMIT 1").first();
   if (!kw) return { summary: 'No keyword gap ready to write.', quiet: true };
   const r = await writePost(env, kw);
@@ -243,7 +262,30 @@ async function managerSkill(env) {
   return { summary: `${n} reviewed.`, quiet: true };
 }
 
-const RUN = { social_research: (e) => pipe(e, 'social_research', 'Research team', researchDesk), social_visual: visualSkill, social_writer: (e) => pipe(e, 'social_writer', 'Content writer', writerDesk), social_manager: managerSkill, content_writer: contentWriter, product_copy: productCopy, keyword_research: keywordSkill, cj_orders: cjOrders, order_watch: orderWatch, social_fill: socialFill, seo_health: seoHealth, content_review: contentReview, daily_report: dailyReport };
+async function marketWatchSkill(env) {
+  const r = await marketWatch(env);
+  if (r.brand.length) await note(env, 'market_watch', 'warn', `${r.brand.length} new mention(s) of WinkCasa`, r.brand.map((i) => `${i.title} ${i.url}`).join('\n'));
+  if (r.comp.length) await note(env, 'market_watch', 'action', `${r.comp.length} new competitor post(s)`, r.comp.slice(0, 15).map((i) => `${i.title} ${i.url}`).join('\n'));
+  if (r.news.length) await note(env, 'market_watch', 'info', `${r.news.length} new trend headline(s)`, r.news.slice(0, 10).map((i) => `${i.title} ${i.url}`).join('\n'));
+  return { summary: `${r.brand.length} mentions, ${r.comp.length} competitor posts, ${r.news.length} trend headlines.`, quiet: true };
+}
+async function socialListeningSkill(env) {
+  const f = await listenSocial(env);
+  if (f.length) await note(env, 'social_listening', 'action', `${f.length} public thread(s) worth a look`, f.slice(0, 12).map((i) => `${i.title} ${i.url}`).join('\n') + '\n\nThe agent only reads. Reply yourself if it is helpful.');
+  return { summary: `${f.length} new threads.`, quiet: true };
+}
+async function insightsSkill(env) {
+  const r = await runInsights(env);
+  await note(env, 'insights', r.missing.length ? 'warn' : 'report', r.missing.length ? `Insights: ${r.connected} source(s) connected, ${r.missing.length} to connect` : 'Daily insights', r.lines.join('\n') || 'Nothing new today.');
+  return { summary: `${r.connected} source(s), ${r.gaps} answer gap(s) queued.`, quiet: true };
+}
+async function topicPlannerSkill(env) {
+  const r = await planTopics(env, 2);
+  if (r.queued) await note(env, 'topic_planner', 'action', `Queued ${r.queued} topic(s) for the writer`, r.picks.map((p) => `${p.kw}: ${p.why}\n  Title: ${p.brief.title}\n  Question: ${p.brief.question}\n  Keywords: ${p.brief.keywords.join(', ')}\n  Also answers: ${p.brief.questions.join(' | ') || 'n/a'}`).join('\n\n'));
+  return { summary: `${r.queued} topic(s) queued, ${r.pending} waiting.`, quiet: true };
+}
+
+const RUN = { market_watch: marketWatchSkill, social_listening: socialListeningSkill, insights: insightsSkill, topic_planner: topicPlannerSkill,  social_research: (e) => pipe(e, 'social_research', 'Research team', researchDesk), social_visual: visualSkill, social_writer: (e) => pipe(e, 'social_writer', 'Content writer', writerDesk), social_manager: managerSkill, content_writer: contentWriter, product_copy: productCopy, keyword_research: keywordSkill, cj_orders: cjOrders, order_watch: orderWatch, social_fill: socialFill, seo_health: seoHealth, content_review: contentReview, daily_report: dailyReport };
 
 // Runs every skill that is switched on and due. Safe to call often: each skill has its own interval, and only one run goes at a time.
 export async function runAgent(env, { only, force } = {}) {
@@ -256,7 +298,7 @@ export async function runAgent(env, { only, force } = {}) {
     for (const sk of SKILLS) {
       if (sk.locked || !RUN[sk.id] || (only && only !== sk.id) || (!only && !st.on[sk.id])) continue;
       const last = st.last[sk.id] || 0;
-      if (!force && now - last < sk.everyMin * 60000) continue;
+      if (!force && (sk.slots ? !dueBySlots(now, last, sk.slots) : now - last < sk.everyMin * 60000)) continue;
       if (!force && sk.hourIst !== undefined && istHour() < sk.hourIst) continue;
       const cost = sk.cost ?? 3; if (!force && cost > budget) continue; budget -= cost;
       st.last[sk.id] = now;

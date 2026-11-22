@@ -12,7 +12,7 @@ const QUESTION = /^(how|what|which|why|can|should|is|are|best|top|where)\b/i;
 const clean = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9&' -]/g, ' ').replace(/\s+/g, ' ').trim();
 export const keepKeyword = (k) => { const w = k.split(' ').length; return k.length >= 5 && k.length <= 70 && w >= 2 && w <= 7 && CORE.test(k) && !BLOCK.test(k); };
 
-async function suggestGoogle(q) {
+export async function suggestGoogle(q) {
   try { const r = await fetch('https://suggestqueries.google.com/complete/search?client=firefox&hl=en&gl=in&q=' + encodeURIComponent(q), { headers: { 'User-Agent': 'Mozilla/5.0' } }); if (!r.ok) return []; const j = await r.json(); return Array.isArray(j[1]) ? j[1] : []; } catch { return []; }
 }
 async function suggestAmazon(q) {
