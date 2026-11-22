@@ -15,16 +15,26 @@ test('new agents are registered, on by default, and have a definition', () => {
   for (const id of ['market_watch', 'social_listening', 'insights', 'topic_planner']) assert.ok(SKILLS.find((s) => s.id === id), id);
 });
 
-test('market watch stores news + competitor posts once, flags brand mentions, ignores blocked sources', async () => {
-  stub({ 'news.google.com': rss(['WinkCasa launches festive range', 'Fashion jewellery trend 2026']), 'giva.co': rss(['Giva: layering guide']), 'palmonas.com': { body: 'blocked', status: 403 } });
+test('market watch tracks competitors (blogs + their news), not WinkCasa; stores each item once; skips blocked sites', async () => {
+  stub({ 'news.google.com': rss(['Palmonas opens new store', 'Fashion jewellery trend 2026']), 'giva.co': rss(['Giva: layering guide for Diwali']), 'palmonas.com': { body: 'blocked', status: 403 } });
+  const seen = []; const orig = globalThis.fetch; globalThis.fetch = async (u, o) => { seen.push(String(u)); return orig(u, o); };
   const r = await runAgent(env, { only: 'market_watch', force: true });
   assert.equal(r.ran[0].error, undefined);
+  assert.ok(!seen.some((u) => /winkcasa/i.test(decodeURIComponent(u)) && u.includes('news.google')), 'no WinkCasa brand search');
   const n1 = env.DB.raw.prepare('SELECT COUNT(*) n FROM intel').get().n; assert.ok(n1 >= 3);
+  assert.ok(env.DB.raw.prepare("SELECT 1 FROM intel WHERE kind='competitor' AND title LIKE 'giva.co:%'").get(), 'competitor blog post kept');
+  assert.ok(env.DB.raw.prepare("SELECT 1 FROM intel WHERE kind='competitor-news'").get(), 'competitor news kept');
   await runAgent(env, { only: 'market_watch', force: true });
   assert.equal(env.DB.raw.prepare('SELECT COUNT(*) n FROM intel').get().n, n1, 'same items are not stored twice');
-  assert.ok(env.DB.raw.prepare("SELECT 1 FROM intel WHERE kind='brand'").get(), 'brand mention kept');
+  globalThis.fetch = orig;
 });
-
+test('default competitor list covers the real fashion-jewellery rivals and is editable', async () => {
+  const { getCompetitors, setCompetitors } = await import('../../src/intel.js');
+  const d = await getCompetitors(env);
+  for (const x of ['yellowchimes.com', 'priyaasi.com', 'sukkhi.com', 'voylla.com', 'zariin.com', 'palmonas.com', 'giva.co']) assert.ok(d.includes(x), x);
+  assert.deepEqual(await setCompetitors(env, ['https://www.Example.com/blog', 'bad host']), ['www.example.com']);
+  await setCompetitors(env, d);
+});
 test('social listening reads public Reddit search feed and never throws when blocked', async () => {
   stub({ 'reddit.com': rss(['Where to buy oxidised earrings in India?']) });
   await runAgent(env, { only: 'social_listening', force: true });

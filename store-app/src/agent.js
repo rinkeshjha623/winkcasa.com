@@ -10,7 +10,7 @@ import { researchDesk, visualDesk, writerDesk, managerDesk, safetyNet, graphicsD
 import { SITE_ORIGIN, absUrl } from './social.js';
 import { dueBySlots } from './slots.js';
 import { seoCheck } from './blogqa.js';
-import { marketWatch, listenSocial, planTopics, ensureAgentTables } from './intel.js';
+import { marketWatch, listenSocial, planTopics, ensureAgentTables, themeDigest } from './intel.js';
 import { runInsights } from './insights.js';
 
 const sql = (d = new Date()) => d.toISOString().slice(0, 19).replace('T', ' ');
@@ -20,7 +20,7 @@ const istHour = () => new Date(Date.now() + IST).getUTCHours();
 const rupees = (p) => '₹' + Math.round((p || 0) / 100).toLocaleString('en-IN');
 
 export const SKILLS = [
-  { id: 'market_watch', title: 'Market watcher: competitors, news, brand mentions', about: 'Twice a day (7 AM and 5 PM): reads competitor blog feeds and Google News for jewellery trends and any mention of WinkCasa, and keeps what is new in the market feed. Alerts you on a WinkCasa mention.', slots: [7, 17], cost: 12 },
+  { id: 'market_watch', title: 'Competitor watcher: blogs, news and trends', about: 'Twice a day (7 AM and 5 PM): reads the blogs of your closest rivals (Yellow Chimes, Priyaasi, Sukkhi, Voylla, Zariin, Palmonas, Giva, Jewelmaze, editable), news about them, and jewellery trend headlines. Shows what topics they write about and feeds the topic planner.', slots: [7, 17], cost: 12 },
   { id: 'social_listening', title: 'Research agent: public questions (Reddit)', about: 'Twice a day (8 AM and 6 PM): finds public threads where people ask for what we sell. It only reads. You decide what to answer. Quora and Pinterest cannot be read automatically.', slots: [8, 18], cost: 8 },
   { id: 'insights', title: 'Insights: Search Console, GA4, Bing, AEO and AI answers', about: 'Every morning (9 AM): reads Search Console, Analytics and Bing (when connected), finds searches close to page 1 and shopper questions no page answers, and queues them as topics. Read-only.', slots: [9], cost: 6 },
   { id: 'topic_planner', title: 'Topic planner: high volume, low or medium competition', about: 'Every morning (10 AM): picks the best 2 topics from keywords with no page yet, using Keyword Planner volumes you upload (never High competition). Feeds the content writer.', slots: [10], cost: 2 },
@@ -264,10 +264,14 @@ async function managerSkill(env) {
 
 async function marketWatchSkill(env) {
   const r = await marketWatch(env);
-  if (r.brand.length) await note(env, 'market_watch', 'warn', `${r.brand.length} new mention(s) of WinkCasa`, r.brand.map((i) => `${i.title} ${i.url}`).join('\n'));
-  if (r.comp.length) await note(env, 'market_watch', 'action', `${r.comp.length} new competitor post(s)`, r.comp.slice(0, 15).map((i) => `${i.title} ${i.url}`).join('\n'));
-  if (r.news.length) await note(env, 'market_watch', 'info', `${r.news.length} new trend headline(s)`, r.news.slice(0, 10).map((i) => `${i.title} ${i.url}`).join('\n'));
-  return { summary: `${r.brand.length} mentions, ${r.comp.length} competitor posts, ${r.news.length} trend headlines.`, quiet: true };
+  const line = (i) => `${i.title} ${i.url}`;
+  if (r.comp.length) {
+    const dg = themeDigest(r.comp.map((i) => i.title));
+    await note(env, 'market_watch', 'action', `${r.comp.length} new competitor blog post(s)`, (dg.length ? 'What they are writing about: ' + dg.map((d) => `${d.theme} (${d.count})`).join(', ') + '\n\n' : '') + r.comp.slice(0, 15).map(line).join('\n'));
+  }
+  if (r.compNews.length) await note(env, 'market_watch', 'action', `${r.compNews.length} new competitor news item(s)`, r.compNews.slice(0, 12).map(line).join('\n'));
+  if (r.news.length) await note(env, 'market_watch', 'info', `${r.news.length} new trend headline(s)`, r.news.slice(0, 10).map(line).join('\n'));
+  return { summary: `${r.comp.length} competitor posts, ${r.compNews.length} competitor news, ${r.news.length} trend headlines.`, quiet: true };
 }
 async function socialListeningSkill(env) {
   const f = await listenSocial(env);

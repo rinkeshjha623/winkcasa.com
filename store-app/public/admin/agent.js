@@ -50,9 +50,9 @@
     const brief = (x) => { let b = null; try { b = JSON.parse(x.brief); } catch {} return b ? `<div class="muted">Title: ${esc(b.title)}<br>Question: ${esc(b.question)}<br>Keywords: ${esc(b.keywords.join(', '))}${b.questions.length ? '<br>Also answers: ' + esc(b.questions.join(' | ')) : ''}</div>` : ''; };
     return `<div class="card" style="margin-bottom:12px"><h3>Research team hand-over to the writer</h3>
     ${q.length ? `<div class="tw"><table><thead><tr><th>Topic and brief</th><th>Status</th></tr></thead><tbody>${q.map((x) => `<tr><td><b>${esc(x.kw)}</b><div class="muted">${esc(x.why)}</div>${brief(x)}</td><td>${esc(x.status)}</td></tr>`).join('')}</tbody></table></div>` : '<p class="muted">No topics yet. The planner runs at 10 AM, or press Run on it.</p>'}
-    <h4 style="margin:12px 0 4px">Market feed (competitors, news, mentions, public questions)</h4>
-    ${it.length ? `<div class="tw"><table><thead><tr><th>Type</th><th>Item</th></tr></thead><tbody>${it.slice(0, 25).map((x) => `<tr><td class="muted">${esc(x.kind)}</td><td><a href="${esc(x.url)}" target="_blank" rel="noopener noreferrer">${esc(x.title)}</a><div class="muted">${esc(x.source)} · ${esc(x.seen_at)}</div></td></tr>`).join('')}</tbody></table></div>` : '<p class="muted">Nothing yet. The market watcher runs at 7 AM and 5 PM.</p>'}
-    <h4 style="margin:12px 0 4px">Competitor sites to watch (their blog feeds)</h4>
+    <h4 style="margin:12px 0 4px">Market feed (competitor blogs, competitor news, trends, public questions)</h4>
+    ${it.length ? `<div class="tw"><table><thead><tr><th>Type</th><th>Item</th></tr></thead><tbody>${it.slice(0, 25).map((x) => `<tr><td class="muted">${esc(x.kind)}</td><td><a href="${esc(x.url)}" target="_blank" rel="noopener noreferrer">${esc(x.title)}</a><div class="muted">${esc(x.source)} · ${esc(x.seen_at)}</div></td></tr>`).join('')}</tbody></table></div>` : '<p class="muted">Nothing yet. The competitor watcher runs at 7 AM and 5 PM.</p>'}
+    <h4 style="margin:12px 0 4px">Competitor websites to watch (their blogs). Add or remove any.</h4>
     <div style="display:flex;gap:6px"><input id="compList" style="flex:1" value="${esc((D.competitors || []).join(', '))}"><button class="btn sm" id="compSave">Save</button></div></div>`;
   }
   function draw() {

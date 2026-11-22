@@ -1,13 +1,13 @@
 // How each agent works, written for the owner. Shown in Admin > Agent and used as the single source of truth for the daily playbook.
 export const DEFS = {
   market_watch: {
-    name: 'Market watcher', role: 'Watches the outside world for you: competitor blogs, news and any mention of WinkCasa.',
+    name: 'Competitor watcher', role: 'Watches the businesses that sell what we sell, so WinkCasa can copy what works and fill what they miss.',
     when: 'Twice a day: 7:00 AM and 5:00 PM India time.',
-    inputs: ['Google News search feed (WinkCasa and jewellery trends in India)', 'Competitor blog feeds (list is editable in this tab)'],
-    steps: ['Reads each news query and each competitor feed.', 'Keeps only items it has not seen before.', 'Marks anything that mentions WinkCasa and tells you.', 'Saves everything in the market feed below.'],
-    gives: 'New competitor posts, trend headlines and brand mentions in the market feed. Alerts you when WinkCasa is mentioned.',
-    handsTo: 'Topic planner (competitor headlines show what is being written about).',
-    limits: ['Reads public feeds only, about 10 requests per run.', 'A site that blocks it is skipped quietly.', 'It never copies anyone\'s article.'],
+    inputs: ['Blog feeds of your closest rivals: Yellow Chimes, Priyaasi, Sukkhi, Voylla, Zariin, Palmonas, Giva, Jewelmaze (list is editable in this tab)', 'Google News about those brands (launches, campaigns, funding)', 'Jewellery and hair-accessory trend headlines for India'],
+    steps: ['Reads each rival blog feed and the news feeds.', 'Keeps only items it has not seen before.', 'Groups what rivals write about: gifting and festive, styling guides, care, trends, offers.', 'Marks topics that rivals already publish on, so the planner treats them as proven demand.'],
+    gives: 'The market feed below, a theme summary in the activity list, and a boost for topics rivals already cover.',
+    handsTo: 'Topic research team (competitor headlines and proven topics go into each brief).',
+    limits: ['Reads public blog and news feeds only, about 30 requests a run.', 'A rival whose site has no public feed or blocks the agent is skipped quietly; add its feed address if you know one.', 'It never copies anyone\'s article; it uses headlines only to choose our own topics.'],
   },
   social_listening: {
     name: 'Research agent (public social)', role: 'Finds public conversations where shoppers ask for what we sell.',

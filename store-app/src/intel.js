@@ -57,11 +57,11 @@ const fmt = (n) => Number(n).toLocaleString('en-IN');
 // Highest searches with Low or Medium competition first. Known-High competition is never chosen. Without data, falls back to suggestion score and says so.
 export function pickTopics(cands, n) {
   const withData = cands.filter((c) => c.volume != null && (c.competition === 'low' || c.competition === 'medium'))
-    .sort((a, b) => b.volume - a.volume || (a.competition === 'low' ? -1 : 1) - (b.competition === 'low' ? -1 : 1));
-  const picks = withData.slice(0, n).map((c) => ({ kw: c.kw, why: `About ${fmt(c.volume)} searches a month, ${c.competition} competition (Keyword Planner)` }));
+    .sort((a, b) => b.volume - a.volume || (b.competitor ? 1 : 0) - (a.competitor ? 1 : 0) || (a.competition === 'low' ? -1 : 1) - (b.competition === 'low' ? -1 : 1));
+  const picks = withData.slice(0, n).map((c) => ({ kw: c.kw, why: `About ${fmt(c.volume)} searches a month, ${c.competition} competition (Keyword Planner)` + (c.competitor ? '. Competitors already publish on this' : '') }));
   if (picks.length < n) {
-    const rest = cands.filter((c) => c.volume == null && !c.competition).sort((a, b) => b.score - a.score).slice(0, n - picks.length);
-    for (const c of rest) picks.push({ kw: c.kw, why: `No volume data yet (upload a Keyword Planner CSV); chosen on suggestion score ${c.score}` });
+    const rest = cands.filter((c) => c.volume == null && !c.competition).sort((a, b) => (b.competitor ? 1 : 0) - (a.competitor ? 1 : 0) || b.score - a.score).slice(0, n - picks.length);
+    for (const c of rest) picks.push({ kw: c.kw, why: `No volume data yet (upload a Keyword Planner CSV); chosen on suggestion score ${c.score}` + (c.competitor ? '. Competitors already publish on this' : '') });
   }
   return picks;
 }
@@ -104,6 +104,8 @@ export async function planTopics(env, n = 2) {
   if (pending >= 4) return { queued: 0, pending };
   const cands = (await env.DB.prepare(`SELECT k.kw, k.score, m.volume, m.competition, m.impressions FROM keywords k LEFT JOIN keyword_metrics m ON m.kw=k.kw
     WHERE k.covered=0 AND k.status='new' AND k.kw NOT IN (SELECT kw FROM topic_queue) ORDER BY k.score DESC LIMIT 400`).all()).results;
+  const titles = (await env.DB.prepare("SELECT LOWER(title) t FROM intel WHERE kind='competitor' AND seen_at > datetime('now','-45 days')").all()).results.map((r) => r.t);
+  for (const c of cands) c.competitor = titles.some((t) => c.kw.split(' ').filter((w) => w.length > 3).every((w) => t.includes(w.replace(/s$/, ''))));
   const picks = pickTopics(cands, Math.min(n, 4 - pending));
   for (const p of picks) { const brief = await researchBrief(env, p.kw, p.why); p.brief = brief; await env.DB.prepare('INSERT INTO topic_queue (kw,why,brief) VALUES (?,?,?)').bind(p.kw, p.why, JSON.stringify(brief)).run(); }
   return { queued: picks.length, pending: pending + picks.length, picks };
@@ -123,7 +125,9 @@ async function keep(env, kind, source, items) {
   return fresh;
 }
 const gnews = (q) => `https://news.google.com/rss/search?q=${encodeURIComponent(q)}&hl=en-IN&gl=IN&ceid=IN:en`;
-export const DEFAULT_COMPETITORS = ['giva.co', 'palmonas.com'];
+// Closest rivals: Indian fashion / artificial / demi-fine jewellery and accessories sold online. Editable in Admin > Agent.
+export const DEFAULT_COMPETITORS = ['yellowchimes.com', 'priyaasi.com', 'sukkhi.com', 'voylla.com', 'zariin.com', 'palmonas.com', 'giva.co', 'jewelmaze.com'];
+const RIVAL_NEWS = '(Palmonas OR Giva OR Sukkhi OR Voylla OR Zariin OR "Yellow Chimes" OR Priyaasi OR Jewelmaze) jewellery';
 export async function getCompetitors(env) {
   const row = await env.DB.prepare("SELECT value FROM settings WHERE key='competitors'").first();
   try { const a = JSON.parse(row.value); if (Array.isArray(a) && a.length) return a; } catch {}
@@ -136,15 +140,22 @@ export async function setCompetitors(env, list) {
 }
 export async function marketWatch(env) {
   await ensureAgentTables(env);
-  const out = { brand: [], news: [], comp: [] };
-  out.brand = await keep(env, 'brand', 'Google News', await getFeed(gnews('"WinkCasa"')));
+  const out = { comp: [], compNews: [], news: [] };
+  out.compNews = await keep(env, 'competitor-news', 'Google News', await getFeed(gnews(RIVAL_NEWS)));
   for (const q of ['fashion jewellery trend India', 'hair accessories trend India']) out.news.push(...await keep(env, 'news', 'Google News', await getFeed(gnews(q))));
-  for (const d of (await getCompetitors(env)).slice(0, 4)) {
-    let items = await getFeed(`https://${d}/blogs/news.atom`);
-    if (!items.length) items = await getFeed(`https://${d}/blog/feed`);
-    out.comp.push(...(await keep(env, 'competitor', d, items)).map((i) => ({ ...i, title: d + ': ' + i.title })));
+  for (const d of (await getCompetitors(env)).slice(0, 8)) {
+    let items = [];
+    for (const path of ['/blogs/news.atom', '/blog/feed', '/feed']) { items = await getFeed(`https://${d}${path}`); if (items.length) break; }
+    out.comp.push(...await keep(env, 'competitor', d, items.map((i) => ({ ...i, title: d + ': ' + i.title }))));
   }
   return out;
+}
+const THEMES = [['Gifting and festive', /\b(gift|gifting|diwali|rakhi|raksha|valentine|wedding|festive|festival|karwa|bridal|birthday|anniversary|christmas)\b/i], ['Styling guides', /\b(style|styling|how to wear|wear|outfit|look|ideas|pair|match)\b/i], ['Care and cleaning', /\b(clean|care|polish|tarnish|maintain|store|allerg|sensitive)\b/i], ['Trends', /\b(trend|trending|2026|2027|latest|new collection|collection)\b/i], ['Offers', /\b(sale|offer|discount|deal|off\b|combo)\b/i]];
+// What rivals write about, grouped. Shows the owner where their content effort goes.
+export function themeDigest(titles) {
+  const c = new Map();
+  for (const t of titles) for (const [name, re] of THEMES) if (re.test(t)) { c.set(name, (c.get(name) || 0) + 1); break; }
+  return THEMES.map(([name]) => ({ theme: name, count: c.get(name) || 0 })).filter((x) => x.count).sort((a, b) => b.count - a.count);
 }
 export async function listenSocial(env) {
   await ensureAgentTables(env);

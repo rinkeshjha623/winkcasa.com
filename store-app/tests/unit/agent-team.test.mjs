@@ -93,3 +93,14 @@ test('brief gives the writer topic, question, title with the keyword, keywords a
   assert.equal(b.questions.length, 2);
   assert.equal(buildBrief({ kw: 'claw clip' }).question.includes('claw clip'), true);
 });
+
+import { themeDigest } from '../../src/intel.js';
+test('theme digest shows what competitors write about (gifting, festive, styling, care, trends, offers)', () => {
+  const d = themeDigest(['Diwali jewellery gift ideas', 'How to style a claw clip', 'How to clean silver jewellery', 'Rakhi gifts for sister', 'Layering necklaces 2026 trend']);
+  assert.deepEqual(d.map((x) => [x.theme, x.count]), [['Gifting and festive', 2], ['Styling guides', 1], ['Care and cleaning', 1], ['Trends', 1]].sort((a, b) => b[1] - a[1]));
+  assert.deepEqual(themeDigest([]), []);
+});
+test('topic picker lifts topics competitors already write about when volumes tie', () => {
+  const r = pickTopics([{ kw: 'a b', score: 1, volume: 1000, competition: 'low', competitor: false }, { kw: 'c d', score: 1, volume: 1000, competition: 'low', competitor: true }], 1);
+  assert.equal(r[0].kw, 'c d'); assert.match(r[0].why, /competitors/i);
+});
