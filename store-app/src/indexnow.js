@@ -3,7 +3,7 @@ import { SITE } from './seo.js';
 import { publishedPosts } from './blog.js';
 
 const KEY = '310772f01b7e395fc84a92f085aa82a5';
-const HOUR = 3600000, ENDPOINTS = ['https://api.indexnow.org/indexnow', 'https://www.bing.com/indexnow'];
+const HOUR = 3600000, ENDPOINTS = ['https://api.indexnow.org/indexnow', 'https://www.bing.com/indexnow', 'https://yandex.com/indexnow'];
 const readState = async (env) => { const row = await env.DB.prepare("SELECT value FROM settings WHERE key='indexnow'").first(); try { return row ? JSON.parse(row.value) : {}; } catch { return {}; } };
 const saveState = (env, st) => env.DB.prepare("INSERT OR REPLACE INTO settings (key,value) VALUES ('indexnow',?)").bind(JSON.stringify(st)).run();
 
@@ -23,7 +23,7 @@ export async function submitIndexNow(env, { force } = {}) {
   const full = !st.sent || now - (st.fullAt || 0) > 7 * 24 * HOUR;
   const urlList = full ? all : all.filter((u) => !sent.has(u.replace(SITE, '')));
   if (!urlList.length) { await saveState(env, { ...st, ok: true, okAt: now, failAt: 0 }); return { ok: true, skipped: true, submitted: 0, reason: 'nothing new to send' }; }
-  let status = 0, rate = false;
+  let status = 0, rate = false, detail = '';
   for (const ep of ENDPOINTS) {
     const res = await fetch(ep, { method: 'POST', headers: { 'Content-Type': 'application/json; charset=utf-8' }, body: JSON.stringify({ host: 'www.winkcasa.com', key: KEY, keyLocation: SITE + '/' + KEY + '.txt', urlList }) }).catch(() => null);
     status = res ? res.status : 0;
@@ -33,9 +33,10 @@ export async function submitIndexNow(env, { force } = {}) {
       return { ok: true, status, submitted: urlList.length };
     }
     if (status === 429) rate = true;
+    if (res) detail = (ep.split('/')[2] + ': ' + (await res.text().catch(() => '')).slice(0, 200)).trim();
   }
-  await saveState(env, { ...st, ok: false, status, failAt: now, backoffUntil: rate ? now + 24 * HOUR : 0 });
-  return { ok: false, status, submitted: 0 };
+  await saveState(env, { ...st, ok: false, status, failAt: now, detail, backoffUntil: rate ? now + 24 * HOUR : 0 });
+  return { ok: false, status, submitted: 0, detail };
 }
 
 // Called from the schedule. The rules above decide whether anything is actually sent. Never throws.

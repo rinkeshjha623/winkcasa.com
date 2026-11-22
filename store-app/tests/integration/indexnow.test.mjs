@@ -76,3 +76,17 @@ test('force (the owner pressing Run) bypasses the waiting but still sends only w
   assert.equal(r.ok, true); assert.equal(calls.length, 0); // nothing new, so still no call
   assert.match(r.reason, /nothing new/i);
 });
+
+test('the search engine\'s reply text is kept so the owner can see why it refused', async () => {
+  const env = newEnv(); calls.length = 0;
+  globalThis.fetch = async (u) => new Response('Too many requests for host www.winkcasa.com', { status: 429 });
+  const r = await submitIndexNow(env);
+  assert.equal(r.ok, false); assert.match(r.detail, /Too many requests for host/);
+  assert.match(getState(env).detail, /Too many requests/);
+});
+test('three endpoints are tried: IndexNow, Bing, Yandex', async () => {
+  const env = newEnv(); const seen = [];
+  globalThis.fetch = async (u) => { seen.push(String(u)); return new Response('', { status: 503 }); };
+  await submitIndexNow(env);
+  assert.equal(seen.length, 3); assert.match(seen[2], /yandex\.com\/indexnow/);
+});

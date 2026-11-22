@@ -121,8 +121,8 @@ async function socialFill(env) {
   return { summary: `Planned ${made} post(s).`, quiet: !made };
 }
 
-async function seoHealth(env) {
-  const idx = await submitIndexNow(env).catch((e) => ({ ok: false, status: e.message }));
+async function seoHealth(env, st, opt = {}) {
+  const idx = await submitIndexNow(env, { force: !!opt.byOwner }).catch((e) => ({ ok: false, status: e.message }));
   const q = async (s) => (await env.DB.prepare(s).all()).results;
   const noImg = await q("SELECT id,name FROM products WHERE active=1 AND (images_json='[]' OR images_json='') LIMIT 20");
   const thin = await q("SELECT id,name FROM products WHERE active=1 AND LENGTH(description)<80 LIMIT 20");
@@ -135,7 +135,7 @@ async function seoHealth(env) {
   if (noKw) issues.push(`${noKw} product(s) have no focus keyword.`);
   const gk = (await q("SELECT kw FROM keywords WHERE covered=0 AND intent='buy' ORDER BY score DESC LIMIT 8")).map((x) => x.kw);
   if (gk.length) issues.push('Buying keywords with no page yet: ' + gk.join(' | '));
-  if (!idx.ok) issues.push('IndexNow submission failed: ' + idx.status);
+  if (!idx.ok) issues.push('IndexNow submission failed: ' + idx.status + (idx.detail ? ' (' + idx.detail + ')' : ''));
   await note(env, 'seo_health', issues.length ? 'warn' : 'info', `IndexNow ${idx.skipped ? 'not needed now (' + idx.reason + ')' : idx.ok ? 'accepted ' + idx.submitted + ' URLs' : 'failed (' + idx.status + ')'}; ${issues.length} issue type(s) on the site`, issues.join('\n') || 'No issues found.');
   return { summary: `${idx.skipped ? 'IndexNow skipped (' + idx.reason + ')' : (idx.submitted || 0) + ' URLs sent'}, ${issues.length} issue type(s).`, quiet: true };
 }
@@ -307,7 +307,7 @@ export async function runAgent(env, { only, force } = {}) {
       if (!force && sk.hourIst !== undefined && istHour() < sk.hourIst) continue;
       const cost = sk.cost ?? 3; if (!only && cost > budget) { left++; continue; } budget -= cost;
       st.last[sk.id] = now;
-      try { const r = await RUN[sk.id](env, st); ran.push({ skill: sk.id, ...r }); if (!r.quiet) await note(env, sk.id, 'info', r.summary, null).catch(() => {}); }
+      try { const r = await RUN[sk.id](env, st, { byOwner: !!only }); ran.push({ skill: sk.id, ...r }); if (!r.quiet) await note(env, sk.id, 'info', r.summary, null).catch(() => {}); }
       catch (e) { ran.push({ skill: sk.id, error: String(e.message || e) }); await note(env, sk.id, 'alert', `${sk.title} failed`, String(e.message || e)).catch(() => {}); }
     }
     await saveState(env, st);
