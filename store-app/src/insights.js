@@ -41,6 +41,7 @@ async function bingQueries(env) {
     const j = await r.json().catch(() => ({}));
     if (r.ok) return (j.d || []).slice(0, 100).map((x) => ({ kw: String(x.Query || '').toLowerCase(), clicks: x.Clicks, impressions: x.Impressions, position: x.AvgImpressionPosition }));
     last = `${r.status} ${String(j.Message || j.message || '').slice(0, 120)} (site ${site})`;
+    if (/throttle/i.test(last)) { last = 'Bing is rate-limiting this server (ThrottleIP). The key is accepted; it will be retried on the next run.'; break; }
   }
   throw new Error('Bing Webmaster: ' + last);
 }
