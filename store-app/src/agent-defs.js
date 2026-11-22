@@ -3,7 +3,7 @@ export const DEFS = {
   market_watch: {
     name: 'Competitor watcher', role: 'Watches the businesses that sell what we sell, so WinkCasa can copy what works and fill what they miss.',
     when: 'Twice a day: 7:00 AM and 5:00 PM India time.',
-    inputs: ['Blog feeds of your closest rivals: Yellow Chimes, Priyaasi, Sukkhi, Voylla, Zariin, Palmonas, Giva, Jewelmaze (list is editable in this tab)', 'Google News about those brands (launches, campaigns, funding)', 'Jewellery and hair-accessory trend headlines for India'],
+    inputs: ['Blog feeds of your closest rivals: Yellow Chimes, Priyaasi, Sukkhi, Voylla, Zariin, Palmonas, Giva, Jewelmaze (edit the list under Content and research)', 'Google News about those brands (launches, campaigns, funding)', 'Jewellery and hair-accessory trend headlines for India'],
     steps: ['Reads each rival blog feed and the news feeds.', 'Keeps only items it has not seen before.', 'Groups what rivals write about: gifting and festive, styling guides, care, trends, offers.', 'Marks topics that rivals already publish on, so the planner treats them as proven demand.'],
     gives: 'The market feed below, a theme summary in the activity list, and a boost for topics rivals already cover.',
     handsTo: 'Topic research team (competitor headlines and proven topics go into each brief).',
